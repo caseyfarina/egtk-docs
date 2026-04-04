@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EGTK — UI Implementation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg:#0D0F14; --surface:#171B24; --surf2:#1C2130;
+    --text1:#F0F2F8; --text2:#8B8FA8; --text3:#5E6280;
+    --rule:#21283C; --blue:#4F8EF7; --purple:#9B72F7;
+    --green:#34D399; --orange:#FB923C; --teal:#2DD4BF;
+    --slate:#94A3C8; --yellow:#F59E0B;
+  }
+  html { scroll-behavior: smooth; }
+  body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text1); -webkit-font-smoothing:antialiased; }
+  .dot-grid { background-image:radial-gradient(circle,rgba(148,163,200,.065) 1px,transparent 1px); background-size:28px 28px; }
+
+  .topnav { position:sticky; top:0; z-index:100; background:rgba(13,15,20,.88); backdrop-filter:blur(12px); border-bottom:1px solid var(--rule); padding:0 80px; display:flex; align-items:center; gap:32px; height:52px; }
+  .topnav-logo { font-size:13px; font-weight:700; color:var(--text1); text-decoration:none; }
+  .topnav-logo span { color:var(--blue); }
+  .topnav-sep { width:1px; height:16px; background:var(--rule); }
+  .topnav a { font-size:12px; font-weight:500; color:var(--text3); text-decoration:none; transition:color .15s; }
+  .topnav a:hover { color:var(--text1); }
+  .topnav-back { margin-left:auto; font-size:12px; font-weight:500; color:var(--text3); text-decoration:none; }
+  .topnav-back:hover { color:var(--blue); }
+
+  .hero { padding:80px 80px 48px; max-width:1200px; margin:0 auto; }
+  .breadcrumb { font-size:12px; color:var(--text3); margin-bottom:20px; }
+  .breadcrumb a { color:var(--text3); text-decoration:none; }
+  .breadcrumb a:hover { color:var(--blue); }
+  .breadcrumb span { margin:0 8px; }
+  .hero-pill { display:inline-flex; align-items:center; font-size:10px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; padding:5px 12px; border-radius:20px; background:rgba(79,142,247,.1); color:var(--blue); margin-bottom:20px; }
+  .hero-title { font-size:52px; font-weight:700; letter-spacing:-.03em; line-height:1.1; color:var(--text1); margin-bottom:16px; }
+  .hero-desc { font-size:17px; color:var(--text2); line-height:1.7; max-width:600px; margin-bottom:48px; }
+
+  .section { max-width:1200px; margin:0 auto; padding:0 80px 72px; }
+  .sec-label { font-size:10px; font-weight:600; letter-spacing:.12em; text-transform:uppercase; color:var(--text3); margin-bottom:12px; display:block; }
+  .sec-title { font-size:28px; font-weight:700; letter-spacing:-.02em; color:var(--text1); margin-bottom:10px; }
+  .sec-desc { font-size:15px; color:var(--text2); line-height:1.7; max-width:680px; margin-bottom:32px; }
+  hr.rule { border:none; border-top:1px solid var(--rule); max-width:1200px; margin:0 auto; }
+
+  /* Option cards */
+  .option-card { background:var(--surface); border:1px solid var(--rule); border-radius:14px; overflow:hidden; margin-bottom:24px; }
+  .option-hdr { padding:20px 28px; border-bottom:1px solid var(--rule); display:flex; align-items:center; gap:14px; }
+  .option-badge { font-size:10px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; padding:5px 12px; border-radius:20px; flex-shrink:0; }
+  .option-title { font-size:20px; font-weight:700; color:var(--text1); letter-spacing:-.01em; }
+  .option-body { padding:24px 28px; }
+
+  /* Steps */
+  .mini-steps { display:flex; flex-direction:column; gap:10px; margin-bottom:20px; }
+  .mini-step { display:flex; gap:12px; align-items:flex-start; }
+  .mini-badge { width:22px; height:22px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; }
+  .mini-body { font-size:13px; color:var(--text2); line-height:1.6; padding-top:2px; }
+  .mini-body code { font-family:'SF Mono','Fira Mono',monospace; font-size:12px; padding:1px 5px; border-radius:4px; background:rgba(255,255,255,.07); color:var(--text1); }
+  .mini-body strong { color:var(--text1); font-weight:600; }
+
+  /* Field rows */
+  .field-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:16px; }
+  .field-item { background:var(--surf2); border-radius:8px; padding:10px 14px; }
+  .field-name { font-size:12px; font-weight:600; font-family:'SF Mono','Fira Mono',monospace; margin-bottom:3px; }
+  .field-desc { font-size:12px; color:var(--text3); line-height:1.5; }
+
+  /* Wire node diagram — Option B */
+  .wire-diagram { position:relative; border-radius:16px; border:1px solid var(--rule); padding:40px; overflow:hidden; margin-top:20px; }
+  .wire-diagram > .dot-grid { position:absolute; inset:0; border-radius:16px; }
+  .wire-diagram > *:not(.dot-grid) { position:relative; z-index:1; }
+  .wd-grid { display:grid; grid-template-columns:200px 80px 200px 80px 200px; align-items:center; gap:0; row-gap:12px; }
+  .wnode { background:rgba(23,27,36,.85); backdrop-filter:blur(6px); border:1px solid var(--rule); border-radius:10px; padding:12px 16px; position:relative; }
+  .wnode::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; border-radius:10px 10px 0 0; background:var(--nc); }
+  .wnode-label { font-size:9px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--nc); margin-bottom:4px; }
+  .wnode-name { font-size:12px; font-weight:600; color:var(--text1); font-family:'SF Mono','Fira Mono',monospace; }
+  .wnode-port-out { position:absolute; right:-5px; top:50%; transform:translateY(-50%); width:10px; height:10px; border-radius:50%; background:var(--nc); box-shadow:0 0 7px var(--nc); z-index:2; }
+  .wnode-port-in { position:absolute; left:-5px; top:50%; transform:translateY(-50%); width:10px; height:10px; border-radius:50%; background:var(--npc,var(--nc)); box-shadow:0 0 7px var(--npc,var(--nc)); z-index:2; }
+  .wconn { height:2px; position:relative; margin:0 4px; }
+  .wconn-line { position:absolute; inset:0; opacity:.5; }
+  .wconn-bead { position:absolute; top:-4px; width:8px; height:8px; border-radius:50%; animation:bead 2s linear infinite; animation-delay:var(--bd,0s); }
+  @keyframes bead { 0%{left:0;opacity:0} 8%{opacity:.9} 85%{opacity:.9} 100%{left:calc(100% - 8px);opacity:0} }
+  .wconn-label { position:absolute; bottom:8px; left:50%; transform:translateX(-50%); font-size:9px; color:var(--text3); white-space:nowrap; background:rgba(13,15,20,.8); padding:1px 5px; border-radius:3px; }
+  .wempty { } /* spacer */
+
+  /* Ad-hoc section */
+  .adhoc-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:24px; }
+  .adhoc-card { background:var(--surface); border:1px solid var(--rule); border-radius:12px; overflow:hidden; }
+  .adhoc-hdr { padding:12px 18px; border-bottom:1px solid var(--rule); }
+  .adhoc-name { font-size:13px; font-weight:700; font-family:'SF Mono','Fira Mono',monospace; margin-bottom:3px; }
+  .adhoc-sub { font-size:12px; color:var(--text3); }
+  .adhoc-body { padding:14px 18px; font-size:13px; color:var(--text2); line-height:1.6; }
+  .adhoc-body code { font-family:'SF Mono','Fira Mono',monospace; font-size:12px; padding:1px 5px; border-radius:4px; background:rgba(255,255,255,.07); color:var(--text1); }
+
+  /* Decision table */
+  .decision-table { display:flex; flex-direction:column; gap:4px; margin-bottom:32px; }
+  .drow { display:flex; align-items:center; gap:0; border-radius:6px; overflow:hidden; }
+  .drow:nth-child(odd) { background:var(--surface); }
+  .drow:nth-child(even) { background:var(--surf2); }
+  .dq { flex:1; padding:12px 20px; font-size:13px; color:var(--text2); }
+  .darrow { padding:0 16px; color:var(--text3); flex-shrink:0; }
+  .da { padding:12px 20px; font-size:13px; font-weight:600; min-width:260px; }
+
+  /* Callout */
+  .callout { border-radius:12px; padding:20px 24px; border:1px solid; display:flex; gap:16px; align-items:flex-start; margin-bottom:24px; }
+  .callout-icon { font-size:20px; flex-shrink:0; }
+  .callout-title { font-size:14px; font-weight:700; margin-bottom:5px; }
+  .callout-body { font-size:13px; color:var(--text2); line-height:1.7; }
+
+  .page-footer { border-top:1px solid var(--rule); padding:32px 80px; max-width:1200px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; font-size:13px; color:var(--text3); }
+  .page-footer a { color:var(--blue); text-decoration:none; }
+  .page-footer a:hover { text-decoration:underline; }
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <a href="index.html" class="topnav-logo">EGTK<span>.</span></a>
+  <div class="topnav-sep"></div>
+  <a href="#option-a">Option A — showUI</a>
+  <a href="#option-b">Option B — GameUIManager</a>
+  <a href="#adhoc">Ad-hoc UI</a>
+  <a href="#decision">Which to Use</a>
+  <a href="index.html" class="topnav-back">← All Docs</a>
+</nav>
+
+<div class="hero">
+  <div class="breadcrumb"><a href="index.html">EGTK Docs</a><span>/</span>UI Implementation</div>
+  <div class="hero-pill">Deep Dive</div>
+  <h1 class="hero-title">UI Implementation</h1>
+  <p class="hero-desc">Two approaches to showing score, health, and timer on screen. Option A is a single checkbox. Option B gives you full control. Both call the same underlying functions — they just get there differently.</p>
+</div>
+
+<hr class="rule">
+
+<!-- Option A -->
+<div class="section" id="option-a" style="padding-top:60px">
+  <span class="sec-label">Option A — Zero wiring</span>
+
+  <div class="option-card">
+    <div class="option-hdr" style="background:rgba(52,211,153,.04)">
+      <span class="option-badge" style="background:rgba(52,211,153,.12);color:var(--green)">Option A</span>
+      <span class="option-title">Enable <code style="font-family:'SF Mono',monospace;font-size:18px;color:var(--green)">showUI</code> — and you're done</span>
+    </div>
+    <div class="option-body">
+      <p style="font-size:14px;color:var(--text2);margin-bottom:20px;line-height:1.7">Each manager (GameHealthManager, GameCollectionManager, GameTimerManager, GameInventoryManager) has a built-in <strong style="color:var(--text1)">Show UI</strong> toggle. Enable it and the manager creates its own Canvas at runtime — text, bar, and all. No GameObject, no Canvas, no wiring required.</p>
+      <div class="mini-steps">
+        <div class="mini-step">
+          <div class="mini-badge" style="background:rgba(52,211,153,.12);color:var(--green)">1</div>
+          <div class="mini-body">Select your manager GameObject (GameHealthManager, GameCollectionManager, etc.)</div>
+        </div>
+        <div class="mini-step">
+          <div class="mini-badge" style="background:rgba(52,211,153,.12);color:var(--green)">2</div>
+          <div class="mini-body">Check <strong>Show UI</strong> in the Inspector</div>
+        </div>
+        <div class="mini-step">
+          <div class="mini-badge" style="background:rgba(52,211,153,.12);color:var(--green)">3</div>
+          <div class="mini-body">Adjust <strong>Text Position</strong>, <strong>Font Size</strong>, and <strong>Label Prefix</strong> to position the text. Hit Play to see it.</div>
+        </div>
+      </div>
+      <div class="field-grid">
+        <div class="field-item"><div class="field-name" style="color:var(--green)">Show UI</div><div class="field-desc">Creates the Canvas automatically at runtime</div></div>
+        <div class="field-item"><div class="field-name" style="color:var(--green)">Label Prefix</div><div class="field-desc">Text before the number ("Health: ", "Score: ")</div></div>
+        <div class="field-item"><div class="field-name" style="color:var(--green)">Text Position</div><div class="field-desc">Screen anchor position (top-left origin)</div></div>
+        <div class="field-item"><div class="field-name" style="color:var(--green)">Show Bar</div><div class="field-desc">Adds a fill bar. Requires Max Value set.</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<hr class="rule">
+
+<!-- Option B -->
+<div class="section" id="option-b" style="padding-top:60px">
+  <span class="sec-label">Option B — Full control</span>
+
+  <div class="option-card">
+    <div class="option-hdr" style="background:rgba(79,142,247,.04)">
+      <span class="option-badge" style="background:rgba(79,142,247,.12);color:var(--blue)">Option B</span>
+      <span class="option-title">Wire managers to <code style="font-family:'SF Mono',monospace;font-size:18px;color:var(--blue)">GameUIManager</code></span>
+    </div>
+    <div class="option-body">
+      <p style="font-size:14px;color:var(--text2);margin-bottom:20px;line-height:1.7">Add GameUIManager to any GameObject. It creates a full HUD Canvas with score, health bar, timer, and inventory slots. You control sizing, color, font, and position. Wire each manager's value-changed event to the matching update method.</p>
+      <div class="mini-steps">
+        <div class="mini-step">
+          <div class="mini-badge" style="background:rgba(79,142,247,.12);color:var(--blue)">1</div>
+          <div class="mini-body">Add <strong>GameUIManager</strong> to a manager GameObject. Toggle which slots you need (score, health, timer, inventory).</div>
+        </div>
+        <div class="mini-step">
+          <div class="mini-badge" style="background:rgba(79,142,247,.12);color:var(--blue)">2</div>
+          <div class="mini-body">Enable <strong>Editor Preview</strong> in the Inspector to see the HUD layout before pressing Play. Adjust positions with the offset controls.</div>
+        </div>
+        <div class="mini-step">
+          <div class="mini-badge" style="background:rgba(79,142,247,.12);color:var(--blue)">3</div>
+          <div class="mini-body">Wire each manager to GameUIManager using the event table below. <strong>Leave showUI disabled</strong> on each manager — only one system should run.</div>
+        </div>
+      </div>
+
+      <!-- Wire diagram -->
+      <div class="wire-diagram" style="margin-top:24px">
+        <div class="dot-grid"></div>
+        <div class="wd-grid">
+          <!-- Row 1: Health -->
+          <div class="wnode" style="--nc:var(--orange)">
+            <div class="wnode-label">Manager</div>
+            <div class="wnode-name">GameHealthManager</div>
+            <div class="wnode-port-out"></div>
+          </div>
+          <div class="wconn" style="--bd:0s">
+            <div class="wconn-line" style="background:linear-gradient(90deg,var(--orange),var(--blue))"></div>
+            <div class="wconn-bead" style="background:var(--orange);box-shadow:0 0 6px var(--orange)"></div>
+            <div class="wconn-label">onHealthChanged</div>
+          </div>
+          <div class="wnode" style="--nc:var(--blue);--npc:var(--orange)">
+            <div class="wnode-port-in"></div>
+            <div class="wnode-label">Hub</div>
+            <div class="wnode-name">GameUIManager</div>
+            <div class="wnode-port-out"></div>
+          </div>
+          <div class="wconn" style="--bd:.2s">
+            <div class="wconn-line" style="background:linear-gradient(90deg,var(--blue),var(--slate))"></div>
+            <div class="wconn-bead" style="background:var(--blue);box-shadow:0 0 6px var(--blue)"></div>
+            <div class="wconn-label">UpdateHealth(int,int)</div>
+          </div>
+          <div class="wnode" style="--nc:var(--slate);--npc:var(--blue)">
+            <div class="wnode-port-in"></div>
+            <div class="wnode-label">HUD Element</div>
+            <div class="wnode-name">Health Bar + Text</div>
+          </div>
+
+          <!-- Row 2: Score -->
+          <div class="wnode" style="--nc:var(--green)">
+            <div class="wnode-label">Manager</div>
+            <div class="wnode-name">GameCollectionManager</div>
+            <div class="wnode-port-out"></div>
+          </div>
+          <div class="wconn" style="--bd:.4s">
+            <div class="wconn-line" style="background:linear-gradient(90deg,var(--green),var(--blue))"></div>
+            <div class="wconn-bead" style="background:var(--green);box-shadow:0 0 6px var(--green)"></div>
+            <div class="wconn-label">onValueChanged</div>
+          </div>
+          <div class="wnode" style="--nc:var(--blue);--npc:var(--green)">
+            <div class="wnode-port-in"></div>
+            <div class="wnode-label">Hub</div>
+            <div class="wnode-name">GameUIManager</div>
+            <div class="wnode-port-out"></div>
+          </div>
+          <div class="wconn" style="--bd:.6s">
+            <div class="wconn-line" style="background:linear-gradient(90deg,var(--blue),var(--slate))"></div>
+            <div class="wconn-bead" style="background:var(--blue);box-shadow:0 0 6px var(--blue)"></div>
+            <div class="wconn-label">UpdateScore(int)</div>
+          </div>
+          <div class="wnode" style="--nc:var(--slate);--npc:var(--blue)">
+            <div class="wnode-port-in"></div>
+            <div class="wnode-label">HUD Element</div>
+            <div class="wnode-name">Score Text</div>
+          </div>
+
+          <!-- Row 3: Timer -->
+          <div class="wnode" style="--nc:var(--yellow)">
+            <div class="wnode-label">Manager</div>
+            <div class="wnode-name">GameTimerManager</div>
+            <div class="wnode-port-out"></div>
+          </div>
+          <div class="wconn" style="--bd:.8s">
+            <div class="wconn-line" style="background:linear-gradient(90deg,var(--yellow),var(--blue))"></div>
+            <div class="wconn-bead" style="background:var(--yellow);box-shadow:0 0 6px var(--yellow)"></div>
+            <div class="wconn-label">onTimerUpdate</div>
+          </div>
+          <div class="wnode" style="--nc:var(--blue);--npc:var(--yellow)">
+            <div class="wnode-port-in"></div>
+            <div class="wnode-label">Hub</div>
+            <div class="wnode-name">GameUIManager</div>
+            <div class="wnode-port-out"></div>
+          </div>
+          <div class="wconn" style="--bd:1s">
+            <div class="wconn-line" style="background:linear-gradient(90deg,var(--blue),var(--slate))"></div>
+            <div class="wconn-bead" style="background:var(--blue);box-shadow:0 0 6px var(--blue)"></div>
+            <div class="wconn-label">UpdateTimer(float)</div>
+          </div>
+          <div class="wnode" style="--nc:var(--slate);--npc:var(--blue)">
+            <div class="wnode-port-in"></div>
+            <div class="wnode-label">HUD Element</div>
+            <div class="wnode-name">Timer Text</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="callout" style="border-color:rgba(239,68,68,.2);background:rgba(239,68,68,.04);margin-top:20px">
+        <div class="callout-icon">⚠️</div>
+        <div>
+          <div class="callout-title" style="color:#EF4444">Don't enable showUI on a manager that's wired to GameUIManager</div>
+          <div class="callout-body">Both will run at the same time and produce overlapping displays. Pick one approach per manager.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<hr class="rule">
+
+<!-- Ad-hoc -->
+<div class="section" id="adhoc" style="padding-top:60px">
+  <span class="sec-label">Ad-hoc UI — no manager needed</span>
+  <h2 class="sec-title">Show a message or image at any moment</h2>
+  <p class="sec-desc">These aren't tied to a manager. Wire any event → <code style="font-family:'SF Mono',monospace;font-size:14px;background:rgba(255,255,255,.07);padding:2px 6px;border-radius:4px">Show()</code> and they appear.</p>
+
+  <div class="adhoc-grid">
+    <div class="adhoc-card">
+      <div class="adhoc-hdr" style="background:rgba(79,142,247,.05)">
+        <div class="adhoc-name" style="color:var(--blue)">ActionDisplayText</div>
+        <div class="adhoc-sub">Shows a text string with optional typewriter effect</div>
+      </div>
+      <div class="adhoc-body">
+        Set your message, position, and font size in the Inspector. Wire any event → <code>Show()</code>. Wire another event → <code>Hide()</code> to dismiss it. Good for hints, subtitles, and NPC messages when ActionDialogueSequence is overkill.
+      </div>
+    </div>
+    <div class="adhoc-card">
+      <div class="adhoc-hdr" style="background:rgba(251,146,60,.05)">
+        <div class="adhoc-name" style="color:var(--orange)">ActionDisplayImage</div>
+        <div class="adhoc-sub">Shows a sprite with fade or scale animation</div>
+      </div>
+      <div class="adhoc-body">
+        Assign a sprite, pick an animation (Fade In, Scale In, or Both), set auto-hide duration. Wire any event → <code>Show()</code>. Good for tutorial images, objective icons, and pop-up indicators.
+      </div>
+    </div>
+  </div>
+</div>
+
+<hr class="rule">
+
+<!-- Decision guide -->
+<div class="section" id="decision" style="padding-top:60px">
+  <span class="sec-label">Which should I use?</span>
+  <h2 class="sec-title">Decision guide</h2>
+  <p class="sec-desc" style="margin-bottom:24px">Match the approach to what you're trying to accomplish.</p>
+
+  <div class="decision-table" id="decisionTable"></div>
+</div>
+
+<div class="page-footer">
+  <span>Both approaches call the same underlying functions — they just get there differently.</span>
+  <span><a href="index.html">← All Docs</a></span>
+</div>
+
+<script>
+const DECISIONS = [
+  { q: "I just want something on screen fast",                        a: "Option A — enable showUI",            color: "#34D399" },
+  { q: "I'm prototyping and don't care about style yet",             a: "Option A — enable showUI",            color: "#34D399" },
+  { q: "I have a designed HUD with specific layout",                 a: "Option B — GameUIManager",            color: "#4F8EF7" },
+  { q: "I want all HUD elements in one place, styled consistently",  a: "Option B — GameUIManager",            color: "#4F8EF7" },
+  { q: "I need a hint to appear when the player enters an area",     a: "ActionDisplayText → Show()",          color: "#FB923C" },
+  { q: "I want to show an image when something happens",             a: "ActionDisplayImage → Show()",         color: "#FB923C" },
+  { q: "I need health bar AND score counter",                        a: "Both managers — each picks A or B",  color: "#8B8FA8" },
+];
+
+const el = document.getElementById('decisionTable');
+DECISIONS.forEach((d, i) => {
+  const row = document.createElement('div');
+  row.className = 'drow';
+  row.innerHTML = `<div class="dq">${d.q}</div><div class="darrow">→</div><div class="da" style="color:${d.color}">${d.a}</div>`;
+  el.appendChild(row);
+});
+</script>
+</body>
+</html>

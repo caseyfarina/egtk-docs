@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EGTK — Score & Collection System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg:#0D0F14; --surface:#171B24; --surf2:#1C2130;
+    --text1:#F0F2F8; --text2:#8B8FA8; --text3:#5E6280;
+    --rule:#21283C; --blue:#4F8EF7; --purple:#9B72F7;
+    --green:#34D399; --orange:#FB923C; --teal:#2DD4BF;
+    --slate:#94A3C8; --yellow:#F59E0B;
+  }
+  html { scroll-behavior: smooth; }
+  body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text1); -webkit-font-smoothing:antialiased; }
+  .dot-grid { background-image:radial-gradient(circle,rgba(148,163,200,.065) 1px,transparent 1px); background-size:28px 28px; }
+
+  .topnav { position:sticky; top:0; z-index:100; background:rgba(13,15,20,.88); backdrop-filter:blur(12px); border-bottom:1px solid var(--rule); padding:0 80px; display:flex; align-items:center; gap:32px; height:52px; }
+  .topnav-logo { font-size:13px; font-weight:700; color:var(--text1); text-decoration:none; }
+  .topnav-logo span { color:var(--blue); }
+  .topnav-sep { width:1px; height:16px; background:var(--rule); }
+  .topnav a { font-size:12px; font-weight:500; color:var(--text3); text-decoration:none; transition:color .15s; }
+  .topnav a:hover { color:var(--text1); }
+  .topnav-back { margin-left:auto; font-size:12px; font-weight:500; color:var(--text3); text-decoration:none; }
+  .topnav-back:hover { color:var(--blue); }
+
+  .hero { padding:80px 80px 48px; max-width:1200px; margin:0 auto; }
+  .breadcrumb { font-size:12px; color:var(--text3); margin-bottom:20px; }
+  .breadcrumb a { color:var(--text3); text-decoration:none; }
+  .breadcrumb a:hover { color:var(--blue); }
+  .breadcrumb span { margin:0 8px; }
+  .hero-pill { display:inline-flex; align-items:center; font-size:10px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; padding:5px 12px; border-radius:20px; background:rgba(52,211,153,.1); color:var(--green); margin-bottom:20px; }
+  .hero-title { font-size:52px; font-weight:700; letter-spacing:-.03em; line-height:1.1; color:var(--text1); margin-bottom:16px; }
+  .hero-desc { font-size:17px; color:var(--text2); line-height:1.7; max-width:600px; margin-bottom:32px; }
+  .outcome-row { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:48px; }
+  .outcome-chip { display:flex; align-items:center; gap:6px; background:var(--surface); border:1px solid var(--rule); border-radius:8px; padding:6px 12px; font-size:12px; font-weight:500; color:var(--text2); }
+  .outcome-chip .dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+
+  .section { max-width:1200px; margin:0 auto; padding:0 80px 72px; }
+  .sec-label { font-size:10px; font-weight:600; letter-spacing:.12em; text-transform:uppercase; color:var(--text3); margin-bottom:12px; display:block; }
+  .sec-title { font-size:28px; font-weight:700; letter-spacing:-.02em; color:var(--text1); margin-bottom:10px; }
+  .sec-desc { font-size:15px; color:var(--text2); line-height:1.7; max-width:680px; margin-bottom:32px; }
+  hr.rule { border:none; border-top:1px solid var(--rule); max-width:1200px; margin:0 auto; }
+
+  /* Steps */
+  .steps-list { list-style:none; display:flex; flex-direction:column; gap:12px; margin-bottom:32px; }
+  .step-item { display:flex; gap:16px; align-items:flex-start; background:var(--surface); border:1px solid var(--rule); border-radius:10px; padding:16px 20px; }
+  .step-badge { width:28px; height:28px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; color:var(--green); background:rgba(52,211,153,.12); margin-top:1px; }
+  .step-title { font-size:14px; font-weight:600; color:var(--text1); margin-bottom:4px; }
+  .step-body { font-size:13px; color:var(--text2); line-height:1.6; }
+  .step-body code { font-family:'SF Mono','Fira Mono',monospace; font-size:12px; padding:1px 5px; border-radius:4px; background:rgba(255,255,255,.07); color:var(--text1); }
+  .step-body strong { color:var(--text1); font-weight:600; }
+
+  /* Wire card */
+  .wire-card { border-radius:12px; border:1px solid var(--rule); overflow:hidden; margin-bottom:16px; }
+  .wc-header { display:flex; align-items:center; gap:10px; padding:12px 20px; border-bottom:1px solid var(--rule); background:rgba(255,255,255,.02); }
+  .wc-dot { width:8px; height:8px; border-radius:50%; }
+  .wc-label { font-size:11px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; }
+  .wc-row { display:flex; align-items:center; padding:10px 20px; border-bottom:1px solid rgba(33,40,60,.5); gap:12px; }
+  .wc-row:last-child { border-bottom:none; }
+  .wc-row:nth-child(even) { background:var(--surf2); }
+  .wc-src { font-size:12px; font-weight:500; font-family:'SF Mono','Fira Mono',monospace; min-width:240px; }
+  .wc-arrow { color:var(--text3); font-size:14px; flex-shrink:0; }
+  .wc-tgt { font-size:12px; color:var(--text2); font-family:'SF Mono','Fira Mono',monospace; }
+
+  /* Flow diagram */
+  .flow-wrap { position:relative; border-radius:16px; border:1px solid var(--rule); padding:40px; margin-bottom:32px; overflow:hidden; }
+  .flow-wrap > .dot-grid { position:absolute; inset:0; border-radius:16px; }
+  .flow-wrap > *:not(.dot-grid) { position:relative; z-index:1; }
+  .flow-row { display:flex; align-items:center; gap:0; margin-bottom:20px; }
+  .flow-row:last-child { margin-bottom:0; }
+  .fbox { background:rgba(23,27,36,.85); backdrop-filter:blur(6px); border:1px solid var(--rule); border-radius:10px; padding:14px 18px; position:relative; min-width:180px; flex-shrink:0; }
+  .fbox::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; border-radius:10px 10px 0 0; background:var(--fc); }
+  .fbox-name { font-size:13px; font-weight:600; color:var(--fc); font-family:'SF Mono','Fira Mono',monospace; margin-bottom:3px; }
+  .fbox-detail { font-size:11px; color:var(--text3); }
+  .fport-out { position:absolute; right:-5px; top:50%; transform:translateY(-50%); width:10px; height:10px; border-radius:50%; background:var(--fc); box-shadow:0 0 8px var(--fc); z-index:2; }
+  .fport-in { position:absolute; left:-5px; top:50%; transform:translateY(-50%); width:10px; height:10px; border-radius:50%; background:var(--fc); box-shadow:0 0 8px var(--fc); z-index:2; }
+  .fwire { height:2px; flex:1; min-width:32px; position:relative; }
+  .fwire-line { position:absolute; inset:0; opacity:.5; }
+  .fwire-bead { position:absolute; top:-4px; width:8px; height:8px; border-radius:50%; animation:bead 2s linear infinite; animation-delay:var(--bd,0s); }
+  @keyframes bead { 0%{left:0;opacity:0} 8%{opacity:.9} 85%{opacity:.9} 100%{left:calc(100% - 8px);opacity:0} }
+  .fevent { font-size:10px; color:var(--text3); position:absolute; bottom:8px; left:50%; transform:translateX(-50%); white-space:nowrap; background:rgba(13,15,20,.8); padding:1px 5px; border-radius:3px; }
+
+  /* Callout */
+  .callout { border-radius:12px; padding:20px 24px; border:1px solid; display:flex; gap:16px; align-items:flex-start; margin-bottom:24px; }
+  .callout-icon { font-size:20px; flex-shrink:0; margin-top:1px; }
+  .callout-title { font-size:14px; font-weight:700; margin-bottom:5px; }
+  .callout-body { font-size:13px; color:var(--text2); line-height:1.7; }
+  .callout-body code { font-family:'SF Mono','Fira Mono',monospace; font-size:12px; padding:1px 5px; border-radius:4px; background:rgba(255,255,255,.07); color:var(--text1); }
+
+  /* Inspector field table */
+  .field-table { width:100%; border-collapse:collapse; border:1px solid var(--rule); border-radius:10px; overflow:hidden; margin-bottom:24px; }
+  .field-table th { font-size:9px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--text3); padding:9px 16px; text-align:left; background:rgba(255,255,255,.03); border-bottom:1px solid var(--rule); }
+  .field-table td { padding:9px 16px; font-size:13px; border-bottom:1px solid rgba(33,40,60,.5); vertical-align:top; }
+  .field-table tr:last-child td { border-bottom:none; }
+  .field-table tr:nth-child(even) td { background:var(--surf2); }
+  .field-name { font-family:'SF Mono','Fira Mono',monospace; font-size:12px; color:var(--green); font-weight:500; }
+  .field-desc { color:var(--text2); }
+
+  .page-footer { border-top:1px solid var(--rule); padding:32px 80px; max-width:1200px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; font-size:13px; color:var(--text3); }
+  .page-footer a { color:var(--blue); text-decoration:none; }
+  .page-footer a:hover { text-decoration:underline; }
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <a href="../index.html" class="topnav-logo">EGTK<span>.</span></a>
+  <div class="topnav-sep"></div>
+  <a href="#setup">Setup</a>
+  <a href="#threshold">Threshold Events</a>
+  <a href="#ui">Displaying the Value</a>
+  <a href="../index.html" class="topnav-back">← All Docs</a>
+</nav>
+
+<div class="hero">
+  <div class="breadcrumb"><a href="../index.html">EGTK Docs</a><span>/</span>Examples<span>/</span>Score &amp; Collection</div>
+  <div class="hero-pill">Example</div>
+  <h1 class="hero-title">Score &amp; Collection System</h1>
+  <p class="hero-desc">Build a working coin counter, score display, and threshold event — step by step. <strong style="color:var(--text1)">GameCollectionManager</strong> tracks a number, fires events when it crosses thresholds, and can show its own UI with a single checkbox.</p>
+  <div class="outcome-row">
+    <div class="outcome-chip"><div class="dot" style="background:var(--green);box-shadow:0 0 6px var(--green)"></div>Coins increment on collect</div>
+    <div class="outcome-chip"><div class="dot" style="background:var(--blue);box-shadow:0 0 6px var(--blue)"></div>Score displays on screen</div>
+    <div class="outcome-chip"><div class="dot" style="background:var(--yellow);box-shadow:0 0 6px var(--yellow)"></div>Win condition at threshold</div>
+    <div class="outcome-chip"><div class="dot" style="background:var(--teal);box-shadow:0 0 6px var(--teal)"></div>Collectibles are just tagged triggers</div>
+  </div>
+</div>
+
+<hr class="rule">
+
+<div class="section" id="setup" style="padding-top:60px">
+  <span class="sec-label">Step by Step</span>
+  <h2 class="sec-title">Setting up the collection system</h2>
+  <p class="sec-desc">Three objects. One wire. That's the minimum viable collection system.</p>
+
+  <ol class="steps-list">
+    <li class="step-item">
+      <div class="step-badge">1</div>
+      <div>
+        <div class="step-title">Create a Manager object and add GameCollectionManager</div>
+        <div class="step-body">Create an empty GameObject, name it <code>CollectionManager</code>. Add the <strong>GameCollectionManager</strong> component. Set <code>Label Prefix</code> to something like <code>Coins: </code>. Enable <strong>Show UI</strong> — a text display will appear automatically at runtime, no Canvas needed.</div>
+      </div>
+    </li>
+    <li class="step-item">
+      <div class="step-badge">2</div>
+      <div>
+        <div class="step-title">Create a collectible — a tagged trigger</div>
+        <div class="step-body">Create a sphere (or use any mesh). Add a Collider and check <strong>Is Trigger</strong>. Set its <strong>Tag</strong> to <code>Collectible</code> (or any tag you choose — it just needs to be consistent). Add an <strong>InputTriggerZone</strong> component to the player, set its <em>Trigger Object Tag</em> to match.</div>
+      </div>
+    </li>
+    <li class="step-item">
+      <div class="step-badge">3</div>
+      <div>
+        <div class="step-title">Wire the trigger to the manager</div>
+        <div class="step-body">Select the player (or the object with InputTriggerZone). In the <strong>On Enter</strong> event: drag in <code>CollectionManager</code>, choose function <code>GameCollectionManager → Increment()</code>. The default increment is 1 — pass a specific int if you need a different value. Also wire <code>On Enter</code> → the collectible's <code>SetActive(false)</code> to hide it on collect.</div>
+      </div>
+    </li>
+    <li class="step-item">
+      <div class="step-badge">4</div>
+      <div>
+        <div class="step-title">Duplicate the collectible to place more</div>
+        <div class="step-body">Select the configured collectible and press <strong>Ctrl+D</strong>. Reposition. The duplicate keeps its tag and collider. Remember: if you save it as a prefab, you lose the cross-scene event wiring — but for collectibles that only call <code>SetActive(false)</code> on themselves, the prefab works fine.</div>
+      </div>
+    </li>
+  </ol>
+
+  <!-- The flow diagram -->
+  <div class="flow-wrap">
+    <div class="dot-grid"></div>
+    <div class="flow-row">
+      <div class="fbox" style="--fc:var(--teal)">
+        <div class="fbox-name">Collectible</div>
+        <div class="fbox-detail">tag: Collectible<br>Collider (trigger)</div>
+        <div class="fport-out" style="--fc:var(--teal)"></div>
+      </div>
+      <div class="fwire" style="--bd:.0s">
+        <div class="fwire-line" style="background:linear-gradient(90deg,var(--teal),var(--blue))"></div>
+        <div class="fwire-bead" style="background:var(--teal);box-shadow:0 0 6px var(--teal)"></div>
+        <div class="fevent">enters zone</div>
+      </div>
+      <div class="fbox" style="--fc:var(--blue)">
+        <div class="fport-in" style="--fc:var(--teal)"></div>
+        <div class="fbox-name">InputTriggerZone</div>
+        <div class="fbox-detail">on player object<br>tag filter: Collectible</div>
+        <div class="fport-out" style="--fc:var(--blue)"></div>
+      </div>
+      <div class="fwire" style="--bd:.5s">
+        <div class="fwire-line" style="background:linear-gradient(90deg,var(--blue),var(--green))"></div>
+        <div class="fwire-bead" style="background:var(--green);box-shadow:0 0 6px var(--green)"></div>
+        <div class="fevent">On Enter</div>
+      </div>
+      <div class="fbox" style="--fc:var(--green)">
+        <div class="fport-in" style="--fc:var(--blue)"></div>
+        <div class="fbox-name">GameCollectionManager</div>
+        <div class="fbox-detail">Increment(1)</div>
+      </div>
+    </div>
+    <div class="flow-row">
+      <div style="min-width:180px;flex-shrink:0"></div>
+      <div style="flex:1;min-width:32px"></div>
+      <div class="fbox" style="--fc:var(--blue);min-width:180px">
+        <div class="fbox-name">InputTriggerZone</div>
+        <div class="fbox-detail">same component</div>
+        <div class="fport-out" style="--fc:var(--blue)"></div>
+      </div>
+      <div class="fwire" style="--bd:.3s">
+        <div class="fwire-line" style="background:linear-gradient(90deg,var(--blue),var(--text3))"></div>
+        <div class="fwire-bead" style="background:var(--text3);box-shadow:0 0 5px var(--text3)"></div>
+        <div class="fevent">On Enter</div>
+      </div>
+      <div class="fbox" style="--fc:var(--text3)">
+        <div class="fport-in" style="--fc:var(--blue)"></div>
+        <div class="fbox-name">Collectible</div>
+        <div class="fbox-detail">SetActive(false)</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<hr class="rule">
+
+<div class="section" id="threshold" style="padding-top:60px">
+  <span class="sec-label">Threshold Events</span>
+  <h2 class="sec-title">Fire an event when the score reaches a value</h2>
+  <p class="sec-desc">Thresholds let you react when the count crosses a number — in either direction. This is how you build win conditions, difficulty spikes, and bonus triggers.</p>
+
+  <ol class="steps-list">
+    <li class="step-item">
+      <div class="step-badge">1</div>
+      <div>
+        <div class="step-title">Add a threshold on GameCollectionManager</div>
+        <div class="step-body">In the Inspector, find the <strong>Thresholds</strong> list and add an entry. Set the <code>Value</code> to your target (e.g. <code>10</code> for collecting 10 coins).</div>
+      </div>
+    </li>
+    <li class="step-item">
+      <div class="step-badge">2</div>
+      <div>
+        <div class="step-title">Wire On Crossed Up</div>
+        <div class="step-body">The <code>onCrossedUp</code> event fires once when the value goes from below to at-or-above the threshold. Wire it to whatever should happen — <code>GameStateManager.Victory()</code> for a win, <code>ActionAutoSpawner.StartSpawning()</code> to trigger a wave, or <code>ActionPlaySound.PlaySound()</code> for a fanfare.</div>
+      </div>
+    </li>
+    <li class="step-item">
+      <div class="step-badge">3</div>
+      <div>
+        <div class="step-title">Optional: On Crossed Down</div>
+        <div class="step-body"><code>onCrossedDown</code> fires when the value drops back below the threshold. Useful for resources that can be spent — e.g. player uses 10 coins, drops below threshold, and a UI warning appears.</div>
+      </div>
+    </li>
+  </ol>
+
+  <div class="callout" style="border-color:rgba(245,158,11,.2);background:rgba(245,158,11,.04)">
+    <div class="callout-icon">💡</div>
+    <div>
+      <div class="callout-title" style="color:var(--yellow)">Thresholds fire once per crossing</div>
+      <div class="callout-body">If the value crosses the threshold, drops back, and crosses again, <code>onCrossedUp</code> fires again. This is intentional — it lets thresholds work for both one-time win conditions and repeating bonus triggers. Set <code>Max Value</code> if you want to cap the score.</div>
+    </div>
+  </div>
+
+  <div class="wire-card">
+    <div class="wc-header">
+      <div class="wc-dot" style="background:var(--green);box-shadow:0 0 6px var(--green)"></div>
+      <span class="wc-label" style="color:var(--green)">Collection Example — all wires</span>
+    </div>
+    <div class="wc-row">
+      <span class="wc-src" style="color:var(--teal)">InputTriggerZone.onEnter</span>
+      <span class="wc-arrow">→</span>
+      <span class="wc-tgt">GameCollectionManager.Increment(1)</span>
+    </div>
+    <div class="wc-row">
+      <span class="wc-src" style="color:var(--teal)">InputTriggerZone.onEnter</span>
+      <span class="wc-arrow">→</span>
+      <span class="wc-tgt">Collectible.SetActive(false)</span>
+    </div>
+    <div class="wc-row">
+      <span class="wc-src" style="color:var(--green)">GameCollectionManager.onValueChanged</span>
+      <span class="wc-arrow">→</span>
+      <span class="wc-tgt">GameUIManager.UpdateScore(int)</span>
+    </div>
+    <div class="wc-row">
+      <span class="wc-src" style="color:var(--green)">CollectionThreshold[10].onCrossedUp</span>
+      <span class="wc-arrow">→</span>
+      <span class="wc-tgt">GameStateManager.Victory()</span>
+    </div>
+  </div>
+</div>
+
+<hr class="rule">
+
+<div class="section" id="ui" style="padding-top:60px">
+  <span class="sec-label">Displaying the Value</span>
+  <h2 class="sec-title">Two ways to show score on screen</h2>
+  <p class="sec-desc">Use one or the other — not both on the same manager at once.</p>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:32px">
+    <div style="background:var(--surface);border:1px solid var(--rule);border-radius:12px;overflow:hidden">
+      <div style="padding:14px 20px;border-bottom:1px solid var(--rule);background:rgba(52,211,153,.05)">
+        <span style="font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--green)">Option A — Zero setup</span>
+        <div style="font-size:15px;font-weight:700;color:var(--text1);margin-top:4px">Enable Show UI</div>
+      </div>
+      <div style="padding:16px 20px;font-size:13px;color:var(--text2);line-height:1.7">
+        Check <strong style="color:var(--text1)">Show UI</strong> on GameCollectionManager. A Canvas and text label are created automatically at runtime. Set <strong style="color:var(--text1)">Label Prefix</strong> for the text, <strong style="color:var(--text1)">Text Position</strong> to place it. Enable <strong style="color:var(--text1)">Show Bar</strong> + set <strong style="color:var(--text1)">Max Value</strong> to also get a progress bar.
+        <br><br>
+        <strong style="color:var(--green)">Best for:</strong> Prototyping, quick setup, when you don't need custom styling.
+      </div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--rule);border-radius:12px;overflow:hidden">
+      <div style="padding:14px 20px;border-bottom:1px solid var(--rule);background:rgba(79,142,247,.05)">
+        <span style="font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--blue)">Option B — Full control</span>
+        <div style="font-size:15px;font-weight:700;color:var(--text1);margin-top:4px">Wire to GameUIManager</div>
+      </div>
+      <div style="padding:16px 20px;font-size:13px;color:var(--text2);line-height:1.7">
+        Add <strong style="color:var(--text1)">GameUIManager</strong> to a manager object. Wire <code style="font-family:'SF Mono',monospace;font-size:12px;background:rgba(255,255,255,.07);padding:1px 5px;border-radius:3px">GameCollectionManager.onValueChanged → GameUIManager.UpdateScore(int)</code>. GameUIManager creates its own styled Canvas with score, health, timer, and inventory slots.
+        <br><br>
+        <strong style="color:var(--blue)">Best for:</strong> When you want a consistent HUD across all managers.
+      </div>
+    </div>
+  </div>
+
+  <div class="callout" style="border-color:rgba(239,68,68,.2);background:rgba(239,68,68,.04)">
+    <div class="callout-icon">⚠️</div>
+    <div>
+      <div class="callout-title" style="color:#EF4444">Don't enable Show UI and wire GameUIManager on the same manager</div>
+      <div class="callout-body">Both will run simultaneously and create overlapping displays. Choose one approach per manager and stick with it.</div>
+    </div>
+  </div>
+
+  <h3 style="font-size:17px;font-weight:600;color:var(--text1);margin-bottom:16px;letter-spacing:-.01em">Key Inspector fields</h3>
+  <table class="field-table">
+    <thead><tr><th>Field</th><th>What it does</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td class="field-name">Label Prefix</td><td class="field-desc">Text before the number (e.g. "Coins: ")</td><td style="font-size:12px;color:var(--text3)">Include trailing space</td></tr>
+      <tr><td class="field-name">Show UI</td><td class="field-desc">Creates a Canvas text display automatically</td><td style="font-size:12px;color:var(--text3)">Disable if using GameUIManager</td></tr>
+      <tr><td class="field-name">Text Position</td><td class="field-desc">Screen position of the text (top-left origin)</td><td style="font-size:12px;color:var(--text3)">Use editor preview to position</td></tr>
+      <tr><td class="field-name">Show Bar</td><td class="field-desc">Adds a progress bar below the text</td><td style="font-size:12px;color:var(--text3)">Requires Max Value &gt; 0</td></tr>
+      <tr><td class="field-name">Max Value</td><td class="field-desc">Cap on the value; bar fills to this</td><td style="font-size:12px;color:var(--text3)">0 = no cap, bar disabled</td></tr>
+      <tr><td class="field-name">Thresholds</td><td class="field-desc">List of values that fire events on crossing</td><td style="font-size:12px;color:var(--text3)">Add multiple for multi-stage goals</td></tr>
+      <tr><td class="field-name">Persist Across Scenes</td><td class="field-desc">Survives scene loads (DontDestroyOnLoad)</td><td style="font-size:12px;color:var(--text3)">Put in first scene only</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="page-footer">
+  <span>EGTK — Event Game Toolkit</span>
+  <span><a href="../index.html">← All Docs</a> &nbsp;·&nbsp; <a href="../ui.html">UI Implementation →</a></span>
+</div>
+</body>
+</html>

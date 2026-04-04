@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EGTK — Puzzle System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg:#0D0F14; --surface:#171B24; --surf2:#1C2130;
+    --text1:#F0F2F8; --text2:#8B8FA8; --text3:#5E6280;
+    --rule:#21283C; --blue:#4F8EF7; --purple:#9B72F7;
+    --green:#34D399; --orange:#FB923C; --pink:#F472B6;
+    --teal:#2DD4BF; --slate:#94A3C8; --yellow:#F59E0B;
+  }
+  html { scroll-behavior: smooth; }
+  body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text1); -webkit-font-smoothing:antialiased; }
+  .dot-grid { background-image:radial-gradient(circle,rgba(148,163,200,.065) 1px,transparent 1px); background-size:28px 28px; }
+
+  .topnav { position:sticky; top:0; z-index:100; background:rgba(13,15,20,.88); backdrop-filter:blur(12px); border-bottom:1px solid var(--rule); padding:0 80px; display:flex; align-items:center; gap:32px; height:52px; }
+  .topnav-logo { font-size:13px; font-weight:700; color:var(--text1); text-decoration:none; }
+  .topnav-logo span { color:var(--blue); }
+  .topnav-sep { width:1px; height:16px; background:var(--rule); }
+  .topnav a { font-size:12px; font-weight:500; color:var(--text3); text-decoration:none; transition:color .15s; }
+  .topnav a:hover { color:var(--text1); }
+  .topnav-back { margin-left:auto; font-size:12px; font-weight:500; color:var(--text3); text-decoration:none; }
+  .topnav-back:hover { color:var(--blue); }
+
+  .hero { padding:80px 80px 48px; max-width:1200px; margin:0 auto; }
+  .breadcrumb { font-size:12px; color:var(--text3); margin-bottom:20px; }
+  .breadcrumb a { color:var(--text3); text-decoration:none; }
+  .breadcrumb a:hover { color:var(--blue); }
+  .breadcrumb span { margin:0 8px; }
+  .hero-pill { display:inline-flex; align-items:center; font-size:10px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; padding:5px 12px; border-radius:20px; background:rgba(244,114,182,.1); color:var(--pink); margin-bottom:20px; }
+  .hero-title { font-size:52px; font-weight:700; letter-spacing:-.03em; line-height:1.1; color:var(--text1); margin-bottom:16px; }
+  .hero-desc { font-size:17px; color:var(--text2); line-height:1.7; max-width:600px; margin-bottom:32px; }
+  .outcome-row { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:48px; }
+  .outcome-chip { display:flex; align-items:center; gap:6px; background:var(--surface); border:1px solid var(--rule); border-radius:8px; padding:6px 12px; font-size:12px; font-weight:500; color:var(--text2); }
+  .outcome-chip .dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+
+  .section { max-width:1200px; margin:0 auto; padding:0 80px 72px; }
+  .sec-label { font-size:10px; font-weight:600; letter-spacing:.12em; text-transform:uppercase; color:var(--text3); margin-bottom:12px; display:block; }
+  .sec-title { font-size:28px; font-weight:700; letter-spacing:-.02em; color:var(--text1); margin-bottom:10px; }
+  .sec-desc { font-size:15px; color:var(--text2); line-height:1.7; max-width:680px; margin-bottom:32px; }
+  hr.rule { border:none; border-top:1px solid var(--rule); max-width:1200px; margin:0 auto; }
+
+  /* Steps */
+  .steps-list { list-style:none; display:flex; flex-direction:column; gap:12px; margin-bottom:32px; }
+  .step-item { display:flex; gap:16px; align-items:flex-start; background:var(--surface); border:1px solid var(--rule); border-radius:10px; padding:16px 20px; }
+  .step-badge { width:28px; height:28px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; color:var(--pink); background:rgba(244,114,182,.12); margin-top:1px; }
+  .step-title { font-size:14px; font-weight:600; color:var(--text1); margin-bottom:4px; }
+  .step-body { font-size:13px; color:var(--text2); line-height:1.6; }
+  .step-body code { font-family:'SF Mono','Fira Mono',monospace; font-size:12px; padding:1px 5px; border-radius:4px; background:rgba(255,255,255,.07); color:var(--text1); }
+  .step-body strong { color:var(--text1); font-weight:600; }
+
+  /* Callout */
+  .callout { border-radius:12px; padding:20px 24px; border:1px solid; display:flex; gap:16px; align-items:flex-start; margin-bottom:24px; }
+  .callout-icon { font-size:20px; flex-shrink:0; margin-top:1px; }
+  .callout-title { font-size:14px; font-weight:700; margin-bottom:5px; }
+  .callout-body { font-size:13px; color:var(--text2); line-height:1.7; }
+  .callout-body code { font-family:'SF Mono','Fira Mono',monospace; font-size:12px; padding:1px 5px; border-radius:4px; background:rgba(255,255,255,.07); color:var(--text1); }
+
+  /* Component comparison cards */
+  .compare-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:32px; }
+  .ccard { background:var(--surface); border:1px solid var(--rule); border-radius:12px; overflow:hidden; }
+  .ccard-hdr { padding:14px 20px; border-bottom:1px solid var(--rule); }
+  .ccard-name { font-size:13px; font-weight:700; font-family:'SF Mono','Fira Mono',monospace; margin-bottom:4px; }
+  .ccard-sub { font-size:12px; color:var(--text3); }
+  .ccard-body { padding:16px 20px; }
+  .ccard-row { display:flex; gap:10px; margin-bottom:8px; font-size:13px; color:var(--text2); }
+  .ccard-row:last-child { margin-bottom:0; }
+  .ccard-row .pill { flex-shrink:0; font-size:9px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; padding:2px 7px; border-radius:4px; margin-top:2px; }
+
+  /* Flow diagram */
+  .flow-wrap { position:relative; border-radius:16px; border:1px solid var(--rule); padding:40px 40px 32px; margin-bottom:32px; overflow:hidden; }
+  .flow-wrap > .dot-grid { position:absolute; inset:0; border-radius:16px; }
+  .flow-wrap > *:not(.dot-grid) { position:relative; z-index:1; }
+  .flow-diagram { display:flex; align-items:center; gap:0; }
+  .fbox { background:rgba(23,27,36,.85); backdrop-filter:blur(6px); border:1px solid var(--rule); border-radius:10px; padding:14px 18px; position:relative; min-width:160px; flex-shrink:0; }
+  .fbox::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; border-radius:10px 10px 0 0; background:var(--fc); }
+  .fbox-label { font-size:9px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--fc); margin-bottom:5px; }
+  .fbox-name { font-size:13px; font-weight:600; color:var(--text1); font-family:'SF Mono','Fira Mono',monospace; margin-bottom:3px; }
+  .fbox-detail { font-size:11px; color:var(--text3); }
+  .fport-out { position:absolute; right:-5px; top:50%; transform:translateY(-50%); width:10px; height:10px; border-radius:50%; background:var(--fc); box-shadow:0 0 8px var(--fc); z-index:2; }
+  .fport-in { position:absolute; left:-5px; top:50%; transform:translateY(-50%); width:10px; height:10px; border-radius:50%; background:var(--fpc,var(--fc)); box-shadow:0 0 8px var(--fpc,var(--fc)); z-index:2; }
+  .fwire { height:2px; flex:1; min-width:32px; position:relative; }
+  .fwire-line { position:absolute; inset:0; opacity:.5; }
+  .fwire-bead { position:absolute; top:-4px; width:8px; height:8px; border-radius:50%; animation:bead 2s linear infinite; animation-delay:var(--bd,0s); }
+  @keyframes bead { 0%{left:0;opacity:0} 8%{opacity:.9} 85%{opacity:.9} 100%{left:calc(100% - 8px);opacity:0} }
+  .fevent { font-size:10px; color:var(--text3); position:absolute; bottom:8px; left:50%; transform:translateX(-50%); white-space:nowrap; background:rgba(13,15,20,.8); padding:1px 5px; border-radius:3px; }
+  .flow-caption { text-align:center; margin-top:24px; font-size:13px; color:var(--text3); }
+  .flow-caption span { color:var(--pink); }
+
+  /* State checker diagram */
+  .state-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:24px; }
+  .state-box { background:var(--surface); border:2px solid var(--rule); border-radius:10px; padding:14px 16px; text-align:center; transition:border-color .2s; }
+  .state-box.correct { border-color:var(--green); background:rgba(52,211,153,.06); }
+  .state-box.wrong { border-color:rgba(239,68,68,.4); background:rgba(239,68,68,.05); }
+  .state-label { font-size:10px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; margin-bottom:6px; }
+  .state-name { font-size:13px; font-weight:600; color:var(--text1); font-family:'SF Mono','Fira Mono',monospace; }
+  .state-current { font-size:11px; color:var(--text3); margin-top:3px; }
+
+  /* Event list */
+  .event-list { display:flex; flex-direction:column; gap:8px; margin-bottom:32px; }
+  .event-row { background:var(--surface); border:1px solid var(--rule); border-radius:8px; padding:12px 16px; display:flex; gap:16px; align-items:baseline; }
+  .event-row:nth-child(even) { background:var(--surf2); }
+  .event-name { font-size:12px; font-weight:600; font-family:'SF Mono','Fira Mono',monospace; min-width:240px; flex-shrink:0; }
+  .event-desc { font-size:13px; color:var(--text2); }
+
+  /* Wire table */
+  .wire-table { width:100%; border-collapse:collapse; border:1px solid var(--rule); border-radius:12px; overflow:hidden; margin-bottom:32px; }
+  .wire-table th { font-size:9px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--text3); padding:10px 16px; text-align:left; background:rgba(255,255,255,.03); border-bottom:1px solid var(--rule); }
+  .wire-table td { padding:10px 16px; font-size:13px; border-bottom:1px solid rgba(33,40,60,.5); vertical-align:middle; }
+  .wire-table tr:last-child td { border-bottom:none; }
+  .wire-table tr:nth-child(even) td { background:var(--surf2); }
+
+  .page-footer { border-top:1px solid var(--rule); padding:32px 80px; max-width:1200px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; font-size:13px; color:var(--text3); }
+  .page-footer a { color:var(--blue); text-decoration:none; }
+  .page-footer a:hover { text-decoration:underline; }
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <a href="../index.html" class="topnav-logo">EGTK<span>.</span></a>
+  <div class="topnav-sep"></div>
+  <a href="#combination">Combination Lock</a>
+  <a href="#sequence">Sequence Puzzle</a>
+  <a href="#reference">Event Reference</a>
+  <a href="../index.html" class="topnav-back">← All Docs</a>
+</nav>
+
+<div class="hero">
+  <div class="breadcrumb"><a href="../index.html">EGTK Docs</a><span>/</span>Examples<span>/</span>Puzzle System</div>
+  <div class="hero-pill">Example</div>
+  <h1 class="hero-title">Puzzle System</h1>
+  <p class="hero-desc">Two puzzle components, two puzzle types. <strong style="color:var(--text1)">PuzzleSwitchChecker</strong> fires when all switches reach their required states — order doesn't matter. <strong style="color:var(--text1)">PuzzleSequenceChecker</strong> fires when switches are activated in the exact right order.</p>
+  <div class="outcome-row">
+    <div class="outcome-chip"><div class="dot" style="background:var(--pink);box-shadow:0 0 6px var(--pink)"></div>Combination lock (any order)</div>
+    <div class="outcome-chip"><div class="dot" style="background:var(--purple);box-shadow:0 0 6px var(--purple)"></div>Sequence puzzle (order matters)</div>
+    <div class="outcome-chip"><div class="dot" style="background:var(--orange);box-shadow:0 0 6px var(--orange)"></div>Opens a door on solve</div>
+    <div class="outcome-chip"><div class="dot" style="background:var(--green);box-shadow:0 0 6px var(--green)"></div>Resets on mistake</div>
+  </div>
+</div>
+
+<hr class="rule">
+
+<!-- Component comparison -->
+<div class="section" style="padding-top:60px">
+  <span class="sec-label">Choosing the right checker</span>
+  <h2 class="sec-title">PuzzleSwitchChecker vs PuzzleSequenceChecker</h2>
+  <p class="sec-desc">Both use PuzzleSwitch objects as inputs. The difference is what they check.</p>
+
+  <div class="compare-grid">
+    <div class="ccard">
+      <div class="ccard-hdr" style="background:rgba(244,114,182,.05)">
+        <div class="ccard-name" style="color:var(--pink)">PuzzleSwitchChecker</div>
+        <div class="ccard-sub">All switches must reach their required states</div>
+      </div>
+      <div class="ccard-body">
+        <div class="ccard-row"><span class="pill" style="background:rgba(52,211,153,.12);color:var(--green)">Checks</span>Each switch is assigned a required state (0, 1, 2…). Solver fires when all match simultaneously.</div>
+        <div class="ccard-row"><span class="pill" style="background:rgba(148,163,200,.08);color:var(--slate)">Order</span>Doesn't matter. Player can flip switches in any order.</div>
+        <div class="ccard-row"><span class="pill" style="background:rgba(148,163,200,.08);color:var(--slate)">Can unsolved</span>If a switch is moved away from its required state, puzzle un-solves and fires <code>onPuzzleUnsolved</code>.</div>
+        <div class="ccard-row"><span class="pill" style="background:rgba(244,114,182,.12);color:var(--pink)">Use for</span>Combination locks, multi-lever doors, "hit all targets" challenges.</div>
+      </div>
+    </div>
+    <div class="ccard">
+      <div class="ccard-hdr" style="background:rgba(155,114,247,.05)">
+        <div class="ccard-name" style="color:var(--purple)">PuzzleSequenceChecker</div>
+        <div class="ccard-sub">Switches must be activated in exact order</div>
+      </div>
+      <div class="ccard-body">
+        <div class="ccard-row"><span class="pill" style="background:rgba(52,211,153,.12);color:var(--green)">Checks</span>Tracks activation sequence. Fires when switches are triggered in the exact order defined in the array.</div>
+        <div class="ccard-row"><span class="pill" style="background:rgba(148,163,200,.08);color:var(--slate)">Order</span>Matters. Wrong switch resets progress to step 0 (if Reset on Mistake is on).</div>
+        <div class="ccard-row"><span class="pill" style="background:rgba(148,163,200,.08);color:var(--slate)">Same switch twice</span>Supported — add the same switch in multiple positions in the array.</div>
+        <div class="ccard-row"><span class="pill" style="background:rgba(155,114,247,.12);color:var(--purple)">Use for</span>Musical puzzles, Simon-says, ritual sequences, ordered button presses.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<hr class="rule">
+
+<!-- Combination lock -->
+<div class="section" id="combination" style="padding-top:60px">
+  <span class="sec-label">Type 1</span>
+  <h2 class="sec-title">Combination lock — any order</h2>
+  <p class="sec-desc">Three switches, each must be in the right state. Wire PuzzleSwitchChecker to open a door when they all match.</p>
+
+  <ol class="steps-list">
+    <li class="step-item">
+      <div class="step-badge">1</div>
+      <div>
+        <div class="step-title">Create switch objects and add PuzzleSwitch</div>
+        <div class="step-body">Create 3 GameObjects. Add <strong>PuzzleSwitch</strong> to each. Give each a unique <code>Switch ID</code> (e.g. <code>Switch1</code>, <code>Switch2</code>, <code>Switch3</code>). Set <code>Number of States</code> to 2 for simple on/off switches. Wire your interaction input → <code>PuzzleSwitch.Activate()</code> on each.</div>
+      </div>
+    </li>
+    <li class="step-item">
+      <div class="step-badge">2</div>
+      <div>
+        <div class="step-title">Add PuzzleSwitchChecker and assign switches</div>
+        <div class="step-body">Create another empty GameObject and add <strong>PuzzleSwitchChecker</strong>. In the <strong>Switch Targets</strong> list, add one entry per switch. For each entry: drag in the switch object, set <code>Required State</code> (0 = off, 1 = on). Leave <strong>Automatic Checking</strong> enabled — it watches for changes without needing an extra wire.</div>
+      </div>
+    </li>
+    <li class="step-item">
+      <div class="step-badge">3</div>
+      <div>
+        <div class="step-title">Wire onPuzzleSolved to your reward</div>
+        <div class="step-body">Wire <code>PuzzleSwitchChecker.onPuzzleSolved</code> → <code>ActionAnimateTransform.Play()</code> to open a door, or <code>GameStateManager.Victory()</code> for a win state. Use <code>onFirstTimeSolved</code> instead if the reward should only happen once even if the player solves it multiple times.</div>
+      </div>
+    </li>
+  </ol>
+
+  <!-- Visual state check diagram -->
+  <h3 style="font-size:15px;font-weight:600;color:var(--text1);margin-bottom:12px;letter-spacing:-.01em">How the checker sees it at runtime</h3>
+  <div class="state-grid">
+    <div class="state-box correct">
+      <div class="state-label" style="color:var(--green)">Switch A ✓</div>
+      <div class="state-name">Switch1</div>
+      <div class="state-current">State 1 — required: 1</div>
+    </div>
+    <div class="state-box correct">
+      <div class="state-label" style="color:var(--green)">Switch B ✓</div>
+      <div class="state-name">Switch2</div>
+      <div class="state-current">State 1 — required: 1</div>
+    </div>
+    <div class="state-box wrong">
+      <div class="state-label" style="color:#EF4444">Switch C ✗</div>
+      <div class="state-name">Switch3</div>
+      <div class="state-current">State 0 — required: 1</div>
+    </div>
+  </div>
+  <p style="font-size:13px;color:var(--text3);margin-bottom:32px">2/3 correct — puzzle not yet solved. When Switch C reaches state 1, <code>onPuzzleSolved</code> fires.</p>
+
+  <!-- Flow diagram -->
+  <div class="flow-wrap">
+    <div class="dot-grid"></div>
+    <div class="flow-diagram">
+      <div style="display:flex;flex-direction:column;gap:8px;flex-shrink:0">
+        <div class="fbox" style="--fc:var(--pink);min-width:140px">
+          <div class="fbox-label">Switch</div>
+          <div class="fbox-name">PuzzleSwitch A</div>
+          <div class="fport-out"></div>
+        </div>
+        <div class="fbox" style="--fc:var(--pink);min-width:140px">
+          <div class="fbox-label">Switch</div>
+          <div class="fbox-name">PuzzleSwitch B</div>
+          <div class="fport-out"></div>
+        </div>
+        <div class="fbox" style="--fc:var(--pink);min-width:140px">
+          <div class="fbox-label">Switch</div>
+          <div class="fbox-name">PuzzleSwitch C</div>
+          <div class="fport-out"></div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px;width:80px;flex-shrink:0;align-self:stretch;justify-content:space-around;position:relative">
+        <div style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:space-around">
+          <div style="height:2px;background:linear-gradient(90deg,var(--pink),var(--purple));opacity:.5;position:relative"><div style="position:absolute;top:-4px;width:8px;height:8px;border-radius:50%;background:var(--pink);box-shadow:0 0 6px var(--pink);animation:bead 2s linear infinite;animation-delay:0s"></div></div>
+          <div style="height:2px;background:linear-gradient(90deg,var(--pink),var(--purple));opacity:.5;position:relative"><div style="position:absolute;top:-4px;width:8px;height:8px;border-radius:50%;background:var(--pink);box-shadow:0 0 6px var(--pink);animation:bead 2s linear infinite;animation-delay:.5s"></div></div>
+          <div style="height:2px;background:linear-gradient(90deg,var(--pink),var(--purple));opacity:.5;position:relative"><div style="position:absolute;top:-4px;width:8px;height:8px;border-radius:50%;background:var(--pink);box-shadow:0 0 6px var(--pink);animation:bead 2s linear infinite;animation-delay:1s"></div></div>
+        </div>
+      </div>
+      <div class="fbox" style="--fc:var(--purple);min-width:200px;align-self:center">
+        <div class="fport-in" style="--fpc:var(--pink)"></div>
+        <div class="fbox-label">Checker</div>
+        <div class="fbox-name">PuzzleSwitchChecker</div>
+        <div class="fbox-detail">watching all 3 switches</div>
+        <div class="fport-out"></div>
+      </div>
+      <div class="fwire" style="--bd:.3s">
+        <div class="fwire-line" style="background:linear-gradient(90deg,var(--purple),var(--green))"></div>
+        <div class="fwire-bead" style="background:var(--green);box-shadow:0 0 6px var(--green)"></div>
+        <div class="fevent">onPuzzleSolved</div>
+      </div>
+      <div class="fbox" style="--fc:var(--green)">
+        <div class="fport-in" style="--fpc:var(--purple)"></div>
+        <div class="fbox-label">Reward</div>
+        <div class="fbox-name">ActionAnimateTransform</div>
+        <div class="fbox-detail">Play() — door opens</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<hr class="rule">
+
+<!-- Sequence puzzle -->
+<div class="section" id="sequence" style="padding-top:60px">
+  <span class="sec-label">Type 2</span>
+  <h2 class="sec-title">Sequence puzzle — order matters</h2>
+  <p class="sec-desc">Same PuzzleSwitch objects, different checker. The player must activate them in the order you define. A wrong activation resets progress.</p>
+
+  <ol class="steps-list">
+    <li class="step-item">
+      <div class="step-badge">1</div>
+      <div>
+        <div class="step-title">Set up switches identically to combination lock</div>
+        <div class="step-body">PuzzleSwitch setup is the same — each switch just needs <code>Activate()</code> wired to its interaction input. The sequence checker listens to <code>onActivated</code> internally, so you don't need to wire anything on the switches themselves.</div>
+      </div>
+    </li>
+    <li class="step-item">
+      <div class="step-badge">2</div>
+      <div>
+        <div class="step-title">Add PuzzleSequenceChecker and define the sequence</div>
+        <div class="step-body">Add <strong>PuzzleSequenceChecker</strong> to a manager object. In the <strong>Correct Sequence</strong> array, drag in the switches in the order the player must activate them. You can add the same switch more than once — e.g. A, B, A, C is a valid 4-step sequence.</div>
+      </div>
+    </li>
+    <li class="step-item">
+      <div class="step-badge">3</div>
+      <div>
+        <div class="step-title">Configure Reset on Mistake and wire events</div>
+        <div class="step-body">Enable <strong>Reset on Mistake</strong> if a wrong step should restart from step 1 (recommended for most puzzles). Wire <code>onSequenceSolved</code> to the reward. Wire <code>onMistake</code> → <code>ActionPlaySound.PlaySound()</code> for an error sound. Wire <code>onProgress</code> → <code>ActionDisplayText.Show()</code> to show "Step 2 of 4".</div>
+      </div>
+    </li>
+  </ol>
+
+  <div class="callout" style="border-color:rgba(155,114,247,.2);background:rgba(155,114,247,.05)">
+    <div class="callout-icon">💡</div>
+    <div>
+      <div class="callout-title" style="color:var(--purple)">Giving the player feedback is important</div>
+      <div class="callout-body">The sequence checker has rich progress events. Use <code>onProgress</code> to show a step counter. Use <code>onMistake</code> to play an error sound or flash the screen. Without feedback, sequence puzzles feel broken to players who don't know if they're making progress.</div>
+    </div>
+  </div>
+</div>
+
+<hr class="rule">
+
+<!-- Event Reference -->
+<div class="section" id="reference" style="padding-top:60px">
+  <span class="sec-label">Event Reference</span>
+  <h2 class="sec-title">Every event, what it fires on</h2>
+
+  <h3 style="font-size:15px;font-weight:600;color:var(--pink);margin-bottom:12px;letter-spacing:-.01em">PuzzleSwitchChecker events</h3>
+  <div class="event-list" style="margin-bottom:32px">
+    <div class="event-row"><span class="event-name" style="color:var(--green)">onPuzzleSolved</span><span class="event-desc">All switches are in their required states simultaneously</span></div>
+    <div class="event-row"><span class="event-name" style="color:var(--green)">onFirstTimeSolved</span><span class="event-desc">Same as above, but only fires the very first time</span></div>
+    <div class="event-row"><span class="event-name" style="color:var(--orange)">onPuzzleUnsolved</span><span class="event-desc">A switch moved away from its required state (only if Can Be Unsolved is on)</span></div>
+    <div class="event-row"><span class="event-name" style="color:var(--blue)">onProgressChanged(int, int)</span><span class="event-desc">Correct count changed — passes (correctCount, totalCount)</span></div>
+    <div class="event-row"><span class="event-name" style="color:var(--blue)">onSwitchBecameCorrect(int)</span><span class="event-desc">A switch just reached its required state — passes switch index</span></div>
+    <div class="event-row"><span class="event-name" style="color:var(--blue)">onSwitchBecameIncorrect(int)</span><span class="event-desc">A switch just left its required state — passes switch index</span></div>
+    <div class="event-row"><span class="event-name" style="color:var(--text3)">onCheckFailed</span><span class="event-desc">CheckPuzzle() was called manually but puzzle is not solved</span></div>
+  </div>
+
+  <h3 style="font-size:15px;font-weight:600;color:var(--purple);margin-bottom:12px;letter-spacing:-.01em">PuzzleSequenceChecker events</h3>
+  <div class="event-list" style="margin-bottom:32px">
+    <div class="event-row"><span class="event-name" style="color:var(--green)">onSequenceSolved</span><span class="event-desc">Sequence completed in correct order</span></div>
+    <div class="event-row"><span class="event-name" style="color:var(--green)">onFirstTimeSolved</span><span class="event-desc">Same as above, first time only</span></div>
+    <div class="event-row"><span class="event-name" style="color:var(--blue)">onProgress(int, int)</span><span class="event-desc">Correct step activated — passes (currentStep, totalSteps)</span></div>
+    <div class="event-row"><span class="event-name" style="color:var(--orange)">onMistake(int)</span><span class="event-desc">Wrong switch activated — passes expected step index</span></div>
+    <div class="event-row"><span class="event-name" style="color:var(--text3)">onReset</span><span class="event-desc">Sequence reset to step 0 (from mistake or manual ResetSequence call)</span></div>
+  </div>
+
+  <h3 style="font-size:15px;font-weight:600;color:var(--pink);margin-bottom:12px;letter-spacing:-.01em">PuzzleSwitch events</h3>
+  <div class="event-list">
+    <div class="event-row"><span class="event-name" style="color:var(--pink)">onStateChanged(int)</span><span class="event-desc">State changed — passes the new state index</span></div>
+    <div class="event-row"><span class="event-name" style="color:var(--pink)">onActivated</span><span class="event-desc">Switch was activated (any interaction)</span></div>
+    <div class="event-row"><span class="event-name" style="color:var(--text3)">onState0 … onState4</span><span class="event-desc">Per-state events — fire only when transitioning to that specific state</span></div>
+  </div>
+</div>
+
+<div class="page-footer">
+  <span>EGTK — Event Game Toolkit</span>
+  <span><a href="../index.html">← All Docs</a> &nbsp;·&nbsp; <a href="collection.html">Collection Example →</a></span>
+</div>
+</body>
+</html>
