@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EGTK — Projectile System Example</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:      #0D0F14;
+    --surface: #171B24;
+    --surf2:   #1C2130;
+    --text1:   #F0F2F8;
+    --text2:   #8B8FA8;
+    --text3:   #5E6280;
+    --rule:    #21283C;
+    --blue:    #4F8EF7;
+    --purple:  #9B72F7;
+    --green:   #34D399;
+    --orange:  #FB923C;
+    --red:     #EF4444;
+    --pink:    #F472B6;
+    --teal:    #2DD4BF;
+    --slate:   #94A3C8;
+    --yellow:  #F59E0B;
+  }
+
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text1);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .dot-grid {
+    background-image: radial-gradient(circle, rgba(148,163,200,.065) 1px, transparent 1px);
+    background-size: 28px 28px;
+  }
+
+  /* ── Top nav ──────────────────────────────────────────── */
+  .topnav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(13,15,20,.88);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--rule);
+    padding: 0 80px;
+    display: flex; align-items: center; gap: 32px; height: 52px;
+  }
+  .topnav-logo {
+    font-size: 13px; font-weight: 700; color: var(--text1);
+    text-decoration: none; letter-spacing: -.01em;
+  }
+  .topnav-logo span { color: var(--blue); }
+  .topnav-sep { width: 1px; height: 16px; background: var(--rule); }
+  .topnav a {
+    font-size: 12px; font-weight: 500; color: var(--text3);
+    text-decoration: none; transition: color .15s;
+  }
+  .topnav a:hover { color: var(--text1); }
+  .topnav-back {
+    margin-left: auto;
+    font-size: 12px; font-weight: 500; color: var(--text3);
+    text-decoration: none; transition: color .15s;
+  }
+  .topnav-back:hover { color: var(--blue); }
+
+  /* ── Hero ─────────────────────────────────────────────── */
+  .hero {
+    padding: 80px 80px 48px;
+    max-width: 1200px; margin: 0 auto;
+    position: relative;
+  }
+  .breadcrumb {
+    font-size: 12px; color: var(--text3); margin-bottom: 20px;
+  }
+  .breadcrumb a { color: var(--text3); text-decoration: none; }
+  .breadcrumb a:hover { color: var(--blue); }
+  .breadcrumb span { margin: 0 8px; }
+  .hero-pill {
+    display: inline-flex; align-items: center;
+    font-size: 10px; font-weight: 600; letter-spacing: .1em;
+    text-transform: uppercase; padding: 5px 12px; border-radius: 20px;
+    background: rgba(251,146,60,.1); color: var(--orange);
+    margin-bottom: 20px;
+  }
+  .hero-title {
+    font-size: 52px; font-weight: 700; letter-spacing: -.03em;
+    line-height: 1.1; color: var(--text1); margin-bottom: 16px;
+  }
+  .hero-desc {
+    font-size: 17px; color: var(--text2); line-height: 1.7;
+    max-width: 600px; margin-bottom: 40px;
+  }
+
+  /* outcome chips */
+  .outcome-row {
+    display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 48px;
+  }
+  .outcome-chip {
+    display: flex; align-items: center; gap: 6px;
+    background: var(--surface); border: 1px solid var(--rule);
+    border-radius: 8px; padding: 6px 12px;
+    font-size: 12px; font-weight: 500; color: var(--text2);
+  }
+  .outcome-chip .dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  /* ── Section ──────────────────────────────────────────── */
+  .section {
+    max-width: 1200px; margin: 0 auto; padding: 0 80px 72px;
+  }
+  .sec-label {
+    font-size: 10px; font-weight: 600; letter-spacing: .12em;
+    text-transform: uppercase; color: var(--text3);
+    margin-bottom: 12px; display: block;
+  }
+  .sec-title {
+    font-size: 28px; font-weight: 700; letter-spacing: -.02em;
+    color: var(--text1); margin-bottom: 10px;
+  }
+  .sec-desc {
+    font-size: 15px; color: var(--text2); line-height: 1.7;
+    max-width: 680px; margin-bottom: 32px;
+  }
+
+  hr.rule {
+    border: none; border-top: 1px solid var(--rule);
+    max-width: 1200px; margin: 0 auto;
+  }
+
+  /* ── Two-tier architecture diagram ───────────────────── */
+  .arch-diagram {
+    position: relative; border-radius: 16px; overflow: hidden;
+    border: 1px solid var(--rule); padding: 48px 40px 40px;
+    margin-bottom: 32px;
+  }
+  .arch-diagram > .dot-grid {
+    position: absolute; inset: 0; z-index: 0; border-radius: 16px;
+  }
+  .arch-diagram > *:not(.dot-grid) { position: relative; z-index: 1; }
+
+  .arch-tiers {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+
+  .tier {
+    border-radius: 12px;
+    border: 1px solid var(--rule);
+    overflow: hidden;
+  }
+  .tier-header {
+    padding: 14px 20px;
+    display: flex; align-items: center; gap: 10px;
+    border-bottom: 1px solid var(--rule);
+  }
+  .tier-dot {
+    width: 10px; height: 10px; border-radius: 50%;
+    box-shadow: 0 0 8px var(--tdot);
+    background: var(--tdot); flex-shrink: 0;
+  }
+  .tier-label {
+    font-size: 11px; font-weight: 600; letter-spacing: .08em;
+    text-transform: uppercase;
+  }
+  .tier-sublabel {
+    font-size: 12px; color: var(--text3); margin-left: auto;
+  }
+  .tier-body {
+    padding: 16px 20px;
+    background: rgba(23,27,36,.6);
+  }
+  .tier-obj {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 10px 12px; border-radius: 8px;
+    background: var(--surf2); border: 1px solid var(--rule);
+    margin-bottom: 8px;
+  }
+  .tier-obj:last-child { margin-bottom: 0; }
+  .tier-obj-icon {
+    width: 28px; height: 28px; border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .tier-obj-name {
+    font-size: 13px; font-weight: 600; color: var(--text1);
+    margin-bottom: 3px;
+  }
+  .tier-obj-comps {
+    display: flex; flex-wrap: wrap; gap: 4px;
+    margin-top: 4px;
+  }
+  .comp-tag {
+    font-size: 10px; font-weight: 500; padding: 2px 7px;
+    border-radius: 4px; font-family: 'SF Mono','Fira Mono',monospace;
+  }
+
+  /* ── Tag detection wire diagram ───────────────────────── */
+  .detection-flow {
+    display: flex; align-items: stretch; gap: 0;
+    border: 1px solid var(--rule); border-radius: 12px;
+    overflow: hidden; margin-bottom: 16px;
+  }
+  .df-col {
+    flex: 1; padding: 20px;
+    border-right: 1px solid var(--rule);
+  }
+  .df-col:last-child { border-right: none; }
+  .df-col-label {
+    font-size: 9px; font-weight: 600; letter-spacing: .1em;
+    text-transform: uppercase; margin-bottom: 10px;
+  }
+  .df-obj-name {
+    font-size: 14px; font-weight: 600; color: var(--text1);
+    margin-bottom: 6px;
+  }
+  .df-detail {
+    font-size: 12px; color: var(--text3); line-height: 1.6;
+  }
+  .df-arrow-col {
+    display: flex; align-items: center; justify-content: center;
+    padding: 0 16px;
+    border-right: 1px solid var(--rule);
+    flex-shrink: 0; min-width: 80px; position: relative;
+  }
+  .df-arrow-col .wire-line {
+    position: absolute; top: 50%; left: 0; right: 0;
+    height: 2px; transform: translateY(-50%);
+  }
+  .df-arrow-col .wire-bead {
+    position: absolute; top: 50%; transform: translateY(-50%);
+    width: 8px; height: 8px; border-radius: 50%;
+    animation: wireflow 2s linear infinite;
+    animation-delay: var(--d, 0s);
+  }
+  @keyframes wireflow {
+    0%   { left: 0; opacity: 0; }
+    8%   { opacity: .9; }
+    85%  { opacity: .9; }
+    100% { left: calc(100% - 8px); opacity: 0; }
+  }
+  .df-arrow-label {
+    position: relative; z-index: 1;
+    font-size: 9px; font-weight: 600; letter-spacing: .07em;
+    text-transform: uppercase; color: var(--text3);
+    background: var(--bg);
+    padding: 2px 6px; border-radius: 4px; white-space: nowrap;
+  }
+
+  /* ── Tag pill ─────────────────────────────────────────── */
+  .tag-pill {
+    display: inline-flex; align-items: center;
+    font-size: 11px; font-weight: 600; letter-spacing: .04em;
+    padding: 2px 9px; border-radius: 5px;
+    font-family: 'SF Mono','Fira Mono',monospace;
+  }
+
+  /* ── Limitation callout ───────────────────────────────── */
+  .callout {
+    border-radius: 12px; padding: 24px 28px;
+    border: 1px solid;
+    display: flex; gap: 18px; align-items: flex-start;
+    margin-bottom: 24px;
+  }
+  .callout-icon {
+    font-size: 22px; flex-shrink: 0; line-height: 1;
+    margin-top: 2px;
+  }
+  .callout-title {
+    font-size: 15px; font-weight: 700; margin-bottom: 6px;
+  }
+  .callout-body {
+    font-size: 14px; color: var(--text2); line-height: 1.7;
+  }
+  .callout-body code {
+    font-family: 'SF Mono','Fira Mono',monospace;
+    font-size: 12px; padding: 1px 5px;
+    border-radius: 4px;
+    background: rgba(255,255,255,.07);
+    color: var(--text1);
+  }
+
+  /* ── Prefab anatomy ───────────────────────────────────── */
+  .prefab-grid {
+    display: grid; grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px; margin-bottom: 32px;
+  }
+  .prefab-card {
+    background: var(--surface); border: 1px solid var(--rule);
+    border-radius: 12px; overflow: hidden;
+  }
+  .prefab-header {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--rule);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .prefab-name {
+    font-size: 13px; font-weight: 600; color: var(--text1);
+    font-family: 'SF Mono','Fira Mono',monospace;
+  }
+  .prefab-body {
+    padding: 14px 18px;
+  }
+  .prefab-row {
+    display: flex; align-items: baseline; justify-content: space-between;
+    padding: 5px 0; border-bottom: 1px solid rgba(33,40,60,.5);
+    gap: 12px;
+  }
+  .prefab-row:last-child { border-bottom: none; }
+  .prefab-field {
+    font-size: 11px; font-weight: 500; color: var(--text3);
+    flex-shrink: 0;
+  }
+  .prefab-val {
+    font-size: 11px; color: var(--text2);
+    font-family: 'SF Mono','Fira Mono',monospace;
+    text-align: right;
+  }
+  .prefab-val.ok { color: var(--green); }
+  .prefab-val.broken { color: var(--red); }
+  .prefab-val.empty { color: var(--text3); font-style: italic; }
+
+  /* ── Workaround steps ─────────────────────────────────── */
+  .steps-list {
+    list-style: none; display: flex; flex-direction: column; gap: 12px;
+    margin-bottom: 32px;
+  }
+  .step-item {
+    display: flex; gap: 16px; align-items: flex-start;
+    background: var(--surface); border: 1px solid var(--rule);
+    border-radius: 10px; padding: 16px 20px;
+  }
+  .step-badge {
+    width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: var(--blue);
+    background: rgba(79,142,247,.12);
+    margin-top: 1px;
+  }
+  .step-title {
+    font-size: 14px; font-weight: 600; color: var(--text1);
+    margin-bottom: 4px;
+  }
+  .step-body {
+    font-size: 13px; color: var(--text2); line-height: 1.6;
+  }
+  .step-body code {
+    font-family: 'SF Mono','Fira Mono',monospace;
+    font-size: 12px; padding: 1px 5px;
+    border-radius: 4px; background: rgba(255,255,255,.07);
+    color: var(--text1);
+  }
+  .step-body strong { color: var(--text1); font-weight: 600; }
+
+  /* ── Full wiring table ────────────────────────────────── */
+  .wire-table {
+    width: 100%; border-collapse: collapse;
+    border: 1px solid var(--rule); border-radius: 12px;
+    overflow: hidden; margin-bottom: 32px;
+  }
+  .wire-table th {
+    font-size: 9px; font-weight: 600; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--text3);
+    padding: 10px 16px; text-align: left;
+    background: rgba(255,255,255,.03);
+    border-bottom: 1px solid var(--rule);
+  }
+  .wire-table td {
+    padding: 10px 16px; font-size: 13px;
+    border-bottom: 1px solid rgba(33,40,60,.5);
+    vertical-align: middle;
+  }
+  .wire-table tr:last-child td { border-bottom: none; }
+  .wire-table tr:nth-child(even) td { background: var(--surf2); }
+  .wt-on { color: var(--text1); font-weight: 500; }
+  .wt-on code {
+    font-family: 'SF Mono','Fira Mono',monospace;
+    font-size: 12px;
+  }
+  .wt-arrow { color: var(--text3); padding: 0 8px; }
+  .wt-target { color: var(--text2); font-family: 'SF Mono','Fira Mono',monospace; font-size: 12px; }
+
+  /* mini wire indicator in table */
+  .mini-wire {
+    display: inline-flex; align-items: center; gap: 0;
+    vertical-align: middle;
+  }
+  .mw-src, .mw-tgt {
+    font-size: 11px; font-weight: 500;
+    padding: 2px 8px; border-radius: 4px; border: 1px solid;
+  }
+  .mw-line {
+    width: 24px; height: 2px; position: relative;
+  }
+  .mw-line::before {
+    content: ''; position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(90deg, var(--mw-from), var(--mw-to));
+    opacity: .6;
+  }
+
+  /* ── Footer ───────────────────────────────────────────── */
+  .page-footer {
+    border-top: 1px solid var(--rule);
+    padding: 32px 80px;
+    max-width: 1200px; margin: 0 auto;
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 13px; color: var(--text3);
+  }
+  .page-footer a { color: var(--blue); text-decoration: none; }
+  .page-footer a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+
+<!-- Nav -->
+<nav class="topnav">
+  <a href="../index.html" class="topnav-logo">EGTK<span>.</span></a>
+  <div class="topnav-sep"></div>
+  <a href="#architecture">Architecture</a>
+  <a href="#limitation">The Limitation</a>
+  <a href="#workaround">Workaround</a>
+  <a href="#wiring">Full Wiring</a>
+  <a href="../index.html" class="topnav-back">← All Docs</a>
+</nav>
+
+<!-- Hero -->
+<div class="hero">
+  <div class="breadcrumb">
+    <a href="../index.html">EGTK Docs</a>
+    <span>/</span>
+    Examples
+    <span>/</span>
+    Projectile System
+  </div>
+  <div class="hero-pill">Example</div>
+  <h1 class="hero-title">Projectile System</h1>
+  <p class="hero-desc">
+    A complete projectile game — player fires, enemies spawn, power-ups drop.
+    This example reveals how EGTK handles spawnable objects: game logic lives on
+    <strong style="color:var(--text1)">persistent scene GameObjects</strong>,
+    while spawned prefabs are just tagged colliders.
+  </p>
+  <div class="outcome-row">
+    <div class="outcome-chip"><div class="dot" style="background:var(--blue);box-shadow:0 0 6px var(--blue)"></div>Player fires projectiles</div>
+    <div class="outcome-chip"><div class="dot" style="background:var(--red);box-shadow:0 0 6px var(--red)"></div>Enemies spawn and chase</div>
+    <div class="outcome-chip"><div class="dot" style="background:var(--green);box-shadow:0 0 6px var(--green)"></div>Health power-ups restore health</div>
+    <div class="outcome-chip"><div class="dot" style="background:var(--orange);box-shadow:0 0 6px var(--orange)"></div>Score on projectile kill</div>
+    <div class="outcome-chip"><div class="dot" style="background:var(--yellow);box-shadow:0 0 6px var(--yellow)"></div>Timer counts down to game over</div>
+  </div>
+</div>
+
+<hr class="rule">
+
+<!-- Architecture -->
+<div class="section" id="architecture" style="padding-top:60px">
+  <span class="sec-label">Core Pattern</span>
+  <h2 class="sec-title">The Two-Tier Architecture</h2>
+  <p class="sec-desc">
+    EGTK games that spawn objects use two kinds of GameObjects with very different responsibilities.
+    Understanding the split is the key to making this pattern work.
+  </p>
+
+  <div class="arch-diagram">
+    <div class="dot-grid"></div>
+    <div class="arch-tiers">
+
+      <!-- Tier 1 -->
+      <div class="tier">
+        <div class="tier-header" style="background:rgba(79,142,247,.05)">
+          <div class="tier-dot" style="--tdot:var(--blue)"></div>
+          <span class="tier-label" style="color:var(--blue)">Tier 1 — The Brains</span>
+          <span class="tier-sublabel">persistent scene objects</span>
+        </div>
+        <div class="tier-body">
+          <div style="font-size:12px;color:var(--text3);margin-bottom:12px;line-height:1.6">
+            These objects live in the scene permanently. All UnityEvent wiring happens here —
+            they watch for tagged objects and call managers when they detect them.
+          </div>
+          <div class="tier-obj">
+            <div class="tier-obj-icon" style="background:rgba(79,142,247,.1)">⚙️</div>
+            <div>
+              <div class="tier-obj-name">MANAGERS</div>
+              <div class="tier-obj-comps">
+                <span class="comp-tag" style="background:rgba(52,211,153,.1);color:var(--green)">GameHealthManager</span>
+                <span class="comp-tag" style="background:rgba(52,211,153,.1);color:var(--green)">GameCollectionManager</span>
+                <span class="comp-tag" style="background:rgba(52,211,153,.1);color:var(--green)">GameTimerManager</span>
+                <span class="comp-tag" style="background:rgba(52,211,153,.1);color:var(--green)">GameStateManager</span>
+              </div>
+            </div>
+          </div>
+          <div class="tier-obj">
+            <div class="tier-obj-icon" style="background:rgba(79,142,247,.1)">🎯</div>
+            <div>
+              <div class="tier-obj-name">ProjectileSpawner</div>
+              <div class="tier-obj-comps">
+                <span class="comp-tag" style="background:rgba(79,142,247,.1);color:var(--blue)">ActionSpawnProjectile</span>
+                <span class="comp-tag" style="background:rgba(79,142,247,.1);color:var(--blue)">InputActionEvent</span>
+                <span class="comp-tag" style="background:rgba(79,142,247,.1);color:var(--blue)">InputTriggerZone ×3</span>
+              </div>
+            </div>
+          </div>
+          <div class="tier-obj">
+            <div class="tier-obj-icon" style="background:rgba(251,146,60,.1)">🔄</div>
+            <div>
+              <div class="tier-obj-name">Spawners</div>
+              <div class="tier-obj-comps">
+                <span class="comp-tag" style="background:rgba(251,146,60,.1);color:var(--orange)">enemySpawner</span>
+                <span class="comp-tag" style="background:rgba(251,146,60,.1);color:var(--orange)">healthPowerUpSpawner</span>
+                <span class="comp-tag" style="background:rgba(251,146,60,.1);color:var(--orange)">projectilePowerUpSpawner</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tier 2 -->
+      <div class="tier">
+        <div class="tier-header" style="background:rgba(239,68,68,.05)">
+          <div class="tier-dot" style="--tdot:var(--red)"></div>
+          <span class="tier-label" style="color:var(--red)">Tier 2 — The Bodies</span>
+          <span class="tier-sublabel">spawnable prefabs</span>
+        </div>
+        <div class="tier-body">
+          <div style="font-size:12px;color:var(--text3);margin-bottom:12px;line-height:1.6">
+            These are minimal. A mesh, a collider, and a tag.
+            No cross-scene event wiring — they can't reference scene objects because they don't exist until runtime.
+          </div>
+          <div class="tier-obj">
+            <div class="tier-obj-icon" style="background:rgba(239,68,68,.1)">👾</div>
+            <div>
+              <div class="tier-obj-name">enemy.prefab</div>
+              <div class="tier-obj-comps">
+                <span class="comp-tag" style="background:rgba(239,68,68,.1);color:var(--red)">tag: enemy</span>
+                <span class="comp-tag" style="background:rgba(148,163,200,.08);color:var(--slate)">EnemyControllerCC</span>
+                <span class="comp-tag" style="background:rgba(148,163,200,.08);color:var(--slate)">Collider</span>
+              </div>
+            </div>
+          </div>
+          <div class="tier-obj">
+            <div class="tier-obj-icon" style="background:rgba(52,211,153,.1)">💊</div>
+            <div>
+              <div class="tier-obj-name">healthPowerUp.prefab</div>
+              <div class="tier-obj-comps">
+                <span class="comp-tag" style="background:rgba(52,211,153,.1);color:var(--green)">tag: health</span>
+                <span class="comp-tag" style="background:rgba(148,163,200,.08);color:var(--slate)">Collider (trigger)</span>
+              </div>
+            </div>
+          </div>
+          <div class="tier-obj">
+            <div class="tier-obj-icon" style="background:rgba(251,146,60,.1)">⚡</div>
+            <div>
+              <div class="tier-obj-name">projectilePowerUp.prefab</div>
+              <div class="tier-obj-comps">
+                <span class="comp-tag" style="background:rgba(251,146,60,.1);color:var(--orange)">tag: projectilePowerUp</span>
+                <span class="comp-tag" style="background:rgba(148,163,200,.08);color:var(--slate)">Collider (trigger)</span>
+              </div>
+            </div>
+          </div>
+          <div class="tier-obj">
+            <div class="tier-obj-icon" style="background:rgba(79,142,247,.1)">🔵</div>
+            <div>
+              <div class="tier-obj-name">projectile.prefab</div>
+              <div class="tier-obj-comps">
+                <span class="comp-tag" style="background:rgba(79,142,247,.1);color:var(--blue)">tag: projectile</span>
+                <span class="comp-tag" style="background:rgba(148,163,200,.08);color:var(--slate)">ProjectileVelocity</span>
+                <span class="comp-tag" style="background:rgba(148,163,200,.08);color:var(--slate)">Collider (trigger)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- How detection works -->
+  <span class="sec-label" style="margin-top:40px;display:block">How It Works</span>
+  <h3 style="font-size:20px;font-weight:700;color:var(--text1);margin-bottom:8px;letter-spacing:-.01em">Detection lives on the persistent object, not the spawned one</h3>
+  <p class="sec-desc" style="margin-bottom:24px">
+    The player (ProjectileSpawner) carries an InputTriggerZone for each tag it cares about.
+    When an enemy wanders into that zone, the zone fires — and the player's wired event calls the manager.
+    The enemy itself doesn't need to know about any manager.
+  </p>
+
+  <div class="detection-flow">
+    <div class="df-col" style="background:rgba(239,68,68,.03)">
+      <div class="df-col-label" style="color:var(--red)">Spawned Object</div>
+      <div class="df-obj-name">enemy.prefab</div>
+      <div class="df-detail">Tagged <span class="tag-pill" style="background:rgba(239,68,68,.12);color:var(--red)">enemy</span></div>
+      <div class="df-detail" style="margin-top:6px">Has a Collider.<br>That's all it needs to be.</div>
+    </div>
+    <div class="df-arrow-col" style="background:rgba(239,68,68,.04)">
+      <div class="wire-line" style="background:linear-gradient(90deg,var(--red),var(--blue))"></div>
+      <div class="wire-bead" style="background:var(--red);box-shadow:0 0 6px var(--red);--d:0s"></div>
+      <div class="df-arrow-label">enters zone</div>
+    </div>
+    <div class="df-col" style="background:rgba(79,142,247,.03)">
+      <div class="df-col-label" style="color:var(--blue)">Persistent Object</div>
+      <div class="df-obj-name">ProjectileSpawner</div>
+      <div class="df-detail">
+        <strong style="color:var(--text1)">InputTriggerZone</strong><br>
+        Tag filter: <span class="tag-pill" style="background:rgba(239,68,68,.12);color:var(--red)">enemy</span>
+      </div>
+    </div>
+    <div class="df-arrow-col" style="background:rgba(52,211,153,.04)">
+      <div class="wire-line" style="background:linear-gradient(90deg,var(--blue),var(--green))"></div>
+      <div class="wire-bead" style="background:var(--green);box-shadow:0 0 6px var(--green);--d:.5s"></div>
+      <div class="df-arrow-label">On Enter fires</div>
+    </div>
+    <div class="df-col" style="background:rgba(52,211,153,.03)">
+      <div class="df-col-label" style="color:var(--green)">Manager</div>
+      <div class="df-obj-name">GameHealthManager</div>
+      <div class="df-detail">
+        <code style="font-family:'SF Mono','Fira Mono',monospace;font-size:12px;color:var(--red)">TakeDamage(10)</code><br>
+        <span style="color:var(--text3);font-size:12px">called from the scene wire</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout" style="border-color:rgba(148,163,200,.15);background:rgba(148,163,200,.04)">
+    <div class="callout-icon">💡</div>
+    <div>
+      <div class="callout-title" style="color:var(--slate)">The rule of thumb</div>
+      <div class="callout-body">
+        The object that <strong>detects</strong> is the persistent one — it lives in the scene and holds the wired event.
+        The object being <strong>detected</strong> just needs the right tag and a collider.
+        You never need to wire events on the spawned object to talk to a scene manager.
+      </div>
+    </div>
+  </div>
+</div>
+
+<hr class="rule">
+
+<!-- The Limitation -->
+<div class="section" id="limitation" style="padding-top:60px">
+  <span class="sec-label">Important Constraint</span>
+  <h2 class="sec-title">UnityEvents are not stored in prefabs</h2>
+  <p class="sec-desc">
+    This is the most important thing to understand about EGTK and Unity prefabs.
+    A UnityEvent that points to a scene object — a manager, a door, another player —
+    cannot be saved inside a prefab. The prefab doesn't know which scene it will land in.
+  </p>
+
+  <div class="callout" style="border-color:rgba(239,68,68,.25);background:rgba(239,68,68,.05);margin-bottom:24px">
+    <div class="callout-icon">⚠️</div>
+    <div>
+      <div class="callout-title" style="color:var(--red)">What Unity actually saves</div>
+      <div class="callout-body">
+        When you save a GameObject as a prefab, any UnityEvent that references a <em>scene</em> object
+        gets saved as <code>m_Target: &#123;fileID: 0&#125;</code> — a null.
+        The method name is remembered, but the target is gone. At runtime,
+        the event fires and silently does nothing.
+      </div>
+    </div>
+  </div>
+
+  <!-- Prefab anatomy: what's preserved vs lost -->
+  <h3 style="font-size:17px;font-weight:600;color:var(--text1);margin-bottom:16px;letter-spacing:-.01em">What each prefab stores (and what it doesn't)</h3>
+  <div class="prefab-grid">
+    <div class="prefab-card">
+      <div class="prefab-header" style="background:rgba(239,68,68,.05)">
+        <span style="font-size:14px">👾</span>
+        <span class="prefab-name">enemy.prefab</span>
+      </div>
+      <div class="prefab-body">
+        <div class="prefab-row">
+          <span class="prefab-field">Tag</span>
+          <span class="prefab-val ok">enemy ✓</span>
+        </div>
+        <div class="prefab-row">
+          <span class="prefab-field">EnemyControllerCC</span>
+          <span class="prefab-val ok">saved ✓</span>
+        </div>
+        <div class="prefab-row">
+          <span class="prefab-field">Collider</span>
+          <span class="prefab-val ok">saved ✓</span>
+        </div>
+        <div class="prefab-row">
+          <span class="prefab-field">OnEnter → GameHealthManager</span>
+          <span class="prefab-val broken">null target ✗</span>
+        </div>
+        <div class="prefab-row">
+          <span class="prefab-field">OnEnter → SetActive(false)</span>
+          <span class="prefab-val ok">self-ref works ✓</span>
+        </div>
+      </div>
+    </div>
+    <div class="prefab-card">
+      <div class="prefab-header" style="background:rgba(52,211,153,.05)">
+        <span style="font-size:14px">💊</span>
+        <span class="prefab-name">healthPowerUp.prefab</span>
+      </div>
+      <div class="prefab-body">
+        <div class="prefab-row">
+          <span class="prefab-field">Tag</span>
+          <span class="prefab-val ok">health ✓</span>
+        </div>
+        <div class="prefab-row">
+          <span class="prefab-field">Collider (trigger)</span>
+          <span class="prefab-val ok">saved ✓</span>
+        </div>
+        <div class="prefab-row">
+          <span class="prefab-field">OnEnter → GameHealthManager</span>
+          <span class="prefab-val empty">not wired</span>
+        </div>
+        <div class="prefab-row">
+          <span class="prefab-field">Destroy self on collect</span>
+          <span class="prefab-val ok">self-ref works ✓</span>
+        </div>
+      </div>
+    </div>
+    <div class="prefab-card">
+      <div class="prefab-header" style="background:rgba(79,142,247,.05)">
+        <span style="font-size:14px">🔵</span>
+        <span class="prefab-name">projectile.prefab</span>
+      </div>
+      <div class="prefab-body">
+        <div class="prefab-row">
+          <span class="prefab-field">Tag</span>
+          <span class="prefab-val ok">projectile ✓</span>
+        </div>
+        <div class="prefab-row">
+          <span class="prefab-field">ProjectileVelocity</span>
+          <span class="prefab-val ok">saved ✓</span>
+        </div>
+        <div class="prefab-row">
+          <span class="prefab-field">Collider (trigger)</span>
+          <span class="prefab-val ok">saved ✓</span>
+        </div>
+        <div class="prefab-row">
+          <span class="prefab-field">OnEnter → any scene obj</span>
+          <span class="prefab-val broken">null target ✗</span>
+        </div>
+        <div class="prefab-row">
+          <span class="prefab-field">Destroy self on hit</span>
+          <span class="prefab-val ok">self-ref works ✓</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout" style="border-color:rgba(52,211,153,.2);background:rgba(52,211,153,.04)">
+    <div class="callout-icon">✅</div>
+    <div>
+      <div class="callout-title" style="color:var(--green)">Self-references inside a prefab always work</div>
+      <div class="callout-body">
+        An event that targets <em>another component on the same prefab</em> — like an enemy disabling
+        its own GameObject on death — is saved correctly. Only cross-scene references
+        (prefab → scene object) break. Design around this by putting detection on the
+        persistent object, not the spawned one.
+      </div>
+    </div>
+  </div>
+</div>
+
+<hr class="rule">
+
+<!-- The Workaround -->
+<div class="section" id="workaround" style="padding-top:60px">
+  <span class="sec-label">Tactical Pattern</span>
+  <h2 class="sec-title">Configure once, then duplicate</h2>
+  <p class="sec-desc">
+    When you need scene-wired events on an object that appears many times —
+    different enemy types, collectibles with different sounds — don't make a prefab.
+    Configure the first one in the scene, then <strong style="color:var(--text1)">duplicate it (Ctrl+D)</strong>.
+    The duplicated object keeps all its wired events intact.
+  </p>
+
+  <ol class="steps-list">
+    <li class="step-item">
+      <div class="step-badge">1</div>
+      <div>
+        <div class="step-title">Place and configure the first instance in the scene</div>
+        <div class="step-body">
+          Drop your enemy (or power-up) into the scene. Add the components you need.
+          Wire all events — drag in the <code>GameHealthManager</code>, set the method, set the value.
+          Test that it works.
+        </div>
+      </div>
+    </li>
+    <li class="step-item">
+      <div class="step-badge">2</div>
+      <div>
+        <div class="step-title">Duplicate, don't re-prefab</div>
+        <div class="step-body">
+          Select the configured object in the Hierarchy. Press <code>Ctrl+D</code>.
+          The copy has <strong>all the same component settings and event wiring</strong> —
+          it's a snapshot of the configured state, not a blank prefab instance.
+          Reposition and rename as needed.
+        </div>
+      </div>
+    </li>
+    <li class="step-item">
+      <div class="step-badge">3</div>
+      <div>
+        <div class="step-title">Use the scene objects as prefabs for your spawner</div>
+        <div class="step-body">
+          Drag either scene object into your Project to create a prefab from it —
+          or just reference the configured instance directly if you don't need to spawn it dynamically.
+          If you <em>do</em> convert to prefab, remember: the cross-scene event wiring will be lost
+          in the prefab asset. The workaround is to keep the detection on the persistent object
+          and let the spawned object remain minimal.
+        </div>
+      </div>
+    </li>
+    <li class="step-item">
+      <div class="step-badge">4</div>
+      <div>
+        <div class="step-title">For multiple variants, duplicate the configured version each time</div>
+        <div class="step-body">
+          Want a fast enemy and a slow enemy? Configure the slow one, duplicate → fast one,
+          adjust the EnemyControllerCC speed. Both keep their <code>GameHealthManager</code> wiring.
+          This is faster than rebuilding from a blank prefab every time.
+        </div>
+      </div>
+    </li>
+  </ol>
+
+  <div class="callout" style="border-color:rgba(245,158,11,.2);background:rgba(245,158,11,.04)">
+    <div class="callout-icon">⚠️</div>
+    <div>
+      <div class="callout-title" style="color:var(--yellow)">When you need dynamic spawning</div>
+      <div class="callout-body">
+        If ActionAutoSpawner needs to spawn the object, assign it a Prefab asset in the
+        Inspector — not a scene object. In that case, design the prefab so it <strong>needs no
+        cross-scene wiring</strong>: give it a tag, and put the detection logic on the
+        persistent spawner/player object using InputTriggerZone.
+        That's exactly how the projectile example is built.
+      </div>
+    </div>
+  </div>
+</div>
+
+<hr class="rule">
+
+<!-- Full Wiring Reference -->
+<div class="section" id="wiring" style="padding-top:60px">
+  <span class="sec-label">Complete Reference</span>
+  <h2 class="sec-title">Every wire in the projectile example</h2>
+  <p class="sec-desc">All the connections, in order of what fires what.</p>
+
+  <table class="wire-table">
+    <thead>
+      <tr>
+        <th>When</th>
+        <th></th>
+        <th>Object</th>
+        <th>Event</th>
+        <th></th>
+        <th>Calls</th>
+      </tr>
+    </thead>
+    <tbody id="wireTableBody"></tbody>
+  </table>
+</div>
+
+<!-- Footer -->
+<div class="page-footer">
+  <span>EGTK — Event Game Toolkit</span>
+  <span><a href="../index.html">← All Docs</a> &nbsp;·&nbsp; <a href="../intro.html">Intro & Reference</a></span>
+</div>
+
+<script>
+const WIRES = [
+  {
+    when: 'Player presses fire key',
+    obj: 'ProjectileSpawner',
+    event: 'InputActionEvent → On Action',
+    calls: 'ActionSpawnProjectile.SpawnProjectile()',
+    srcColor: '#4F8EF7', tgtColor: '#9B72F7',
+  },
+  {
+    when: 'Projectile spawned',
+    obj: 'ActionSpawnProjectile',
+    event: 'onProjectileSpawned',
+    calls: 'GameCollectionManager.Increment() — shot counter',
+    srcColor: '#9B72F7', tgtColor: '#34D399',
+  },
+  {
+    when: 'Enemy enters player zone',
+    obj: 'ProjectileSpawner (player)',
+    event: 'InputTriggerZone (tag: enemy) → On Enter',
+    calls: 'GameHealthManager.TakeDamage(10)',
+    srcColor: '#EF4444', tgtColor: '#34D399',
+  },
+  {
+    when: 'Enemy exits player zone',
+    obj: 'ProjectileSpawner (player)',
+    event: 'InputTriggerZone (tag: enemy) → On Exit',
+    calls: 'GameHealthManager.StopDamage()',
+    srcColor: '#EF4444', tgtColor: '#34D399',
+  },
+  {
+    when: 'Health power-up enters player zone',
+    obj: 'ProjectileSpawner (player)',
+    event: 'InputTriggerZone (tag: health) → On Enter',
+    calls: 'GameHealthManager.Heal(25)',
+    srcColor: '#34D399', tgtColor: '#34D399',
+  },
+  {
+    when: 'Score power-up enters player zone',
+    obj: 'ProjectileSpawner (player)',
+    event: 'InputTriggerZone (tag: projectilePowerUp) → On Enter',
+    calls: 'GameCollectionManager.Increment()',
+    srcColor: '#FB923C', tgtColor: '#34D399',
+  },
+  {
+    when: 'Health reaches zero',
+    obj: 'GameHealthManager',
+    event: 'onDeath',
+    calls: 'GameStateManager → show Game Over',
+    srcColor: '#EF4444', tgtColor: '#94A3C8',
+  },
+  {
+    when: 'Timer reaches zero',
+    obj: 'GameTimerManager',
+    event: 'onComplete',
+    calls: 'GameStateManager → trigger end state',
+    srcColor: '#F59E0B', tgtColor: '#94A3C8',
+  },
+  {
+    when: 'Timer starts',
+    obj: 'GameTimerManager',
+    event: 'onStart',
+    calls: 'ActionAutoSpawner.StartSpawning() — enemies begin',
+    srcColor: '#F59E0B', tgtColor: '#FB923C',
+  },
+  {
+    when: 'Timer starts',
+    obj: 'GameTimerManager',
+    event: 'onStart',
+    calls: 'ActionAutoSpawner.StartSpawning() — power-ups begin',
+    srcColor: '#F59E0B', tgtColor: '#FB923C',
+  },
+];
+
+const tbody = document.getElementById('wireTableBody');
+WIRES.forEach((w, i) => {
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td style="color:var(--text2);font-size:12px;max-width:180px">${w.when}</td>
+    <td class="wt-arrow">→</td>
+    <td class="wt-on" style="white-space:nowrap">${w.obj}</td>
+    <td style="font-size:12px;color:var(--text3);font-family:'SF Mono','Fira Mono',monospace">${w.event}</td>
+    <td class="wt-arrow">→</td>
+    <td class="wt-target">${w.calls}</td>
+  `;
+  tbody.appendChild(tr);
+});
+</script>
+</body>
+</html>
