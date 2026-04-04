@@ -203,58 +203,6 @@
     border-radius: 4px; font-family: 'SF Mono','Fira Mono',monospace;
   }
 
-  /* ── Tag detection wire diagram ───────────────────────── */
-  .detection-flow {
-    display: flex; align-items: stretch; gap: 0;
-    border: 1px solid var(--rule); border-radius: 12px;
-    overflow: hidden; margin-bottom: 16px;
-  }
-  .df-col {
-    flex: 1; padding: 20px;
-    border-right: 1px solid var(--rule);
-  }
-  .df-col:last-child { border-right: none; }
-  .df-col-label {
-    font-size: 9px; font-weight: 600; letter-spacing: .1em;
-    text-transform: uppercase; margin-bottom: 10px;
-  }
-  .df-obj-name {
-    font-size: 14px; font-weight: 600; color: var(--text1);
-    margin-bottom: 6px;
-  }
-  .df-detail {
-    font-size: 12px; color: var(--text3); line-height: 1.6;
-  }
-  .df-arrow-col {
-    display: flex; align-items: center; justify-content: center;
-    padding: 0 16px;
-    border-right: 1px solid var(--rule);
-    flex-shrink: 0; min-width: 80px; position: relative;
-  }
-  .df-arrow-col .wire-line {
-    position: absolute; top: 50%; left: 0; right: 0;
-    height: 2px; transform: translateY(-50%);
-  }
-  .df-arrow-col .wire-bead {
-    position: absolute; top: 50%; transform: translateY(-50%);
-    width: 8px; height: 8px; border-radius: 50%;
-    animation: wireflow 2s linear infinite;
-    animation-delay: var(--d, 0s);
-  }
-  @keyframes wireflow {
-    0%   { left: 0; opacity: 0; }
-    8%   { opacity: .9; }
-    85%  { opacity: .9; }
-    100% { left: calc(100% - 8px); opacity: 0; }
-  }
-  .df-arrow-label {
-    position: relative; z-index: 1;
-    font-size: 9px; font-weight: 600; letter-spacing: .07em;
-    text-transform: uppercase; color: var(--text3);
-    background: var(--bg);
-    padding: 2px 6px; border-radius: 4px; white-space: nowrap;
-  }
-
   /* ── Tag pill ─────────────────────────────────────────── */
   .tag-pill {
     display: inline-flex; align-items: center;
@@ -262,6 +210,9 @@
     padding: 2px 9px; border-radius: 5px;
     font-family: 'SF Mono','Fira Mono',monospace;
   }
+
+  /* ── Graph wrap ───────────────────────────────────────── */
+  .graph-wrap { border-radius: 12px; overflow: hidden; margin-bottom: 16px; background: var(--bg); }
 
   /* ── Limitation callout ───────────────────────────────── */
   .callout {
@@ -359,53 +310,6 @@
     color: var(--text1);
   }
   .step-body strong { color: var(--text1); font-weight: 600; }
-
-  /* ── Full wiring table ────────────────────────────────── */
-  .wire-table {
-    width: 100%; border-collapse: collapse;
-    border: 1px solid var(--rule); border-radius: 12px;
-    overflow: hidden; margin-bottom: 32px;
-  }
-  .wire-table th {
-    font-size: 9px; font-weight: 600; letter-spacing: .1em;
-    text-transform: uppercase; color: var(--text3);
-    padding: 10px 16px; text-align: left;
-    background: rgba(255,255,255,.03);
-    border-bottom: 1px solid var(--rule);
-  }
-  .wire-table td {
-    padding: 10px 16px; font-size: 13px;
-    border-bottom: 1px solid rgba(33,40,60,.5);
-    vertical-align: middle;
-  }
-  .wire-table tr:last-child td { border-bottom: none; }
-  .wire-table tr:nth-child(even) td { background: var(--surf2); }
-  .wt-on { color: var(--text1); font-weight: 500; }
-  .wt-on code {
-    font-family: 'SF Mono','Fira Mono',monospace;
-    font-size: 12px;
-  }
-  .wt-arrow { color: var(--text3); padding: 0 8px; }
-  .wt-target { color: var(--text2); font-family: 'SF Mono','Fira Mono',monospace; font-size: 12px; }
-
-  /* mini wire indicator in table */
-  .mini-wire {
-    display: inline-flex; align-items: center; gap: 0;
-    vertical-align: middle;
-  }
-  .mw-src, .mw-tgt {
-    font-size: 11px; font-weight: 500;
-    padding: 2px 8px; border-radius: 4px; border: 1px solid;
-  }
-  .mw-line {
-    width: 24px; height: 2px; position: relative;
-  }
-  .mw-line::before {
-    content: ''; position: absolute;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: linear-gradient(90deg, var(--mw-from), var(--mw-to));
-    opacity: .6;
-  }
 
   /* ── Footer ───────────────────────────────────────────── */
   .page-footer {
@@ -590,40 +494,25 @@
     The enemy itself doesn't need to know about any manager.
   </p>
 
-  <div class="detection-flow">
-    <div class="df-col" style="background:rgba(239,68,68,.03)">
-      <div class="df-col-label" style="color:var(--red)">Spawned Object</div>
-      <div class="df-obj-name">enemy.prefab</div>
-      <div class="df-detail">Tagged <span class="tag-pill" style="background:rgba(239,68,68,.12);color:var(--red)">enemy</span></div>
-      <div class="df-detail" style="margin-top:6px">Has a Collider.<br>That's all it needs to be.</div>
-    </div>
-    <div class="df-arrow-col" style="background:rgba(239,68,68,.04)">
-      <div class="wire-line" style="background:linear-gradient(90deg,var(--red),var(--blue))"></div>
-      <div class="wire-bead" style="background:var(--red);box-shadow:0 0 6px var(--red);--d:0s"></div>
-      <div class="df-arrow-label">enters zone</div>
-    </div>
-    <div class="df-col" style="background:rgba(79,142,247,.03)">
-      <div class="df-col-label" style="color:var(--blue)">Persistent Object</div>
-      <div class="df-obj-name">ProjectileSpawner</div>
-      <div class="df-detail">
-        <strong style="color:var(--text1)">InputTriggerZone</strong><br>
-        Tag filter: <span class="tag-pill" style="background:rgba(239,68,68,.12);color:var(--red)">enemy</span>
-      </div>
-    </div>
-    <div class="df-arrow-col" style="background:rgba(52,211,153,.04)">
-      <div class="wire-line" style="background:linear-gradient(90deg,var(--blue),var(--green))"></div>
-      <div class="wire-bead" style="background:var(--green);box-shadow:0 0 6px var(--green);--d:.5s"></div>
-      <div class="df-arrow-label">On Enter fires</div>
-    </div>
-    <div class="df-col" style="background:rgba(52,211,153,.03)">
-      <div class="df-col-label" style="color:var(--green)">Manager</div>
-      <div class="df-obj-name">GameHealthManager</div>
-      <div class="df-detail">
-        <code style="font-family:'SF Mono','Fira Mono',monospace;font-size:12px;color:var(--red)">TakeDamage(10)</code><br>
-        <span style="color:var(--text3);font-size:12px">called from the scene wire</span>
-      </div>
-    </div>
+  <!-- SVG graph: detection pattern -->
+  <div class="graph-wrap dot-grid">
+    <svg id="proj-detection-graph" style="border-radius:12px;overflow:visible;display:block"></svg>
   </div>
+  <script>
+  drawGraph('proj-detection-graph', {w:900, h:196, nodes:[
+    {id:'enemy',    x:16,  y:68, w:165, h:60, label:'Spawned',    name:'enemy.prefab',        detail:'tag: enemy · just moves',   color:'#EF4444', ports:{out:{side:'out',dy:30}}},
+    {id:'player',   x:252, y:38, w:200, h:120, label:'Persistent', name:'ProjectileSpawner',  detail:'InputTriggerZone ×3',        color:'#4F8EF7',
+     ports:{in:{side:'in',dy:60}, out1:{side:'out',dy:38}, out2:{side:'out',dy:82}}},
+    {id:'ghm',      x:526, y:38, w:190, h:54, label:'Manager',    name:'GameHealthManager',   detail:'TakeDamage(10)',             color:'#34D399', ports:{in:{side:'in',dy:27}}},
+    {id:'gcm',      x:526, y:104,w:190, h:54, label:'Manager',    name:'GameCollectionManager',detail:'Increment()',              color:'#34D399', ports:{in:{side:'in',dy:27}}},
+    {id:'hpu',      x:16,  y:22,  w:165, h:54, label:'Spawned',   name:'healthPowerUp.prefab',detail:'tag: health',              color:'#34D399', ports:{out:{side:'out',dy:27}}},
+  ], edges:[
+    {from:'enemy',  fromPort:'out',  to:'player', toPort:'in',   label:'enters zone (tag:enemy)',  color:'#EF4444', delay:'0s',  dur:'2s'},
+    {from:'hpu',    fromPort:'out',  to:'player', toPort:'in',   label:'enters zone (tag:health)', color:'#34D399', delay:'.7s', dur:'2s'},
+    {from:'player', fromPort:'out1', to:'ghm',    toPort:'in',   label:'On Enter → TakeDamage(10)',color:'#EF4444', delay:'.4s', dur:'2.2s'},
+    {from:'player', fromPort:'out2', to:'gcm',    toPort:'in',   label:'On Enter → Increment()',   color:'#34D399', delay:'1s',  dur:'2s'},
+  ]});
+  </script>
 
   <div class="callout" style="border-color:rgba(148,163,200,.15);background:rgba(148,163,200,.04)">
     <div class="callout-icon">💡</div>
@@ -848,19 +737,40 @@
   <h2 class="sec-title">Every wire in the projectile example</h2>
   <p class="sec-desc">All the connections, in order of what fires what.</p>
 
-  <table class="wire-table">
-    <thead>
-      <tr>
-        <th>When</th>
-        <th></th>
-        <th>Object</th>
-        <th>Event</th>
-        <th></th>
-        <th>Calls</th>
-      </tr>
-    </thead>
-    <tbody id="wireTableBody"></tbody>
-  </table>
+  <!-- SVG graph: full wiring -->
+  <div class="graph-wrap dot-grid">
+    <svg id="proj-full-graph" style="border-radius:12px;overflow:visible;display:block"></svg>
+  </div>
+  <script>
+  drawGraph('proj-full-graph', {w:960, h:400, nodes:[
+    {id:'input',    x:16,  y:18,  w:185, h:60,  label:'Input',     name:'InputActionEvent',       detail:'fire button',            color:'#4F8EF7', ports:{out:{side:'out',dy:30}}},
+    {id:'itz_e',    x:16,  y:98,  w:185, h:60,  label:'Input',     name:'InputTriggerZone',       detail:'tag: enemy',             color:'#EF4444', ports:{out:{side:'out',dy:30}}},
+    {id:'itz_h',    x:16,  y:178, w:185, h:60,  label:'Input',     name:'InputTriggerZone',       detail:'tag: health',            color:'#34D399', ports:{out:{side:'out',dy:30}}},
+    {id:'itz_p',    x:16,  y:258, w:185, h:60,  label:'Input',     name:'InputTriggerZone',       detail:'tag: projectilePowerUp', color:'#FB923C', ports:{out:{side:'out',dy:30}}},
+    {id:'timer',    x:16,  y:330, w:185, h:60,  label:'Manager',   name:'GameTimerManager',       detail:'onStart · onComplete',   color:'#F59E0B',
+     ports:{out1:{side:'out',dy:20}, out2:{side:'out',dy:40}}},
+
+    {id:'asp',      x:262, y:18,  w:195, h:60,  label:'Action',    name:'ActionSpawnProjectile',  detail:'fires projectile',       color:'#9B72F7',
+     ports:{in:{side:'in',dy:30}, out:{side:'out',dy:30}}},
+    {id:'ghm',      x:262, y:108, w:195, h:90,  label:'Manager',   name:'GameHealthManager',      detail:'health tracking',        color:'#34D399',
+     ports:{in1:{side:'in',dy:22}, in2:{side:'in',dy:68}, out:{side:'out',dy:45}}},
+    {id:'gcm',      x:262, y:248, w:195, h:60,  label:'Manager',   name:'GameCollectionManager',  detail:'score / shot counter',   color:'#34D399',
+     ports:{in1:{side:'in',dy:20}, in2:{side:'in',dy:40}}},
+    {id:'esp',      x:262, y:320, w:195, h:60,  label:'Spawner',   name:'enemySpawner',           detail:'ActionAutoSpawner',      color:'#EF4444', ports:{in:{side:'in',dy:30}}},
+    {id:'hsp',      x:262, y:340, w:195, h:60,  label:'Spawner',   name:'healthPowerUpSpawner',   detail:'ActionAutoSpawner',      color:'#34D399', ports:{in:{side:'in',dy:30}}},
+
+    {id:'gsm',      x:530, y:96,  w:195, h:60,  label:'State',     name:'GameStateManager',       detail:'Victory / Game Over',    color:'#94A3C8', ports:{in:{side:'in',dy:30}}},
+  ], edges:[
+    {from:'input',  fromPort:'out',  to:'asp',  toPort:'in',   label:'On Action',              color:'#4F8EF7', delay:'0s',   dur:'2s'},
+    {from:'asp',    fromPort:'out',  to:'gcm',  toPort:'in1',  label:'onProjectileSpawned',    color:'#9B72F7', delay:'.3s',  dur:'2.2s'},
+    {from:'itz_e',  fromPort:'out',  to:'ghm',  toPort:'in1',  label:'On Enter → TakeDamage',  color:'#EF4444', delay:'.6s',  dur:'2s'},
+    {from:'itz_h',  fromPort:'out',  to:'ghm',  toPort:'in2',  label:'On Enter → Heal(25)',    color:'#34D399', delay:'.9s',  dur:'2s'},
+    {from:'itz_p',  fromPort:'out',  to:'gcm',  toPort:'in2',  label:'On Enter → Increment()', color:'#FB923C', delay:'1.2s', dur:'2s'},
+    {from:'ghm',    fromPort:'out',  to:'gsm',  toPort:'in',   label:'onDeath → Game Over',    color:'#EF4444', delay:'.4s',  dur:'2.2s'},
+    {from:'timer',  fromPort:'out1', to:'esp',  toPort:'in',   label:'onStart → StartSpawning',color:'#F59E0B', delay:'.2s',  dur:'2s'},
+    {from:'timer',  fromPort:'out2', to:'gsm',  toPort:'in',   label:'onComplete → time up',   color:'#F59E0B', delay:'1.5s', dur:'2.2s'},
+  ]});
+  </script>
 </div>
 
 <!-- Footer -->
@@ -870,92 +780,133 @@
 </div>
 
 <script>
-const WIRES = [
-  {
-    when: 'Player presses fire key',
-    obj: 'ProjectileSpawner',
-    event: 'InputActionEvent → On Action',
-    calls: 'ActionSpawnProjectile.SpawnProjectile()',
-    srcColor: '#4F8EF7', tgtColor: '#9B72F7',
-  },
-  {
-    when: 'Projectile spawned',
-    obj: 'ActionSpawnProjectile',
-    event: 'onProjectileSpawned',
-    calls: 'GameCollectionManager.Increment() — shot counter',
-    srcColor: '#9B72F7', tgtColor: '#34D399',
-  },
-  {
-    when: 'Enemy enters player zone',
-    obj: 'ProjectileSpawner (player)',
-    event: 'InputTriggerZone (tag: enemy) → On Enter',
-    calls: 'GameHealthManager.TakeDamage(10)',
-    srcColor: '#EF4444', tgtColor: '#34D399',
-  },
-  {
-    when: 'Enemy exits player zone',
-    obj: 'ProjectileSpawner (player)',
-    event: 'InputTriggerZone (tag: enemy) → On Exit',
-    calls: 'GameHealthManager.StopDamage()',
-    srcColor: '#EF4444', tgtColor: '#34D399',
-  },
-  {
-    when: 'Health power-up enters player zone',
-    obj: 'ProjectileSpawner (player)',
-    event: 'InputTriggerZone (tag: health) → On Enter',
-    calls: 'GameHealthManager.Heal(25)',
-    srcColor: '#34D399', tgtColor: '#34D399',
-  },
-  {
-    when: 'Score power-up enters player zone',
-    obj: 'ProjectileSpawner (player)',
-    event: 'InputTriggerZone (tag: projectilePowerUp) → On Enter',
-    calls: 'GameCollectionManager.Increment()',
-    srcColor: '#FB923C', tgtColor: '#34D399',
-  },
-  {
-    when: 'Health reaches zero',
-    obj: 'GameHealthManager',
-    event: 'onDeath',
-    calls: 'GameStateManager → show Game Over',
-    srcColor: '#EF4444', tgtColor: '#94A3C8',
-  },
-  {
-    when: 'Timer reaches zero',
-    obj: 'GameTimerManager',
-    event: 'onComplete',
-    calls: 'GameStateManager → trigger end state',
-    srcColor: '#F59E0B', tgtColor: '#94A3C8',
-  },
-  {
-    when: 'Timer starts',
-    obj: 'GameTimerManager',
-    event: 'onStart',
-    calls: 'ActionAutoSpawner.StartSpawning() — enemies begin',
-    srcColor: '#F59E0B', tgtColor: '#FB923C',
-  },
-  {
-    when: 'Timer starts',
-    obj: 'GameTimerManager',
-    event: 'onStart',
-    calls: 'ActionAutoSpawner.StartSpawning() — power-ups begin',
-    srcColor: '#F59E0B', tgtColor: '#FB923C',
-  },
-];
+function drawGraph(svgId, {nodes, edges, w, h}) {
+  const NS = 'http://www.w3.org/2000/svg';
+  const svg = document.getElementById(svgId);
+  if (!svg) return;
+  svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+  svg.setAttribute('width', '100%');
+  svg.style.display = 'block';
 
-const tbody = document.getElementById('wireTableBody');
-WIRES.forEach((w, i) => {
-  const tr = document.createElement('tr');
-  tr.innerHTML = `
-    <td style="color:var(--text2);font-size:12px;max-width:180px">${w.when}</td>
-    <td class="wt-arrow">→</td>
-    <td class="wt-on" style="white-space:nowrap">${w.obj}</td>
-    <td style="font-size:12px;color:var(--text3);font-family:'SF Mono','Fira Mono',monospace">${w.event}</td>
-    <td class="wt-arrow">→</td>
-    <td class="wt-target">${w.calls}</td>
-  `;
-  tbody.appendChild(tr);
-});
+  const defs = document.createElementNS(NS, 'defs');
+
+  const pat = document.createElementNS(NS, 'pattern');
+  pat.setAttribute('id', svgId+'-dots'); pat.setAttribute('x','0'); pat.setAttribute('y','0');
+  pat.setAttribute('width','28'); pat.setAttribute('height','28'); pat.setAttribute('patternUnits','userSpaceOnUse');
+  const dc = document.createElementNS(NS, 'circle');
+  dc.setAttribute('cx','1'); dc.setAttribute('cy','1'); dc.setAttribute('r','1'); dc.setAttribute('fill','rgba(148,163,200,0.055)');
+  pat.appendChild(dc); defs.appendChild(pat);
+
+  const uniqueColors = [...new Set([...nodes.map(n=>n.color), ...edges.map(e=>e.color)])];
+  const cfm = {};
+  uniqueColors.forEach((color, i) => {
+    const fid = svgId+'-glow-'+i; cfm[color] = fid;
+    const f = document.createElementNS(NS, 'filter');
+    f.setAttribute('id',fid); f.setAttribute('x','-60%'); f.setAttribute('y','-60%'); f.setAttribute('width','220%'); f.setAttribute('height','220%');
+    const blur = document.createElementNS(NS, 'feGaussianBlur'); blur.setAttribute('in','SourceGraphic'); blur.setAttribute('stdDeviation','3'); blur.setAttribute('result','blur');
+    const merge = document.createElementNS(NS, 'feMerge');
+    const mn1 = document.createElementNS(NS, 'feMergeNode'); mn1.setAttribute('in','blur');
+    const mn2 = document.createElementNS(NS, 'feMergeNode'); mn2.setAttribute('in','SourceGraphic');
+    merge.appendChild(mn1); merge.appendChild(mn2); f.appendChild(blur); f.appendChild(merge); defs.appendChild(f);
+  });
+  svg.appendChild(defs);
+
+  const bgR = document.createElementNS(NS, 'rect');
+  bgR.setAttribute('x','0'); bgR.setAttribute('y','0'); bgR.setAttribute('width',w); bgR.setAttribute('height',h);
+  bgR.setAttribute('rx','12'); bgR.setAttribute('fill','url(#'+svgId+'-dots)');
+  svg.appendChild(bgR);
+  const bdr = document.createElementNS(NS, 'rect');
+  bdr.setAttribute('x','0.5'); bdr.setAttribute('y','0.5'); bdr.setAttribute('width',w-1); bdr.setAttribute('height',h-1);
+  bdr.setAttribute('rx','12'); bdr.setAttribute('fill','none'); bdr.setAttribute('stroke','#21283C'); bdr.setAttribute('stroke-width','1');
+  svg.appendChild(bdr);
+
+  function getPort(node, key) {
+    if (!key || key==='in') return {x:node.x, y:node.y+node.h/2};
+    if (key==='out') return {x:node.x+node.w, y:node.y+node.h/2};
+    if (node.ports && node.ports[key]) {
+      const p = node.ports[key];
+      return {x: p.side==='out' ? node.x+node.w : node.x, y: node.y+p.dy};
+    }
+    return {x:node.x+node.w, y:node.y+node.h/2};
+  }
+
+  function cubicD(p1, p2) {
+    const dx = Math.max(48, Math.abs(p2.x-p1.x)*0.52);
+    return `M ${p1.x} ${p1.y} C ${p1.x+dx} ${p1.y} ${p2.x-dx} ${p2.y} ${p2.x} ${p2.y}`;
+  }
+
+  function bezierMid(p1, p2, t) {
+    const dx = Math.max(48, Math.abs(p2.x-p1.x)*0.52);
+    const cx1=p1.x+dx, cy1=p1.y, cx2=p2.x-dx, cy2=p2.y;
+    const mt=1-t;
+    return { x: mt*mt*mt*p1.x+3*mt*mt*t*cx1+3*mt*t*t*cx2+t*t*t*p2.x,
+             y: mt*mt*mt*p1.y+3*mt*mt*t*cy1+3*mt*t*t*cy2+t*t*t*p2.y };
+  }
+
+  function mkEl(tag, attrs, text) {
+    const e = document.createElementNS(NS, tag);
+    Object.entries(attrs).forEach(([k,v]) => e.setAttribute(k,v));
+    if (text !== undefined) e.textContent = text;
+    return e;
+  }
+
+  edges.forEach((edge, i) => {
+    const fn = nodes.find(n=>n.id===edge.from);
+    const tn = nodes.find(n=>n.id===edge.to);
+    if (!fn||!tn) return;
+    const p1 = getPort(fn, edge.fromPort||'out');
+    const p2 = getPort(tn, edge.toPort||'in');
+    const d = cubicD(p1, p2);
+    const pid = svgId+'-e'+i;
+
+    svg.appendChild(mkEl('path', {id:pid, d, fill:'none', stroke:edge.color, 'stroke-width':'1.5', opacity:'0.35'}));
+
+    if (edge.label) {
+      const mp = bezierMid(p1, p2, 0.5);
+      svg.appendChild(mkEl('rect', {x:mp.x-52, y:mp.y-7, width:'104', height:'13', rx:'3', fill:'#0D0F14', opacity:'0.9'}));
+      svg.appendChild(mkEl('text', {x:mp.x, y:mp.y+0.5, 'text-anchor':'middle', 'font-size':'9', 'font-family':'Inter,sans-serif', 'font-weight':'600', 'letter-spacing':'0.2', fill:'#5E6280', 'dominant-baseline':'middle'}, edge.label));
+    }
+
+    const bead = mkEl('circle', {r:'4', fill:edge.color, filter:`url(#${cfm[edge.color]||cfm[Object.keys(cfm)[0]]})`});
+    const anim = mkEl('animateMotion', {dur:edge.dur||'2.4s', repeatCount:'indefinite', begin:edge.delay||'0s'});
+    const mpath = document.createElementNS(NS, 'mpath');
+    mpath.setAttributeNS('http://www.w3.org/1999/xlink','href','#'+pid);
+    anim.appendChild(mpath); bead.appendChild(anim); svg.appendChild(bead);
+  });
+
+  nodes.forEach(node => {
+    const g = mkEl('g', {});
+    g.appendChild(mkEl('rect', {x:node.x+2, y:node.y+2, width:node.w, height:node.h, rx:'8', fill:'rgba(0,0,0,0.25)'}));
+    g.appendChild(mkEl('rect', {x:node.x, y:node.y, width:node.w, height:node.h, rx:'8', fill:'#171B24', stroke:'#21283C', 'stroke-width':'1'}));
+    g.appendChild(mkEl('rect', {x:node.x, y:node.y, width:node.w, height:'5', rx:'8', fill:node.color}));
+    g.appendChild(mkEl('rect', {x:node.x, y:node.y+2, width:node.w, height:'3', fill:node.color}));
+
+    let ty = node.y + 16;
+    if (node.label) {
+      g.appendChild(mkEl('text', {x:node.x+10, y:ty, 'font-size':'8', 'font-family':'Inter,sans-serif', 'font-weight':'700', 'letter-spacing':'0.8', fill:node.color, 'dominant-baseline':'middle'}, node.label.toUpperCase()));
+      ty += 15;
+    } else { ty += 4; }
+    g.appendChild(mkEl('text', {x:node.x+10, y:ty, 'font-size':'11.5', 'font-family':'"SF Mono","Fira Mono",monospace', 'font-weight':'600', fill:'#F0F2F8', 'dominant-baseline':'middle'}, node.name));
+    if (node.detail) g.appendChild(mkEl('text', {x:node.x+10, y:ty+15, 'font-size':'9.5', 'font-family':'Inter,sans-serif', fill:'#5E6280', 'dominant-baseline':'middle'}, node.detail));
+
+    const portDefs = node.ports ? Object.entries(node.ports) : [['out',{side:'out',dy:node.h/2}],['in',{side:'in',dy:node.h/2}]];
+    portDefs.forEach(([key, p]) => {
+      const isOut = !key.startsWith('in');
+      const connected = edges.some(e =>
+        (isOut && e.from===node.id && ((e.fromPort||'out')===key)) ||
+        (!isOut && e.to===node.id && ((e.toPort||'in')===key))
+      );
+      if (!connected) return;
+      const px = (p.side||'out')==='out' ? node.x+node.w : node.x;
+      const py = node.y + p.dy;
+      const fid = cfm[node.color]||cfm[Object.keys(cfm)[0]];
+      g.appendChild(mkEl('circle', {cx:px, cy:py, r:'8', fill:node.color, opacity:'0.12'}));
+      g.appendChild(mkEl('circle', {cx:px, cy:py, r:'4', fill:node.color, filter:`url(#${fid})`}));
+    });
+
+    svg.appendChild(g);
+  });
+}
 </script>
 </body>
 </html>

@@ -64,23 +64,8 @@
   .field-name { font-size:12px; font-weight:600; font-family:'SF Mono','Fira Mono',monospace; margin-bottom:3px; }
   .field-desc { font-size:12px; color:var(--text3); line-height:1.5; }
 
-  /* Wire node diagram — Option B */
-  .wire-diagram { position:relative; border-radius:16px; border:1px solid var(--rule); padding:40px; overflow:hidden; margin-top:20px; }
-  .wire-diagram > .dot-grid { position:absolute; inset:0; border-radius:16px; }
-  .wire-diagram > *:not(.dot-grid) { position:relative; z-index:1; }
-  .wd-grid { display:grid; grid-template-columns:200px 80px 200px 80px 200px; align-items:center; gap:0; row-gap:12px; }
-  .wnode { background:rgba(23,27,36,.85); backdrop-filter:blur(6px); border:1px solid var(--rule); border-radius:10px; padding:12px 16px; position:relative; }
-  .wnode::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; border-radius:10px 10px 0 0; background:var(--nc); }
-  .wnode-label { font-size:9px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--nc); margin-bottom:4px; }
-  .wnode-name { font-size:12px; font-weight:600; color:var(--text1); font-family:'SF Mono','Fira Mono',monospace; }
-  .wnode-port-out { position:absolute; right:-5px; top:50%; transform:translateY(-50%); width:10px; height:10px; border-radius:50%; background:var(--nc); box-shadow:0 0 7px var(--nc); z-index:2; }
-  .wnode-port-in { position:absolute; left:-5px; top:50%; transform:translateY(-50%); width:10px; height:10px; border-radius:50%; background:var(--npc,var(--nc)); box-shadow:0 0 7px var(--npc,var(--nc)); z-index:2; }
-  .wconn { height:2px; position:relative; margin:0 4px; }
-  .wconn-line { position:absolute; inset:0; opacity:.5; }
-  .wconn-bead { position:absolute; top:-4px; width:8px; height:8px; border-radius:50%; animation:bead 2s linear infinite; animation-delay:var(--bd,0s); }
-  @keyframes bead { 0%{left:0;opacity:0} 8%{opacity:.9} 85%{opacity:.9} 100%{left:calc(100% - 8px);opacity:0} }
-  .wconn-label { position:absolute; bottom:8px; left:50%; transform:translateX(-50%); font-size:9px; color:var(--text3); white-space:nowrap; background:rgba(13,15,20,.8); padding:1px 5px; border-radius:3px; }
-  .wempty { } /* spacer */
+  /* Graph wrap */
+  .graph-wrap { border-radius:12px; overflow:hidden; margin-bottom:32px; background:var(--bg); }
 
   /* Ad-hoc section */
   .adhoc-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:24px; }
@@ -195,95 +180,32 @@
         </div>
       </div>
 
-      <!-- Wire diagram -->
-      <div class="wire-diagram" style="margin-top:24px">
-        <div class="dot-grid"></div>
-        <div class="wd-grid">
-          <!-- Row 1: Health -->
-          <div class="wnode" style="--nc:var(--orange)">
-            <div class="wnode-label">Manager</div>
-            <div class="wnode-name">GameHealthManager</div>
-            <div class="wnode-port-out"></div>
-          </div>
-          <div class="wconn" style="--bd:0s">
-            <div class="wconn-line" style="background:linear-gradient(90deg,var(--orange),var(--blue))"></div>
-            <div class="wconn-bead" style="background:var(--orange);box-shadow:0 0 6px var(--orange)"></div>
-            <div class="wconn-label">onHealthChanged</div>
-          </div>
-          <div class="wnode" style="--nc:var(--blue);--npc:var(--orange)">
-            <div class="wnode-port-in"></div>
-            <div class="wnode-label">Hub</div>
-            <div class="wnode-name">GameUIManager</div>
-            <div class="wnode-port-out"></div>
-          </div>
-          <div class="wconn" style="--bd:.2s">
-            <div class="wconn-line" style="background:linear-gradient(90deg,var(--blue),var(--slate))"></div>
-            <div class="wconn-bead" style="background:var(--blue);box-shadow:0 0 6px var(--blue)"></div>
-            <div class="wconn-label">UpdateHealth(int,int)</div>
-          </div>
-          <div class="wnode" style="--nc:var(--slate);--npc:var(--blue)">
-            <div class="wnode-port-in"></div>
-            <div class="wnode-label">HUD Element</div>
-            <div class="wnode-name">Health Bar + Text</div>
-          </div>
-
-          <!-- Row 2: Score -->
-          <div class="wnode" style="--nc:var(--green)">
-            <div class="wnode-label">Manager</div>
-            <div class="wnode-name">GameCollectionManager</div>
-            <div class="wnode-port-out"></div>
-          </div>
-          <div class="wconn" style="--bd:.4s">
-            <div class="wconn-line" style="background:linear-gradient(90deg,var(--green),var(--blue))"></div>
-            <div class="wconn-bead" style="background:var(--green);box-shadow:0 0 6px var(--green)"></div>
-            <div class="wconn-label">onValueChanged</div>
-          </div>
-          <div class="wnode" style="--nc:var(--blue);--npc:var(--green)">
-            <div class="wnode-port-in"></div>
-            <div class="wnode-label">Hub</div>
-            <div class="wnode-name">GameUIManager</div>
-            <div class="wnode-port-out"></div>
-          </div>
-          <div class="wconn" style="--bd:.6s">
-            <div class="wconn-line" style="background:linear-gradient(90deg,var(--blue),var(--slate))"></div>
-            <div class="wconn-bead" style="background:var(--blue);box-shadow:0 0 6px var(--blue)"></div>
-            <div class="wconn-label">UpdateScore(int)</div>
-          </div>
-          <div class="wnode" style="--nc:var(--slate);--npc:var(--blue)">
-            <div class="wnode-port-in"></div>
-            <div class="wnode-label">HUD Element</div>
-            <div class="wnode-name">Score Text</div>
-          </div>
-
-          <!-- Row 3: Timer -->
-          <div class="wnode" style="--nc:var(--yellow)">
-            <div class="wnode-label">Manager</div>
-            <div class="wnode-name">GameTimerManager</div>
-            <div class="wnode-port-out"></div>
-          </div>
-          <div class="wconn" style="--bd:.8s">
-            <div class="wconn-line" style="background:linear-gradient(90deg,var(--yellow),var(--blue))"></div>
-            <div class="wconn-bead" style="background:var(--yellow);box-shadow:0 0 6px var(--yellow)"></div>
-            <div class="wconn-label">onTimerUpdate</div>
-          </div>
-          <div class="wnode" style="--nc:var(--blue);--npc:var(--yellow)">
-            <div class="wnode-port-in"></div>
-            <div class="wnode-label">Hub</div>
-            <div class="wnode-name">GameUIManager</div>
-            <div class="wnode-port-out"></div>
-          </div>
-          <div class="wconn" style="--bd:1s">
-            <div class="wconn-line" style="background:linear-gradient(90deg,var(--blue),var(--slate))"></div>
-            <div class="wconn-bead" style="background:var(--blue);box-shadow:0 0 6px var(--blue)"></div>
-            <div class="wconn-label">UpdateTimer(float)</div>
-          </div>
-          <div class="wnode" style="--nc:var(--slate);--npc:var(--blue)">
-            <div class="wnode-port-in"></div>
-            <div class="wnode-label">HUD Element</div>
-            <div class="wnode-name">Timer Text</div>
-          </div>
-        </div>
+      <!-- SVG graph: Option B wiring -->
+      <div class="graph-wrap dot-grid" style="margin-top:24px">
+        <svg id="ui-graph" style="border-radius:12px;overflow:visible;display:block"></svg>
       </div>
+      <script>
+      drawGraph('ui-graph', {w:900, h:284, nodes:[
+        {id:'health',  x:16,  y:40,  w:198, h:60, label:'Manager',     name:'GameHealthManager',     detail:'onHealthChanged(int,int)', color:'#FB923C',
+         ports:{out:{side:'out',dy:30}, in:{side:'in',dy:30}}},
+        {id:'score',   x:16,  y:120, w:198, h:60, label:'Manager',     name:'GameCollectionManager', detail:'onValueChanged(int)',       color:'#34D399',
+         ports:{out:{side:'out',dy:30}, in:{side:'in',dy:30}}},
+        {id:'timer',   x:16,  y:200, w:198, h:60, label:'Manager',     name:'GameTimerManager',      detail:'onTimerUpdate(float)',      color:'#F59E0B',
+         ports:{out:{side:'out',dy:30}, in:{side:'in',dy:30}}},
+        {id:'hub', x:302, y:40, w:218, h:220, label:'UI Hub', name:'GameUIManager', detail:'creates HUD Canvas', color:'#4F8EF7',
+         ports:{in1:{side:'in',dy:50}, in2:{side:'in',dy:110}, in3:{side:'in',dy:170}, out1:{side:'out',dy:50}, out2:{side:'out',dy:110}, out3:{side:'out',dy:170}}},
+        {id:'hbar',   x:608, y:40,  w:215, h:60, label:'HUD Element', name:'Health Bar + Text',   detail:'animated, color-coded',     color:'#FB923C', ports:{in:{side:'in',dy:30}}},
+        {id:'htext',  x:608, y:120, w:215, h:60, label:'HUD Element', name:'Score Text',          detail:'punch-scale on change',     color:'#34D399', ports:{in:{side:'in',dy:30}}},
+        {id:'htimer', x:608, y:200, w:215, h:60, label:'HUD Element', name:'Timer Text',          detail:'MM:SS format',              color:'#F59E0B', ports:{in:{side:'in',dy:30}}},
+      ], edges:[
+        {from:'health', fromPort:'out',  to:'hub', toPort:'in1',  label:'UpdateHealth(int,int)', color:'#FB923C', delay:'0s',  dur:'2s'},
+        {from:'score',  fromPort:'out',  to:'hub', toPort:'in2',  label:'UpdateScore(int)',      color:'#34D399', delay:'.5s', dur:'2s'},
+        {from:'timer',  fromPort:'out',  to:'hub', toPort:'in3',  label:'UpdateTimer(float)',    color:'#F59E0B', delay:'1s',  dur:'2s'},
+        {from:'hub',    fromPort:'out1', to:'hbar',   toPort:'in', label:'renders health',  color:'#FB923C', delay:'.3s', dur:'2s'},
+        {from:'hub',    fromPort:'out2', to:'htext',  toPort:'in', label:'renders score',   color:'#34D399', delay:'.8s', dur:'2s'},
+        {from:'hub',    fromPort:'out3', to:'htimer', toPort:'in', label:'renders timer',   color:'#F59E0B', delay:'1.3s', dur:'2s'},
+      ]});
+      </script>
 
       <div class="callout" style="border-color:rgba(239,68,68,.2);background:rgba(239,68,68,.04);margin-top:20px">
         <div class="callout-icon">⚠️</div>
@@ -360,6 +282,136 @@ DECISIONS.forEach((d, i) => {
   row.innerHTML = `<div class="dq">${d.q}</div><div class="darrow">→</div><div class="da" style="color:${d.color}">${d.a}</div>`;
   el.appendChild(row);
 });
+</script>
+
+<script>
+function drawGraph(svgId, {nodes, edges, w, h}) {
+  const NS = 'http://www.w3.org/2000/svg';
+  const svg = document.getElementById(svgId);
+  if (!svg) return;
+  svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+  svg.setAttribute('width', '100%');
+  svg.style.display = 'block';
+
+  const defs = document.createElementNS(NS, 'defs');
+
+  const pat = document.createElementNS(NS, 'pattern');
+  pat.setAttribute('id', svgId+'-dots'); pat.setAttribute('x','0'); pat.setAttribute('y','0');
+  pat.setAttribute('width','28'); pat.setAttribute('height','28'); pat.setAttribute('patternUnits','userSpaceOnUse');
+  const dc = document.createElementNS(NS, 'circle');
+  dc.setAttribute('cx','1'); dc.setAttribute('cy','1'); dc.setAttribute('r','1'); dc.setAttribute('fill','rgba(148,163,200,0.055)');
+  pat.appendChild(dc); defs.appendChild(pat);
+
+  const uniqueColors = [...new Set([...nodes.map(n=>n.color), ...edges.map(e=>e.color)])];
+  const cfm = {};
+  uniqueColors.forEach((color, i) => {
+    const fid = svgId+'-glow-'+i; cfm[color] = fid;
+    const f = document.createElementNS(NS, 'filter');
+    f.setAttribute('id',fid); f.setAttribute('x','-60%'); f.setAttribute('y','-60%'); f.setAttribute('width','220%'); f.setAttribute('height','220%');
+    const blur = document.createElementNS(NS, 'feGaussianBlur'); blur.setAttribute('in','SourceGraphic'); blur.setAttribute('stdDeviation','3'); blur.setAttribute('result','blur');
+    const merge = document.createElementNS(NS, 'feMerge');
+    const mn1 = document.createElementNS(NS, 'feMergeNode'); mn1.setAttribute('in','blur');
+    const mn2 = document.createElementNS(NS, 'feMergeNode'); mn2.setAttribute('in','SourceGraphic');
+    merge.appendChild(mn1); merge.appendChild(mn2); f.appendChild(blur); f.appendChild(merge); defs.appendChild(f);
+  });
+  svg.appendChild(defs);
+
+  const bgR = document.createElementNS(NS, 'rect');
+  bgR.setAttribute('x','0'); bgR.setAttribute('y','0'); bgR.setAttribute('width',w); bgR.setAttribute('height',h);
+  bgR.setAttribute('rx','12'); bgR.setAttribute('fill','url(#'+svgId+'-dots)');
+  svg.appendChild(bgR);
+  const bdr = document.createElementNS(NS, 'rect');
+  bdr.setAttribute('x','0.5'); bdr.setAttribute('y','0.5'); bdr.setAttribute('width',w-1); bdr.setAttribute('height',h-1);
+  bdr.setAttribute('rx','12'); bdr.setAttribute('fill','none'); bdr.setAttribute('stroke','#21283C'); bdr.setAttribute('stroke-width','1');
+  svg.appendChild(bdr);
+
+  function getPort(node, key) {
+    if (!key || key==='in') return {x:node.x, y:node.y+node.h/2};
+    if (key==='out') return {x:node.x+node.w, y:node.y+node.h/2};
+    if (node.ports && node.ports[key]) {
+      const p = node.ports[key];
+      return {x: p.side==='out' ? node.x+node.w : node.x, y: node.y+p.dy};
+    }
+    return {x:node.x+node.w, y:node.y+node.h/2};
+  }
+
+  function cubicD(p1, p2) {
+    const dx = Math.max(48, Math.abs(p2.x-p1.x)*0.52);
+    return `M ${p1.x} ${p1.y} C ${p1.x+dx} ${p1.y} ${p2.x-dx} ${p2.y} ${p2.x} ${p2.y}`;
+  }
+
+  function bezierMid(p1, p2, t) {
+    const dx = Math.max(48, Math.abs(p2.x-p1.x)*0.52);
+    const cx1=p1.x+dx, cy1=p1.y, cx2=p2.x-dx, cy2=p2.y;
+    const mt=1-t;
+    return { x: mt*mt*mt*p1.x+3*mt*mt*t*cx1+3*mt*mt*t*cx2+t*t*t*p2.x,
+             y: mt*mt*mt*p1.y+3*mt*mt*t*cy1+3*mt*t*t*cy2+t*t*t*p2.y };
+  }
+
+  function mkEl(tag, attrs, text) {
+    const e = document.createElementNS(NS, tag);
+    Object.entries(attrs).forEach(([k,v]) => e.setAttribute(k,v));
+    if (text !== undefined) e.textContent = text;
+    return e;
+  }
+
+  edges.forEach((edge, i) => {
+    const fn = nodes.find(n=>n.id===edge.from);
+    const tn = nodes.find(n=>n.id===edge.to);
+    if (!fn||!tn) return;
+    const p1 = getPort(fn, edge.fromPort||'out');
+    const p2 = getPort(tn, edge.toPort||'in');
+    const d = cubicD(p1, p2);
+    const pid = svgId+'-e'+i;
+
+    svg.appendChild(mkEl('path', {id:pid, d, fill:'none', stroke:edge.color, 'stroke-width':'1.5', opacity:'0.35'}));
+
+    if (edge.label) {
+      const mp = bezierMid(p1, p2, 0.5);
+      svg.appendChild(mkEl('rect', {x:mp.x-52, y:mp.y-7, width:'104', height:'13', rx:'3', fill:'#0D0F14', opacity:'0.9'}));
+      svg.appendChild(mkEl('text', {x:mp.x, y:mp.y+0.5, 'text-anchor':'middle', 'font-size':'9', 'font-family':'Inter,sans-serif', 'font-weight':'600', 'letter-spacing':'0.2', fill:'#5E6280', 'dominant-baseline':'middle'}, edge.label));
+    }
+
+    const bead = mkEl('circle', {r:'4', fill:edge.color, filter:`url(#${cfm[edge.color]||cfm[Object.keys(cfm)[0]]})`});
+    const anim = mkEl('animateMotion', {dur:edge.dur||'2.4s', repeatCount:'indefinite', begin:edge.delay||'0s'});
+    const mpath = document.createElementNS(NS, 'mpath');
+    mpath.setAttributeNS('http://www.w3.org/1999/xlink','href','#'+pid);
+    anim.appendChild(mpath); bead.appendChild(anim); svg.appendChild(bead);
+  });
+
+  nodes.forEach(node => {
+    const g = mkEl('g', {});
+    g.appendChild(mkEl('rect', {x:node.x+2, y:node.y+2, width:node.w, height:node.h, rx:'8', fill:'rgba(0,0,0,0.25)'}));
+    g.appendChild(mkEl('rect', {x:node.x, y:node.y, width:node.w, height:node.h, rx:'8', fill:'#171B24', stroke:'#21283C', 'stroke-width':'1'}));
+    g.appendChild(mkEl('rect', {x:node.x, y:node.y, width:node.w, height:'5', rx:'8', fill:node.color}));
+    g.appendChild(mkEl('rect', {x:node.x, y:node.y+2, width:node.w, height:'3', fill:node.color}));
+
+    let ty = node.y + 16;
+    if (node.label) {
+      g.appendChild(mkEl('text', {x:node.x+10, y:ty, 'font-size':'8', 'font-family':'Inter,sans-serif', 'font-weight':'700', 'letter-spacing':'0.8', fill:node.color, 'dominant-baseline':'middle'}, node.label.toUpperCase()));
+      ty += 15;
+    } else { ty += 4; }
+    g.appendChild(mkEl('text', {x:node.x+10, y:ty, 'font-size':'11.5', 'font-family':'"SF Mono","Fira Mono",monospace', 'font-weight':'600', fill:'#F0F2F8', 'dominant-baseline':'middle'}, node.name));
+    if (node.detail) g.appendChild(mkEl('text', {x:node.x+10, y:ty+15, 'font-size':'9.5', 'font-family':'Inter,sans-serif', fill:'#5E6280', 'dominant-baseline':'middle'}, node.detail));
+
+    const portDefs = node.ports ? Object.entries(node.ports) : [['out',{side:'out',dy:node.h/2}],['in',{side:'in',dy:node.h/2}]];
+    portDefs.forEach(([key, p]) => {
+      const isOut = !key.startsWith('in');
+      const connected = edges.some(e =>
+        (isOut && e.from===node.id && ((e.fromPort||'out')===key)) ||
+        (!isOut && e.to===node.id && ((e.toPort||'in')===key))
+      );
+      if (!connected) return;
+      const px = (p.side||'out')==='out' ? node.x+node.w : node.x;
+      const py = node.y + p.dy;
+      const fid = cfm[node.color]||cfm[Object.keys(cfm)[0]];
+      g.appendChild(mkEl('circle', {cx:px, cy:py, r:'8', fill:node.color, opacity:'0.12'}));
+      g.appendChild(mkEl('circle', {cx:px, cy:py, r:'4', fill:node.color, filter:`url(#${fid})`}));
+    });
+
+    svg.appendChild(g);
+  });
+}
 </script>
 </body>
 </html>
