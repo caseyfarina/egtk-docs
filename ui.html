@@ -241,22 +241,22 @@ function drawGraph(svgId, {nodes, edges, w, h}) {
   <div class="breadcrumb"><a href="index.html">EGTK Docs</a><span>/</span>UI Implementation</div>
   <div class="hero-pill">Deep Dive</div>
   <h1 class="hero-title">UI Implementation</h1>
-  <p class="hero-desc">Two approaches to showing score, health, and timer on screen. Option A is a single checkbox. Option B gives you full control. Both call the same underlying functions — they just get there differently.</p>
+  <p class="hero-desc">Two approaches to showing score, health, and timer on screen. Option A gives you the most per-element control — each manager has its own independent styling. Option B gives you a single consistent HUD look with shared styling. Both are valid; pick based on what you need.</p>
 </div>
 
 <hr class="rule">
 
 <!-- Option A -->
 <div class="section" id="option-a" style="padding-top:60px">
-  <span class="sec-label">Option A — Zero wiring</span>
+  <span class="sec-label">Option A — Most flexible</span>
 
   <div class="option-card">
     <div class="option-hdr" style="background:rgba(52,211,153,.04)">
       <span class="option-badge" style="background:rgba(52,211,153,.12);color:var(--green)">Option A</span>
-      <span class="option-title">Enable <code style="font-family:'SF Mono',monospace;font-size:18px;color:var(--green)">showUI</code> — and you're done</span>
+      <span class="option-title">Enable <code style="font-family:'SF Mono',monospace;font-size:18px;color:var(--green)">showUI</code> on each manager</span>
     </div>
     <div class="option-body">
-      <p style="font-size:14px;color:var(--text2);margin-bottom:20px;line-height:1.7">Each manager (GameHealthManager, GameCollectionManager, GameTimerManager, GameInventoryManager) has a built-in <strong style="color:var(--text1)">Show UI</strong> toggle. Enable it and the manager creates its own Canvas at runtime — text, bar, and all. No GameObject, no Canvas, no wiring required.</p>
+      <p style="font-size:14px;color:var(--text2);margin-bottom:20px;line-height:1.7">Each manager (GameHealthManager, GameCollectionManager, GameTimerManager, GameInventoryManager) has a built-in <strong style="color:var(--text1)">Show UI</strong> toggle. Enable it and the manager creates its own Canvas at runtime — text, bar, font size, color, position — all independently configurable per manager. No separate GameObject or wiring required.</p>
       <div class="mini-steps">
         <div class="mini-step">
           <div class="mini-badge" style="background:rgba(52,211,153,.12);color:var(--green)">1</div>
@@ -285,7 +285,7 @@ function drawGraph(svgId, {nodes, edges, w, h}) {
 
 <!-- Option B -->
 <div class="section" id="option-b" style="padding-top:60px">
-  <span class="sec-label">Option B — Full control</span>
+  <span class="sec-label">Option B — Consistent look</span>
 
   <div class="option-card">
     <div class="option-hdr" style="background:rgba(79,142,247,.04)">
@@ -293,7 +293,7 @@ function drawGraph(svgId, {nodes, edges, w, h}) {
       <span class="option-title">Wire managers to <code style="font-family:'SF Mono',monospace;font-size:18px;color:var(--blue)">GameUIManager</code></span>
     </div>
     <div class="option-body">
-      <p style="font-size:14px;color:var(--text2);margin-bottom:20px;line-height:1.7">Add GameUIManager to any GameObject. It creates a full HUD Canvas with score, health bar, timer, and inventory slots. You control sizing, color, font, and position. Wire each manager's value-changed event to the matching update method.</p>
+      <p style="font-size:14px;color:var(--text2);margin-bottom:20px;line-height:1.7">Add GameUIManager to any GameObject. It creates a single HUD Canvas with all elements sharing the same font, color, and style. Good when you want a unified look without configuring each manager separately. Less per-element control than Option A — wire each manager's value-changed event to the matching update method.</p>
       <div class="mini-steps">
         <div class="mini-step">
           <div class="mini-badge" style="background:rgba(79,142,247,.12);color:var(--blue)">1</div>
@@ -395,13 +395,12 @@ function drawGraph(svgId, {nodes, edges, w, h}) {
 
 <script>
 const DECISIONS = [
-  { q: "I just want something on screen fast",                        a: "Option A — enable showUI",            color: "#34D399" },
-  { q: "I'm prototyping and don't care about style yet",             a: "Option A — enable showUI",            color: "#34D399" },
-  { q: "I have a designed HUD with specific layout",                 a: "Option B — GameUIManager",            color: "#4F8EF7" },
-  { q: "I want all HUD elements in one place, styled consistently",  a: "Option B — GameUIManager",            color: "#4F8EF7" },
-  { q: "I need a hint to appear when the player enters an area",     a: "ActionDisplayText → Show()",          color: "#FB923C" },
-  { q: "I want to show an image when something happens",             a: "ActionDisplayImage → Show()",         color: "#FB923C" },
-  { q: "I need health bar AND score counter",                        a: "Both managers — each picks A or B",  color: "#8B8FA8" },
+  { q: "I just want something on screen fast",                        a: "Option A — enable showUI",                    color: "#34D399" },
+  { q: "I need each element at a different position or size",        a: "Option A — each manager has independent controls", color: "#34D399" },
+  { q: "I want health bar AND separate score text",                  a: "Option A — enable showUI on each manager",     color: "#34D399" },
+  { q: "I want all HUD elements styled the same, wired once",       a: "Option B — GameUIManager",                    color: "#4F8EF7" },
+  { q: "I need a hint to appear when the player enters an area",    a: "ActionDisplayText → DisplayDefaultText()",    color: "#FB923C" },
+  { q: "I want to show an image when something happens",            a: "ActionDisplayImage → DisplayDefaultImage()",  color: "#FB923C" },
 ];
 
 const el = document.getElementById('decisionTable');
