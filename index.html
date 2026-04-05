@@ -23,6 +23,8 @@
     --orange:  #FB923C;
     --pink:    #F472B6;
     --teal:    #2DD4BF;
+    --red:     #EF4444;
+    --slate:   #94A3C8;
   }
 
   html { scroll-behavior: smooth; }
@@ -158,6 +160,65 @@
     background: var(--surf2); padding: 4px 10px; border-radius: 20px;
   }
 
+  /* ── Component Reference ─────────────────────────── */
+  .ref-section {
+    max-width: 1200px; margin: 0 auto;
+    padding: 0 80px 80px;
+  }
+  .ref-header {
+    display: flex; align-items: baseline; gap: 16px;
+    margin-bottom: 32px; flex-wrap: wrap;
+  }
+  .ref-pill {
+    display: inline-flex; align-items: center;
+    font-size: 10px; font-weight: 600; letter-spacing: .1em;
+    text-transform: uppercase; padding: 5px 12px;
+    border-radius: 20px; background: rgba(148,163,200,.08); color: var(--slate);
+    flex-shrink: 0;
+  }
+  .ref-title {
+    font-size: 28px; font-weight: 700; letter-spacing: -.02em; color: var(--text1);
+  }
+  .ref-table-wrap {
+    border: 1px solid var(--rule); border-radius: 12px;
+    overflow: hidden; margin-bottom: 16px;
+  }
+  .ref-cat-hdr {
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 20px; border-bottom: 1px solid var(--rule);
+  }
+  .ref-cat-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    box-shadow: 0 0 8px var(--dot-color); background: var(--dot-color); flex-shrink: 0;
+  }
+  .ref-cat-name {
+    font-size: 11px; font-weight: 600; letter-spacing: .08em;
+    text-transform: uppercase; color: var(--dot-color);
+  }
+  .ref-col-row {
+    display: grid; grid-template-columns: 220px 1fr 180px;
+    padding: 8px 20px; background: rgba(255,255,255,.03);
+    border-bottom: 1px solid var(--rule);
+  }
+  .ref-col-label {
+    font-size: 9px; font-weight: 600; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--text3);
+  }
+  .ref-row {
+    display: grid; grid-template-columns: 220px 1fr 180px;
+    padding: 9px 20px; border-bottom: 1px solid rgba(33,40,60,.6);
+    align-items: baseline;
+  }
+  .ref-row:last-child { border-bottom: none; }
+  .ref-row:nth-child(even) { background: var(--surf2); }
+  .ref-cat-tinted { background: var(--cat-tint); }
+  .ref-name {
+    font-size: 12px; font-weight: 500; color: var(--name-color);
+    font-family: 'SF Mono', 'Fira Mono', monospace; letter-spacing: -.01em;
+  }
+  .ref-desc { font-size: 13px; color: var(--text2); padding-right: 12px; }
+  .ref-use  { font-size: 12px; color: var(--text3); }
+
   /* ── Footer ───────────────────────────────────────── */
   footer {
     border-top: 1px solid var(--rule);
@@ -181,6 +242,10 @@
     .cards-section { padding: 0 20px 60px; }
     .cards-grid { grid-template-columns: 1fr; }
     footer { padding: 24px 20px; flex-direction: column; gap: 8px; text-align: center; }
+    .ref-section { padding: 0 20px 60px; }
+    .ref-table-wrap { overflow-x: auto; }
+    .ref-col-row, .ref-row { grid-template-columns: 160px 1fr; }
+    .ref-col-label:last-child, .ref-row > .ref-use { display: none; }
   }
 </style>
 </head>
@@ -300,10 +365,160 @@
   </div>
 </div>
 
+<hr style="border:none;border-top:1px solid var(--rule);max-width:1200px;margin:0 auto;">
+
+<div class="ref-section" id="reference">
+  <div class="ref-header" style="padding-top:64px">
+    <span class="ref-pill">Component Reference</span>
+    <h2 class="ref-title">Every component, one line</h2>
+  </div>
+  <div id="refTables"></div>
+</div>
+
 <footer>
   <div class="footer-left"><strong>EGTK</strong> — Event Game Toolkit · Animation &amp; Interactivity</div>
   <div class="footer-right"><a href="https://github.com/caseyfarina/egtk-docs">GitHub</a></div>
 </footer>
+
+<script>
+const TABLES = [
+  {
+    name: 'Input', color: '#4F8EF7',
+    tint: 'rgba(79,142,247,.04)',
+    rows: [
+      ['InputKeyPress',           'Fires when a key is pressed',                                    'Key pressed → call any function'],
+      ['InputOnStart',            'Fires when the scene starts',                                   'Auto-run something on scene load'],
+      ['InputTriggerZone',        'Fires when a tagged object enters or exits a collider',          'Player walks into area → call a function'],
+      ['InputCheckpointZone',     'A trigger zone that also saves a spawn point',                  'Checkpoints and respawn points'],
+      ['InputInteractionZone',    'Shows a prompt sprite; fires when the player presses Interact', 'Player presses E or Triangle → call any function'],
+      ['InputMouseInteraction',   'Fires when the mouse clicks or hovers over this object',        'Clickable objects with a free cursor'],
+      ['InputFPMouseInteraction', 'Same but raycasts from screen center',                         'Clickable objects in a first-person game'],
+      ['InputClickDrag',          'Makes this object draggable',                                  'Drag-and-drop puzzles and sliders'],
+      ['InputClickRotate',        'Makes this object rotatable by dragging',                      'Dials, wheels, rotating puzzles'],
+      ['InputActionEvent',        'Fires from any Unity Input System action',                     'Custom controller and keyboard bindings'],
+      ['InputKeyCountdown',       'Counts down while a key is held',                              'Hold-to-open doors and charge mechanics'],
+      ['InputCollisionEnter',     'Fires on physics collision with a tagged object',               'Bullet hits and physical triggers'],
+    ],
+  },
+  {
+    name: 'Actions', color: '#9B72F7',
+    tint: 'rgba(155,114,247,.04)',
+    rows: [
+      ['ActionPlaySound',                  'Plays a sound with randomized volume and pitch',                  'Any sound effect'],
+      ['ActionDisplayText',                'Shows text on screen with optional typewriter effect',            'Subtitles, hints, UI messages'],
+      ['ActionDisplayImage',               'Shows an image with fade or scale animation',                     'Pop-up icons and overlays'],
+      ['ActionDialogueSequence',           'Multi-line dialogue with portraits and choices',                  'NPC conversations and cutscenes'],
+      ['ActionSpawnObject',                'Instantiates a prefab at a spawn point',                         'Spawn enemies and pickups'],
+      ['ActionAutoSpawner',                'Continuously spawns prefabs on a timer',                         'Enemy waves and ambient spawning'],
+      ['ActionSpawnProjectile',            'Spawns a projectile with direction and force',                   'Shooting and throwing'],
+      ['ActionRestartScene',               'Reloads the current scene',                                      'Restart button and game over'],
+      ['ActionRespawnPlayer',              'Teleports player to last checkpoint',                            'Death and respawn'],
+      ['ActionTeleportToTransform',        'Teleports any object to a target',                              'Portals and warps'],
+      ['ActionEventSequencer',             'Fires events in sequence with delays',                           'Cutscene chains'],
+      ['ActionRandomEvent',                'Picks one event from a weighted list',                           'Random loot and varied responses'],
+      ['ActionShuffleEvent',               'Cycles events in random order, each once',                      'Shuffle playlists and non-repeating dialogue'],
+      ['ActionTriggerAnimatorParameter',   'Sets an Animator parameter',                                    'Trigger animations'],
+      ['ActionPlayCharacterEmoteAnimation','Plays a named animation trigger',                               'Character reactions and emotes'],
+      ['ActionAnimateTransform',           'Moves, rotates, or scales using animation curves',              'Custom tweened animations'],
+      ['ActionRandomMotion',               'Continuously applies randomized movement',                       'Floating objects and idle wobble'],
+      ['ActionPlatformAnimator',           'Moves a platform between waypoints',                            'Doors, elevators, and moving platforms'],
+      ['ActionDecalSequence',              'Frame-by-frame material animation on a URP decal',              'Animated decals'],
+      ['ActionDecalSequenceLibrary',       'Switches between multiple named decal sequences',               'Characters with multiple animation states'],
+      ['ActionBlinkDecal',                 'Automatically blinks a character eye decal',                    'Any character that needs blinking'],
+    ],
+  },
+  {
+    name: 'Game Managers', color: '#34D399',
+    tint: 'rgba(52,211,153,.04)',
+    rows: [
+      ['GameHealthManager',     'Tracks health with damage, healing, and death event',      'Player or enemy health'],
+      ['GameCollectionManager', 'Tracks a numeric value with threshold events',             'Score, coins, collectibles'],
+      ['GameInventoryManager',  'Tracks multiple item slots with counts',                  'Keys, ammo, resources'],
+      ['GameTimerManager',      'Counts up or down, fires events at thresholds',           'Level timer, countdown clock'],
+      ['GameCheckpointManager', 'Stores last checkpoint for respawning',                  'Respawn system'],
+      ['GameStateManager',      'Handles pause and victory screens',                       'Pause menu, win condition'],
+      ['GameAudioManager',      'Controls background music and ambient audio',             'Music system, crossfades'],
+      ['GameCameraManager',     'Switches between Cinemachine cameras by name',           'Multiple angles, cutscenes'],
+      ['GameUIManager',         'Connects managers to HUD UI elements',                   'HUD wiring'],
+      ['GameSceneManager',      'Loads scenes additively with spawn point coordination',  'Multi-level games and hub worlds'],
+    ],
+  },
+  {
+    name: 'Character Controllers', color: '#EF4444',
+    tint: 'rgba(239,68,68,.04)',
+    rows: [
+      ['CharacterControllerFP',      'First-person controller with mouse look, jump, sprint', 'First-person games'],
+      ['CharacterControllerCC',      'Third-person controller with rotation and jump',        'Third-person and top-down games'],
+      ['PhysicsBallPlayerController','Physics-based ball controller',                        'Rolling ball games'],
+      ['PhysicsCharacterController', 'Rigidbody-based character controller',                 'Physics-heavy platformers'],
+      ['EnemyControllerCC',          'AI enemy that chases the player using NavMesh',        'Basic enemy AI'],
+      ['PhysicsEnemyController',     'Rigidbody-based enemy that chases',                   'Physics-based enemy AI'],
+    ],
+  },
+  {
+    name: 'Physics', color: '#FB923C',
+    tint: 'rgba(251,146,60,.04)',
+    rows: [
+      ['PhysicsBumper',           'Bounces any Rigidbody that touches it',                  'Pinball bumpers, bounce pads'],
+      ['PhysicsBumperTag',        'Same but only affects tagged objects',                   'Targeted bounce zones'],
+      ['PhysicsForceZone',        'Applies forces to Rigidbodies inside a trigger',         'Wind zones, jump pads, explosion areas'],
+      ['PhysicsPlatformAnimator', 'Moves platform between waypoints using Rigidbody',      'Moving platforms the player can stand on'],
+      ['PhysicsPlatformStick',    'Keeps player attached to a moving platform',            'Required companion to PhysicsPlatformAnimator'],
+    ],
+  },
+  {
+    name: 'Puzzles', color: '#F472B6',
+    tint: 'rgba(244,114,182,.04)',
+    rows: [
+      ['PuzzleSwitch',          'A switch that can be activated and deactivated',             'Any interactive switch or button'],
+      ['PuzzleSwitchChecker',   'Fires when all assigned switches are activated',             'Combination puzzles'],
+      ['PuzzleSequenceChecker', 'Fires when switches are activated in the correct order',    'Sequence puzzles'],
+    ],
+  },
+  {
+    name: 'UI & Utilities', color: '#94A3C8',
+    tint: 'rgba(148,163,200,.04)',
+    rows: [
+      ['FadeInFromBlackOnRestart', 'Fades the screen in from black every time the scene loads', 'Scene transitions and respawn fade-in'],
+    ],
+  },
+  {
+    name: 'Spawn Points', color: '#94A3C8',
+    tint: 'rgba(148,163,200,.04)',
+    rows: [
+      ['SpawnPoint', 'Marks a spawn location; character controllers check for one on start', 'Player start positions and multi-door entry'],
+    ],
+  },
+];
+
+const container = document.getElementById('refTables');
+TABLES.forEach(cat => {
+  const wrap = document.createElement('div');
+  wrap.className = 'ref-table-wrap';
+
+  const hdr = document.createElement('div');
+  hdr.className = 'ref-cat-hdr';
+  hdr.style.setProperty('--dot-color', cat.color);
+  hdr.innerHTML = `<div class="ref-cat-dot"></div><span class="ref-cat-name">${cat.name}</span>`;
+  wrap.appendChild(hdr);
+
+  const colRow = document.createElement('div');
+  colRow.className = 'ref-col-row';
+  colRow.innerHTML = '<span class="ref-col-label">Component</span><span class="ref-col-label">What It Does</span><span class="ref-col-label">Good For</span>';
+  wrap.appendChild(colRow);
+
+  cat.rows.forEach((row, i) => {
+    const r = document.createElement('div');
+    r.className = 'ref-row' + (i % 2 === 1 ? ' ref-cat-tinted' : '');
+    r.style.setProperty('--cat-tint', cat.tint);
+    r.style.setProperty('--name-color', cat.color);
+    r.innerHTML = `<span class="ref-name">${row[0]}</span><span class="ref-desc">${row[1]}</span><span class="ref-use">${row[2]}</span>`;
+    wrap.appendChild(r);
+  });
+
+  container.appendChild(wrap);
+});
+</script>
 
 </body>
 </html>
