@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EGTK — Multi-Scene Setup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg:#0D0F14; --surface:#171B24; --surf2:#1C2130;
+    --text1:#F0F2F8; --text2:#8B8FA8; --text3:#5E6280;
+    --rule:#21283C; --blue:#4F8EF7; --purple:#9B72F7;
+    --green:#34D399; --orange:#FB923C; --teal:#2DD4BF;
+    --slate:#94A3C8; --yellow:#F59E0B; --pink:#F472B6;
+  }
+  html { scroll-behavior: smooth; }
+  body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text1); -webkit-font-smoothing:antialiased; }
+  .dot-grid { background-image:radial-gradient(circle,rgba(148,163,200,.065) 1px,transparent 1px); background-size:28px 28px; }
+
+  .topnav { position:sticky; top:0; z-index:100; background:rgba(13,15,20,.88); backdrop-filter:blur(12px); border-bottom:1px solid var(--rule); padding:0 80px; display:flex; align-items:center; gap:32px; height:52px; }
+  .topnav-logo { font-size:13px; font-weight:700; color:var(--text1); text-decoration:none; }
+  .topnav-logo span { color:var(--blue); }
+  .topnav-sep { width:1px; height:16px; background:var(--rule); }
+  .topnav a { font-size:12px; font-weight:500; color:var(--text3); text-decoration:none; transition:color .15s; }
+  .topnav a:hover { color:var(--text1); }
+  .topnav-back { margin-left:auto; font-size:12px; font-weight:500; color:var(--text3); text-decoration:none; }
+  .topnav-back:hover { color:var(--blue); }
+
+  .hero { padding:80px 80px 48px; max-width:1200px; margin:0 auto; }
+  .breadcrumb { font-size:12px; color:var(--text3); margin-bottom:20px; }
+  .breadcrumb a { color:var(--text3); text-decoration:none; }
+  .breadcrumb a:hover { color:var(--blue); }
+  .breadcrumb span { margin:0 8px; }
+  .hero-pill { display:inline-flex; align-items:center; font-size:10px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; padding:5px 12px; border-radius:20px; background:rgba(155,114,247,.1); color:var(--purple); margin-bottom:20px; }
+  .hero-title { font-size:52px; font-weight:700; letter-spacing:-.03em; line-height:1.1; color:var(--text1); margin-bottom:16px; }
+  .hero-desc { font-size:17px; color:var(--text2); line-height:1.7; max-width:640px; margin-bottom:32px; }
+  .outcome-row { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:48px; }
+  .outcome-chip { display:flex; align-items:center; gap:6px; background:var(--surface); border:1px solid var(--rule); border-radius:8px; padding:6px 12px; font-size:12px; font-weight:500; color:var(--text2); }
+  .outcome-chip .dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+
+  .section { max-width:1200px; margin:0 auto; padding:0 80px 72px; }
+  .sec-label { font-size:10px; font-weight:600; letter-spacing:.12em; text-transform:uppercase; color:var(--text3); margin-bottom:12px; display:block; }
+  .sec-title { font-size:28px; font-weight:700; letter-spacing:-.02em; color:var(--text1); margin-bottom:10px; }
+  .sec-desc { font-size:15px; color:var(--text2); line-height:1.7; max-width:680px; margin-bottom:32px; }
+  hr.rule { border:none; border-top:1px solid var(--rule); max-width:1200px; margin:0 auto; }
+
+  /* Steps */
+  .steps-list { list-style:none; display:flex; flex-direction:column; gap:12px; margin-bottom:32px; }
+  .step-item { display:flex; gap:16px; align-items:flex-start; background:var(--surface); border:1px solid var(--rule); border-radius:10px; padding:16px 20px; }
+  .step-badge { width:28px; height:28px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; color:var(--purple); background:rgba(155,114,247,.12); margin-top:1px; }
+  .step-title { font-size:14px; font-weight:600; color:var(--text1); margin-bottom:4px; }
+  .step-body { font-size:13px; color:var(--text2); line-height:1.6; }
+  .step-body code { font-family:'SF Mono','Fira Mono',monospace; font-size:12px; padding:1px 5px; border-radius:4px; background:rgba(255,255,255,.07); color:var(--text1); }
+  .step-body strong { color:var(--text1); font-weight:600; }
+
+  /* Two column layout */
+  .two-col { display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:32px; }
+  @media(max-width:900px) { .two-col { grid-template-columns:1fr; } }
+
+  /* Scene card */
+  .scene-card { background:var(--surface); border:1px solid var(--rule); border-radius:12px; overflow:hidden; }
+  .scene-card-header { padding:12px 20px; border-bottom:1px solid var(--rule); display:flex; align-items:center; gap:10px; }
+  .scene-badge { font-size:9px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; padding:3px 8px; border-radius:4px; }
+  .scene-card-body { padding:16px 20px; }
+  .scene-item { display:flex; align-items:flex-start; gap:10px; padding:6px 0; border-bottom:1px solid rgba(33,40,60,.5); }
+  .scene-item:last-child { border-bottom:none; }
+  .scene-item-dot { width:6px; height:6px; border-radius:50%; flex-shrink:0; margin-top:5px; }
+  .scene-item-name { font-size:12px; font-family:'SF Mono','Fira Mono',monospace; color:var(--text1); font-weight:500; }
+  .scene-item-note { font-size:11px; color:var(--text3); margin-top:1px; }
+
+  /* Graph wrap */
+  .graph-wrap { border-radius:12px; overflow:hidden; margin-bottom:32px; background:var(--bg); }
+
+  /* Callout */
+  .callout { border-radius:12px; padding:20px 24px; border:1px solid; display:flex; gap:16px; align-items:flex-start; margin-bottom:24px; }
+  .callout-icon { font-size:20px; flex-shrink:0; margin-top:1px; }
+  .callout-title { font-size:14px; font-weight:700; margin-bottom:5px; }
+  .callout-body { font-size:13px; color:var(--text2); line-height:1.7; }
+  .callout-body code { font-family:'SF Mono','Fira Mono',monospace; font-size:12px; padding:1px 5px; border-radius:4px; background:rgba(255,255,255,.07); color:var(--text1); }
+  .callout-body strong { color:var(--text1); font-weight:600; }
+
+  /* Field table */
+  .field-table { width:100%; border-collapse:collapse; border:1px solid var(--rule); border-radius:10px; overflow:hidden; margin-bottom:24px; }
+  .field-table th { font-size:9px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--text3); padding:9px 16px; text-align:left; background:rgba(255,255,255,.03); border-bottom:1px solid var(--rule); }
+  .field-table td { padding:9px 16px; font-size:13px; border-bottom:1px solid rgba(33,40,60,.5); vertical-align:top; }
+  .field-table tr:last-child td { border-bottom:none; }
+  .field-table tr:nth-child(even) td { background:var(--surf2); }
+  .field-name { font-family:'SF Mono','Fira Mono',monospace; font-size:12px; color:var(--purple); font-weight:500; }
+  .field-default { font-family:'SF Mono','Fira Mono',monospace; font-size:11px; color:var(--text3); }
+  .field-desc { color:var(--text2); }
+
+  /* Persist row */
+  .persist-row { display:flex; gap:16px; flex-wrap:wrap; margin-bottom:32px; }
+  .persist-card { flex:1; min-width:200px; background:var(--surface); border:1px solid var(--rule); border-radius:10px; padding:16px 20px; }
+  .persist-card-name { font-size:13px; font-family:'SF Mono','Fira Mono',monospace; font-weight:600; margin-bottom:6px; }
+  .persist-card-note { font-size:12px; color:var(--text3); line-height:1.5; }
+  .check-label { display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:600; color:var(--green); margin-bottom:6px; }
+  .check-box { width:14px; height:14px; border-radius:3px; background:var(--green); display:flex; align-items:center; justify-content:center; }
+  .check-box::after { content:'✓'; font-size:10px; color:#0D0F14; font-weight:700; }
+
+  /* Patterns table */
+  .patterns-list { list-style:none; display:flex; flex-direction:column; gap:12px; margin-bottom:32px; }
+  .pattern-item { background:var(--surface); border:1px solid var(--rule); border-radius:10px; padding:16px 20px; }
+  .pattern-title { font-size:13px; font-weight:700; color:var(--text1); margin-bottom:6px; }
+  .pattern-body { font-size:13px; color:var(--text2); line-height:1.6; }
+  .pattern-body code { font-family:'SF Mono','Fira Mono',monospace; font-size:12px; padding:1px 5px; border-radius:4px; background:rgba(255,255,255,.07); color:var(--text1); }
+
+  .page-footer { border-top:1px solid var(--rule); padding:32px 80px; max-width:1200px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; font-size:13px; color:var(--text3); }
+  .page-footer a { color:var(--blue); text-decoration:none; }
+  .page-footer a:hover { text-decoration:underline; }
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <a href="index.html" class="topnav-logo">EGTK<span>.</span></a>
+  <div class="topnav-sep"></div>
+  <a href="#structure">Scene Structure</a>
+  <a href="#loading">Scene Loading</a>
+  <a href="#persistence">Persistence</a>
+  <a href="#reference">Reference</a>
+  <a href="index.html" class="topnav-back">← All Docs</a>
+</nav>
+
+<div class="hero">
+  <div class="breadcrumb"><a href="index.html">EGTK Docs</a><span>/</span>Multi-Scene Setup</div>
+  <div class="hero-pill">Deep Dive</div>
+  <h1 class="hero-title">Multi-Scene Setup</h1>
+  <p class="hero-desc">Build a game with multiple levels, a title screen, and values (health, score) that carry between scenes. Two components do the work: <strong style="color:var(--text1)">GameSceneManager</strong> loads scenes and positions the player, and a simple checkbox keeps values alive across loads.</p>
+  <div class="outcome-row">
+    <div class="outcome-chip"><div class="dot" style="background:var(--purple);box-shadow:0 0 6px var(--purple)"></div>Load levels with one UnityEvent call</div>
+    <div class="outcome-chip"><div class="dot" style="background:var(--green);box-shadow:0 0 6px var(--green)"></div>Health and score survive scene changes</div>
+    <div class="outcome-chip"><div class="dot" style="background:var(--teal);box-shadow:0 0 6px var(--teal)"></div>Player spawns at the right entry point</div>
+    <div class="outcome-chip"><div class="dot" style="background:var(--blue);box-shadow:0 0 6px var(--blue)"></div>Main menu loads any level</div>
+  </div>
+</div>
+
+<hr class="rule">
+
+<!-- Scene Structure -->
+<div class="section" id="structure" style="padding-top:60px">
+  <span class="sec-label">The Pattern</span>
+  <h2 class="sec-title">Two types of scene</h2>
+  <p class="sec-desc">Multi-scene games in EGTK use two types of scene. A <strong style="color:var(--text1)">bootstrap scene</strong> holds your player, managers, and UI — everything that needs to survive. Level scenes contain only the level content — geometry, collectibles, enemies, triggers.</p>
+
+  <div class="two-col">
+    <div class="scene-card">
+      <div class="scene-card-header">
+        <span class="scene-badge" style="background:rgba(155,114,247,.15);color:var(--purple)">Bootstrap</span>
+        <span style="font-size:13px;font-weight:600;color:var(--text1)">Your first and only persistent scene</span>
+      </div>
+      <div class="scene-card-body">
+        <div class="scene-item"><div class="scene-item-dot" style="background:var(--purple)"></div><div><div class="scene-item-name">GameSceneManager</div><div class="scene-item-note">loads and unloads level scenes</div></div></div>
+        <div class="scene-item"><div class="scene-item-dot" style="background:var(--orange)"></div><div><div class="scene-item-name">Player (CharacterController)</div><div class="scene-item-note">survives all scene loads</div></div></div>
+        <div class="scene-item"><div class="scene-item-dot" style="background:var(--green)"></div><div><div class="scene-item-name">GameHealthManager</div><div class="scene-item-note">optional — if health should persist</div></div></div>
+        <div class="scene-item"><div class="scene-item-dot" style="background:var(--green)"></div><div><div class="scene-item-name">GameCollectionManager</div><div class="scene-item-note">optional — if score should persist</div></div></div>
+        <div class="scene-item"><div class="scene-item-dot" style="background:var(--blue)"></div><div><div class="scene-item-name">HUD Canvas / UI</div><div class="scene-item-note">stays visible across all levels</div></div></div>
+      </div>
+    </div>
+    <div class="scene-card">
+      <div class="scene-card-header">
+        <span class="scene-badge" style="background:rgba(79,142,247,.15);color:var(--blue)">Level Scene</span>
+        <span style="font-size:13px;font-weight:600;color:var(--text1)">One per level — loaded and unloaded</span>
+      </div>
+      <div class="scene-card-body">
+        <div class="scene-item"><div class="scene-item-dot" style="background:var(--teal)"></div><div><div class="scene-item-name">SpawnPoint</div><div class="scene-item-note">marks where the player appears on entry</div></div></div>
+        <div class="scene-item"><div class="scene-item-dot" style="background:var(--orange)"></div><div><div class="scene-item-name">Level geometry, props</div><div class="scene-item-note">the actual level content</div></div></div>
+        <div class="scene-item"><div class="scene-item-dot" style="background:var(--pink)"></div><div><div class="scene-item-name">Enemies, collectibles, triggers</div><div class="scene-item-note">wired locally to level managers</div></div></div>
+        <div class="scene-item"><div class="scene-item-dot" style="background:var(--green)"></div><div><div class="scene-item-name">Exit trigger (optional)</div><div class="scene-item-note">calls GameSceneManager.LoadScene()</div></div></div>
+        <div class="scene-item"><div class="scene-item-dot" style="background:var(--text3)"></div><div><div class="scene-item-name">NO player, NO persistent managers</div><div class="scene-item-note">those live in the bootstrap scene</div></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout" style="background:rgba(155,114,247,.05);border-color:rgba(155,114,247,.2)">
+    <div class="callout-icon">💡</div>
+    <div>
+      <div class="callout-title" style="color:var(--purple)">Why additive loading?</div>
+      <div class="callout-body">GameSceneManager loads levels <em>additively</em> — the bootstrap scene stays loaded the whole time. This is what keeps the player, managers, and HUD alive. The level scene is loaded on top, then unloaded when you move to the next level. You never need to move the player between scenes.</div>
+    </div>
+  </div>
+</div>
+
+<hr class="rule">
+
+<!-- Scene Loading Setup -->
+<div class="section" id="loading" style="padding-top:60px">
+  <span class="sec-label">Step by Step</span>
+  <h2 class="sec-title">Setting up scene loading</h2>
+  <p class="sec-desc">Six steps to go from a single scene to a multi-level game.</p>
+
+  <ol class="steps-list">
+    <li class="step-item">
+      <div class="step-badge">1</div>
+      <div>
+        <div class="step-title">Create the bootstrap scene</div>
+        <div class="step-body">Rename your existing scene to <code>Bootstrap</code> (or <code>Title</code>). This scene will be the one in Build Settings at index 0 — it is always the first scene Unity loads. Move your player and any managers you want to survive into it.</div>
+      </div>
+    </li>
+    <li class="step-item">
+      <div class="step-badge">2</div>
+      <div>
+        <div class="step-title">Add GameSceneManager to the bootstrap scene</div>
+        <div class="step-body">Create an empty GameObject, name it <code>SceneManager</code>. Add the <strong>GameSceneManager</strong> component. Leave <strong>Use Additive Loading</strong> checked (default). Leave <strong>Unload Previous Scene</strong> checked. These defaults are correct for almost every game.</div>
+      </div>
+    </li>
+    <li class="step-item">
+      <div class="step-badge">3</div>
+      <div>
+        <div class="step-title">Create a level scene</div>
+        <div class="step-body">File → New Scene. Save it as <code>Level1</code>. Add your level geometry here. Do <strong>not</strong> add a player or a camera rig — the player from the bootstrap scene will move into this level automatically.</div>
+      </div>
+    </li>
+    <li class="step-item">
+      <div class="step-badge">4</div>
+      <div>
+        <div class="step-title">Add a SpawnPoint to the level scene</div>
+        <div class="step-body">Create an empty GameObject in Level1, name it <code>SpawnPoint</code>. Add the <strong>SpawnPoint</strong> component. Leave <strong>Is Default Spawn Point</strong> checked. Position it where the player should appear when entering the level. A green gizmo shows the exact spawn position in the Scene view.</div>
+      </div>
+    </li>
+    <li class="step-item">
+      <div class="step-badge">5</div>
+      <div>
+        <div class="step-title">Add both scenes to Build Settings</div>
+        <div class="step-body">File → Build Settings → Add Open Scenes. Add <code>Bootstrap</code> first (index 0), then <code>Level1</code>. Every scene you want to load must appear in this list. The name shown in Build Settings is the string you pass to <code>LoadScene()</code>.</div>
+      </div>
+    </li>
+    <li class="step-item">
+      <div class="step-badge">6</div>
+      <div>
+        <div class="step-title">Wire a trigger to load the level</div>
+        <div class="step-body">Select your trigger object (InputTriggerZone, InputKeyPress, InputInteractionZone, etc.). In its event, drag in the <code>SceneManager</code> object. Choose <code>GameSceneManager → LoadScene(string)</code>. Type <code>Level1</code> in the string field. Press Play from the bootstrap scene and trigger it — Level1 loads in, the player is repositioned to the SpawnPoint.</div>
+      </div>
+    </li>
+  </ol>
+
+  <!-- Wire diagram -->
+  <h3 style="font-size:15px;font-weight:600;color:var(--text1);margin-bottom:16px;letter-spacing:-.01em">How the pieces connect at runtime</h3>
+  <div class="graph-wrap dot-grid">
+    <svg id="scene-graph" style="border-radius:12px;overflow:visible;display:block"></svg>
+  </div>
+
+  <div class="callout" style="background:rgba(79,142,247,.05);border-color:rgba(79,142,247,.2)">
+    <div class="callout-icon">🔖</div>
+    <div>
+      <div class="callout-title" style="color:var(--blue)">Scene names are case-sensitive</div>
+      <div class="callout-body">The string you pass to <code>LoadScene("Level1")</code> must match the scene filename exactly, including capitalisation, with no path or <code>.unity</code> extension. If the scene isn't in Build Settings, Unity logs an error and <code>onSceneLoadFailed</code> fires.</div>
+    </div>
+  </div>
+</div>
+
+<hr class="rule">
+
+<!-- Value Persistence -->
+<div class="section" id="persistence" style="padding-top:60px">
+  <span class="sec-label">Keeping values alive</span>
+  <h2 class="sec-title">Persist health, score, and inventory across levels</h2>
+  <p class="sec-desc">EGTK handles value persistence automatically — no extra setup needed beyond checking a box on each manager. The underlying system is completely invisible.</p>
+
+  <div class="callout" style="background:rgba(52,211,153,.05);border-color:rgba(52,211,153,.2);margin-bottom:28px">
+    <div class="callout-icon">✅</div>
+    <div>
+      <div class="callout-title" style="color:var(--green)">One checkbox per manager</div>
+      <div class="callout-body">Find the <strong>Scene Persistence</strong> section in the Inspector for GameHealthManager, GameCollectionManager, or GameInventoryManager. Check <strong>Persist Across Scenes</strong>. That's it. Values reset to their Inspector defaults at the start of each play session and survive every scene load during gameplay.</div>
+    </div>
+  </div>
+
+  <div class="persist-row">
+    <div class="persist-card">
+      <div class="check-label"><span class="check-box"></span> Persist Across Scenes</div>
+      <div class="persist-card-name" style="color:var(--orange)">GameHealthManager</div>
+      <div class="persist-card-note">Health carries between levels. On the first level load, starts at Max Health. Add this manager to your bootstrap scene.</div>
+    </div>
+    <div class="persist-card">
+      <div class="check-label"><span class="check-box"></span> Persist Across Scenes</div>
+      <div class="persist-card-name" style="color:var(--green)">GameCollectionManager</div>
+      <div class="persist-card-note">Score or coin count carries between levels. Each level scene can have its own collectibles — the running total accumulates.</div>
+    </div>
+    <div class="persist-card">
+      <div class="check-label"><span class="check-box"></span> Persist Across Scenes</div>
+      <div class="persist-card-name" style="color:var(--teal)">GameInventoryManager</div>
+      <div class="persist-card-note">All slot counts carry between levels. Supports up to 20 slots. Keys collected in Level1 are still in the inventory in Level2.</div>
+    </div>
+  </div>
+
+  <div class="callout" style="background:rgba(251,146,60,.05);border-color:rgba(251,146,60,.2)">
+    <div class="callout-icon">⚠️</div>
+    <div>
+      <div class="callout-title" style="color:var(--orange)">Add managers to each scene that uses them</div>
+      <div class="callout-body">With persistence enabled, the <em>value</em> carries over but the <em>manager instance</em> is recreated per scene. This means each level scene can have its own GameCollectionManager wired to that level's collectibles — and the score accumulates correctly. This is the preferred pattern. Do <strong>not</strong> try to wire collectibles in Level2 to a manager in the bootstrap scene — cross-scene wiring doesn't work in the Inspector.</div>
+    </div>
+  </div>
+</div>
+
+<hr class="rule">
+
+<!-- Reference -->
+<div class="section" id="reference" style="padding-top:60px">
+  <span class="sec-label">Inspector Reference</span>
+  <h2 class="sec-title">GameSceneManager fields and events</h2>
+  <p class="sec-desc">The defaults work for most games. The events let you attach transitions, progress bars, or audio cues to the load cycle.</p>
+
+  <table class="field-table" style="margin-bottom:40px">
+    <thead><tr><th>Field</th><th>Default</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr><td><span class="field-name">Use Additive Loading</span></td><td><span class="field-default">true</span></td><td class="field-desc">Keeps the bootstrap scene alive while loading the level scene on top. Recommended — leave this on.</td></tr>
+      <tr><td><span class="field-name">Unload Previous Scene</span></td><td><span class="field-default">true</span></td><td class="field-desc">Automatically unloads the previous level when loading a new one. Leave on unless you need both levels loaded simultaneously.</td></tr>
+      <tr><td><span class="field-name">Pre Load Delay</span></td><td><span class="field-default">0</span></td><td class="field-desc">Seconds to wait after triggering a load before anything happens. Use this to let a fade-out animation finish before the scene changes.</td></tr>
+      <tr><td><span class="field-name">Post Load Delay</span></td><td><span class="field-default">0</span></td><td class="field-desc">Seconds to wait after loading completes before firing <code>onSceneLoadCompleted</code>. Use this to hold a black screen before fading in.</td></tr>
+    </tbody>
+  </table>
+
+  <table class="field-table" style="margin-bottom:40px">
+    <thead><tr><th>Event</th><th>When it fires</th></tr></thead>
+    <tbody>
+      <tr><td><span class="field-name">onSceneLoadStarted</span></td><td class="field-desc">As soon as loading begins. Wire to a fade-out or loading screen activation.</td></tr>
+      <tr><td><span class="field-name">onSceneLoadCompleted</span></td><td class="field-desc">Once the scene is fully loaded and active. Wire to a fade-in or to call <code>CharacterControllerCC.CheckForSpawnPoint()</code> if using additive loading with a pre-existing player.</td></tr>
+      <tr><td><span class="field-name">onSceneLoadFailed</span></td><td class="field-desc">If the scene name doesn't exist in Build Settings. Wire to an error message or fallback.</td></tr>
+      <tr><td><span class="field-name">onLoadProgress (float)</span></td><td class="field-desc">Fires continuously during load, passing 0→1. Wire to a fill bar's SetFillAmount to show a progress bar.</td></tr>
+    </tbody>
+  </table>
+
+  <table class="field-table" style="margin-bottom:40px">
+    <thead><tr><th>Method</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr><td><span class="field-name">LoadScene(string)</span></td><td class="field-desc">Load a scene by name. Player spawns at the default SpawnPoint.</td></tr>
+      <tr><td><span class="field-name">LoadSceneAtSpawnPoint(string, string)</span></td><td class="field-desc">Load a scene and spawn at a specific SpawnPoint ID. Use when entering from different doors.</td></tr>
+      <tr><td><span class="field-name">LoadSceneSingle(string)</span></td><td class="field-desc">Load a scene replacing all current scenes (non-additive). Use for returning to the main menu.</td></tr>
+      <tr><td><span class="field-name">ReloadCurrentScene()</span></td><td class="field-desc">Reload the current level scene. Wire to game-over restart logic.</td></tr>
+    </tbody>
+  </table>
+
+  <h2 class="sec-title" style="margin-top:48px">SpawnPoint fields</h2>
+  <p class="sec-desc" style="margin-top:8px">Each level scene should have at least one SpawnPoint. Add more if the level has multiple entry points (e.g. entering from the left door vs. the right door).</p>
+
+  <table class="field-table">
+    <thead><tr><th>Field</th><th>Default</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr><td><span class="field-name">Spawn Id</span></td><td><span class="field-default">""</span></td><td class="field-desc">Optional name for this spawn point. Set this if the level has multiple entry points and you want to choose between them using <code>LoadSceneAtSpawnPoint()</code>.</td></tr>
+      <tr><td><span class="field-name">Is Default Spawn Point</span></td><td><span class="field-default">true</span></td><td class="field-desc">If checked, this is used when <code>LoadScene()</code> is called with no specific ID. Only one SpawnPoint per scene should be the default.</td></tr>
+      <tr><td><span class="field-name">Spawn Offset</span></td><td><span class="field-default">0,0,0</span></td><td class="field-desc">Offset from the SpawnPoint's position. Useful for placing the spawn point on the ground while the visual marker sits at head height. A yellow line in the Scene view shows the offset.</td></tr>
+      <tr><td><span class="field-name">onPlayerSpawned</span></td><td class="field-desc" colspan="2">Fires when the player spawns here. Wire to a door-close animation or a room-reveal effect.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<hr class="rule">
+
+<!-- Common Patterns -->
+<div class="section" id="patterns" style="padding-top:60px">
+  <span class="sec-label">Common Patterns</span>
+  <h2 class="sec-title">Recipes for typical multi-scene needs</h2>
+
+  <ul class="patterns-list">
+    <li class="pattern-item">
+      <div class="pattern-title">Load the next level from an exit trigger</div>
+      <div class="pattern-body">Add an <code>InputTriggerZone</code> to an exit area. In <strong>On Enter</strong>: drag the <code>SceneManager</code> object → <code>GameSceneManager → LoadScene(string)</code> → type <code>Level2</code>. The player walks through and Level2 loads seamlessly.</div>
+    </li>
+    <li class="pattern-item">
+      <div class="pattern-title">Return to the main menu</div>
+      <div class="pattern-body">Use <code>LoadSceneSingle(string)</code> instead of <code>LoadScene()</code>. This replaces all loaded scenes, which destroys the bootstrap scene and returns to a clean state. Wire it to a "Quit to Menu" button in your pause menu.</div>
+    </li>
+    <li class="pattern-item">
+      <div class="pattern-title">Restart the current level on death</div>
+      <div class="pattern-body">Wire <code>GameHealthManager → onDeath</code> to <code>GameSceneManager → ReloadCurrentScene()</code>. The current level is unloaded and reloaded, repositioning the player at the SpawnPoint. Health starts fresh from the manager's default (since the death triggered the value to be 0 before reloading — set Max Health as the Inspector default to ensure a full reset).</div>
+    </li>
+    <li class="pattern-item">
+      <div class="pattern-title">Enter a level from a specific door</div>
+      <div class="pattern-body">Add two SpawnPoints to the level. Give the second one a <strong>Spawn Id</strong> like <code>south-entrance</code>. On the trigger for the second door, use <code>GameSceneManager → LoadSceneAtSpawnPoint(string, string)</code> → scene name: <code>Level2</code>, spawn point id: <code>south-entrance</code>. The player spawns at that specific point.</div>
+    </li>
+    <li class="pattern-item">
+      <div class="pattern-title">Fade in/out between levels</div>
+      <div class="pattern-body">Add <strong>FadeInFromBlackOnRestart</strong> to your bootstrap scene — it fades in automatically on every scene load. For a fade-out before loading, set <strong>Pre Load Delay</strong> on GameSceneManager to match your fade-out duration (e.g. <code>0.5</code>), and wire <code>onSceneLoadStarted</code> to trigger the fade-out animation.</div>
+    </li>
+  </ul>
+</div>
+
+<div class="page-footer">
+  <span>GameSceneManager · SpawnPoint · Persist Across Scenes</span>
+  <span><a href="index.html">← All Docs</a></span>
+</div>
+
+<script>
+function drawGraph(svgId, {nodes, edges, w, h}) {
+  const NS = 'http://www.w3.org/2000/svg';
+  const svg = document.getElementById(svgId);
+  svg.setAttribute('width', w); svg.setAttribute('height', h); svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+  svg.style.width='100%'; svg.style.height='auto'; svg.style.display='block';
+
+  const defs = document.createElementNS(NS, 'defs');
+  const pat = document.createElementNS(NS, 'pattern');
+  pat.setAttribute('id', svgId+'-dots'); pat.setAttribute('x','0'); pat.setAttribute('y','0');
+  pat.setAttribute('width','28'); pat.setAttribute('height','28'); pat.setAttribute('patternUnits','userSpaceOnUse');
+  const dc = document.createElementNS(NS, 'circle');
+  dc.setAttribute('cx','1'); dc.setAttribute('cy','1'); dc.setAttribute('r','1'); dc.setAttribute('fill','rgba(148,163,200,0.055)');
+  pat.appendChild(dc); defs.appendChild(pat);
+
+  const uniqueColors = [...new Set([...nodes.map(n=>n.color), ...edges.map(e=>e.color)])];
+  const cfm = {};
+  uniqueColors.forEach((color, i) => {
+    const fid = svgId+'-glow-'+i; cfm[color] = fid;
+    const f = document.createElementNS(NS, 'filter');
+    f.setAttribute('id',fid); f.setAttribute('x','-60%'); f.setAttribute('y','-60%'); f.setAttribute('width','220%'); f.setAttribute('height','220%');
+    const blur = document.createElementNS(NS, 'feGaussianBlur'); blur.setAttribute('in','SourceGraphic'); blur.setAttribute('stdDeviation','3'); blur.setAttribute('result','blur');
+    const merge = document.createElementNS(NS, 'feMerge');
+    const mn1 = document.createElementNS(NS, 'feMergeNode'); mn1.setAttribute('in','blur');
+    const mn2 = document.createElementNS(NS, 'feMergeNode'); mn2.setAttribute('in','SourceGraphic');
+    merge.appendChild(mn1); merge.appendChild(mn2); f.appendChild(blur); f.appendChild(merge); defs.appendChild(f);
+  });
+  svg.appendChild(defs);
+
+  const bgR = document.createElementNS(NS, 'rect');
+  bgR.setAttribute('x','0'); bgR.setAttribute('y','0'); bgR.setAttribute('width',w); bgR.setAttribute('height',h);
+  bgR.setAttribute('rx','12'); bgR.setAttribute('fill','url(#'+svgId+'-dots)');
+  svg.appendChild(bgR);
+  const bdr = document.createElementNS(NS, 'rect');
+  bdr.setAttribute('x','0.5'); bdr.setAttribute('y','0.5'); bdr.setAttribute('width',w-1); bdr.setAttribute('height',h-1);
+  bdr.setAttribute('rx','12'); bdr.setAttribute('fill','none'); bdr.setAttribute('stroke','#21283C'); bdr.setAttribute('stroke-width','1');
+  svg.appendChild(bdr);
+
+  function getPort(node, key) {
+    if (!key || key==='in') return {x:node.x, y:node.y+node.h/2};
+    if (key==='out') return {x:node.x+node.w, y:node.y+node.h/2};
+    if (node.ports && node.ports[key]) {
+      const p = node.ports[key];
+      return {x: p.side==='out' ? node.x+node.w : node.x, y: node.y+p.dy};
+    }
+    return {x:node.x+node.w, y:node.y+node.h/2};
+  }
+
+  function cubicD(p1, p2) {
+    const dx = Math.max(48, Math.abs(p2.x-p1.x)*0.52);
+    return `M ${p1.x} ${p1.y} C ${p1.x+dx} ${p1.y} ${p2.x-dx} ${p2.y} ${p2.x} ${p2.y}`;
+  }
+
+  function bezierMid(p1, p2, t) {
+    const dx = Math.max(48, Math.abs(p2.x-p1.x)*0.52);
+    const cx1=p1.x+dx, cy1=p1.y, cx2=p2.x-dx, cy2=p2.y;
+    const mt=1-t;
+    return { x: mt*mt*mt*p1.x+3*mt*mt*t*cx1+3*mt*t*t*cx2+t*t*t*p2.x,
+             y: mt*mt*mt*p1.y+3*mt*mt*t*cy1+3*mt*t*t*cy2+t*t*t*p2.y };
+  }
+
+  function mkEl(tag, attrs, text) {
+    const e = document.createElementNS(NS, tag);
+    Object.entries(attrs).forEach(([k,v]) => e.setAttribute(k,v));
+    if (text !== undefined) e.textContent = text;
+    return e;
+  }
+
+  edges.forEach((edge, i) => {
+    const fn = nodes.find(n=>n.id===edge.from);
+    const tn = nodes.find(n=>n.id===edge.to);
+    if (!fn||!tn) return;
+    const p1 = getPort(fn, edge.fromPort||'out');
+    const p2 = getPort(tn, edge.toPort||'in');
+    const d = cubicD(p1, p2);
+    const pid = svgId+'-e'+i;
+    svg.appendChild(mkEl('path', {id:pid, d, fill:'none', stroke:edge.color, 'stroke-width':'1.5', opacity:'0.35'}));
+    if (edge.label) {
+      const mp = bezierMid(p1, p2, 0.5);
+      svg.appendChild(mkEl('rect', {x:mp.x-60, y:mp.y-7, width:'120', height:'13', rx:'3', fill:'#0D0F14', opacity:'0.9'}));
+      svg.appendChild(mkEl('text', {x:mp.x, y:mp.y+0.5, 'text-anchor':'middle', 'font-size':'9', 'font-family':'Inter,sans-serif', 'font-weight':'600', 'letter-spacing':'0.2', fill:'#5E6280', 'dominant-baseline':'middle'}, edge.label));
+    }
+    const bead = mkEl('circle', {r:'4', fill:edge.color, filter:`url(#${cfm[edge.color]||cfm[Object.keys(cfm)[0]]})`});
+    const anim = mkEl('animateMotion', {dur:edge.dur||'2.4s', repeatCount:'indefinite', begin:edge.delay||'0s'});
+    const mpath = document.createElementNS(NS, 'mpath');
+    mpath.setAttributeNS('http://www.w3.org/1999/xlink','href','#'+pid);
+    anim.appendChild(mpath); bead.appendChild(anim); svg.appendChild(bead);
+  });
+
+  nodes.forEach(node => {
+    const g = mkEl('g', {});
+    g.appendChild(mkEl('rect', {x:node.x+2, y:node.y+2, width:node.w, height:node.h, rx:'8', fill:'rgba(0,0,0,0.25)'}));
+    g.appendChild(mkEl('rect', {x:node.x, y:node.y, width:node.w, height:node.h, rx:'8', fill:'#171B24', stroke:'#21283C', 'stroke-width':'1'}));
+    g.appendChild(mkEl('rect', {x:node.x, y:node.y, width:node.w, height:'5', rx:'8', fill:node.color}));
+    g.appendChild(mkEl('rect', {x:node.x, y:node.y+2, width:node.w, height:'3', fill:node.color}));
+    let ty = node.y + 16;
+    if (node.label) {
+      g.appendChild(mkEl('text', {x:node.x+10, y:ty, 'font-size':'8', 'font-family':'Inter,sans-serif', 'font-weight':'700', 'letter-spacing':'0.8', fill:node.color, 'dominant-baseline':'middle'}, node.label.toUpperCase()));
+      ty += 15;
+    } else { ty += 4; }
+    g.appendChild(mkEl('text', {x:node.x+10, y:ty, 'font-size':'11.5', 'font-family':'"SF Mono","Fira Mono",monospace', 'font-weight':'600', fill:'#F0F2F8', 'dominant-baseline':'middle'}, node.name));
+    if (node.detail) g.appendChild(mkEl('text', {x:node.x+10, y:ty+15, 'font-size':'9.5', 'font-family':'Inter,sans-serif', fill:'#5E6280', 'dominant-baseline':'middle'}, node.detail));
+    const portDefs = node.ports ? Object.entries(node.ports) : [['out',{side:'out',dy:node.h/2}],['in',{side:'in',dy:node.h/2}]];
+    portDefs.forEach(([key, p]) => {
+      const isOut = !key.startsWith('in');
+      const connected = edges.some(e =>
+        (isOut && e.from===node.id && ((e.fromPort||'out')===key)) ||
+        (!isOut && e.to===node.id && ((e.toPort||'in')===key))
+      );
+      if (!connected) return;
+      const px = (p.side||'out')==='out' ? node.x+node.w : node.x;
+      const py = node.y + p.dy;
+      const fid = cfm[node.color]||cfm[Object.keys(cfm)[0]];
+      g.appendChild(mkEl('circle', {cx:px, cy:py, r:'8', fill:node.color, opacity:'0.12'}));
+      g.appendChild(mkEl('circle', {cx:px, cy:py, r:'4', fill:node.color, filter:`url(#${fid})`}));
+    });
+    svg.appendChild(g);
+  });
+}
+
+drawGraph('scene-graph', {w:940, h:300, nodes:[
+  {id:'trigger', x:16,  y:116, w:170, h:68, label:'Input',    name:'InputTriggerZone',    detail:'exit area · any trigger',  color:'#4F8EF7',
+   ports:{out:{side:'out',dy:34}}},
+  {id:'gsm',     x:240, y:116, w:195, h:68, label:'Manager',  name:'GameSceneManager',    detail:'bootstrap scene (persists)', color:'#9B72F7',
+   ports:{in:{side:'in',dy:34}, out:{side:'out',dy:34}}},
+  {id:'level',   x:492, y:50,  w:188, h:68, label:'Scene',    name:'Level1.unity',         detail:'loaded additively',         color:'#2DD4BF',
+   ports:{in:{side:'in',dy:34}, out:{side:'out',dy:34}}},
+  {id:'spawn',   x:492, y:182, w:188, h:68, label:'Component',name:'SpawnPoint',            detail:'isDefaultSpawnPoint: true', color:'#2DD4BF',
+   ports:{in:{side:'in',dy:34}, out:{side:'out',dy:34}}},
+  {id:'player',  x:738, y:116, w:185, h:68, label:'Player',   name:'CharacterControllerCC',detail:'repositioned on load',      color:'#FB923C',
+   ports:{in:{side:'in',dy:34}}},
+], edges:[
+  {from:'trigger', fromPort:'out',  to:'gsm',    toPort:'in',   label:'On Enter → LoadScene("Level1")', color:'#4F8EF7', delay:'0s',   dur:'2.2s'},
+  {from:'gsm',     fromPort:'out',  to:'level',  toPort:'in',   label:'loads additively',               color:'#9B72F7', delay:'.5s',  dur:'2s'},
+  {from:'level',   fromPort:'out',  to:'spawn',  toPort:'in',   label:'contains SpawnPoint',            color:'#2DD4BF', delay:'1s',   dur:'2s'},
+  {from:'spawn',   fromPort:'out',  to:'player', toPort:'in',   label:'positions player',               color:'#2DD4BF', delay:'1.4s', dur:'2s'},
+]});
+</script>
+</body>
+</html>
