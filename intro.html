@@ -604,7 +604,7 @@ const GOALS = [
     steps: [
       'Add InputKeyPress to any GameObject',
       'Add ActionPlaySound (needs an AudioSource)',
-      'Wire: On Key Press → PlaySound()',
+      'Wire: On Key Press → Play()',
     ],
     delay: '0s',
   },
@@ -617,7 +617,7 @@ const GOALS = [
     steps: [
       'Add ActionDisplayText to a Canvas object',
       'Set your message in the Inspector',
-      'Wire any trigger event → Show()',
+      'Wire any trigger event → DisplayDefaultText()',
     ],
     delay: '.2s',
   },
@@ -669,7 +669,7 @@ const GOALS = [
     steps: [
       'Add GameHealthManager to a manager object',
       'Wire hazards → TakeDamage(10)',
-      'On Death → ActionRestartScene.Restart()',
+      'On Death → ActionRestartScene.RestartScene()',
     ],
     delay: '.5s',
   },
@@ -680,9 +680,9 @@ const GOALS = [
     src:      { label: 'GameTimerManager', color: COLORS.green },
     tgt:      { label: 'ActionRestartScene', color: COLORS.orange },
     steps: [
-      'Add GameTimerManager, set Mode to Count Down',
+      'Add GameTimerManager, uncheck Count Up',
       'Set Start Time (e.g. 60 seconds)',
-      'Wire: On Complete → next action',
+      'Wire: On Timer Stopped → next action',
     ],
     delay: '.7s',
   },
@@ -708,7 +708,7 @@ const GOALS = [
     steps: [
       'Add ActionDialogueSequence to the NPC',
       'Fill in lines, portrait, and choices',
-      'Wire: On Interact → Play()',
+      'Wire: On Interact → StartDialogue()',
     ],
     delay: '.4s',
   },
@@ -721,7 +721,7 @@ const GOALS = [
     steps: [
       'Add InputCheckpointZone along the level',
       'Add ActionRespawnPlayer to the player',
-      'Wire: On Death → Respawn()',
+      'Wire: On Death → RespawnToCheckpoint()',
     ],
     delay: '.6s',
   },
@@ -734,7 +734,7 @@ const GOALS = [
     steps: [
       'Add PuzzleSwitch to each switch object',
       'Add PuzzleSwitchChecker, assign all switches',
-      'Wire: On Complete → open the door',
+      'Wire: On Puzzle Solved → open the door',
     ],
     delay: '.2s',
   },
@@ -797,6 +797,7 @@ const TABLES = [
       ['ActionRandomMotion',              'Continuously applies randomized movement',                        'Floating objects and idle wobble'],
       ['ActionPlatformAnimator',          'Moves a platform between waypoints',                             'Doors, elevators, and moving platforms'],
       ['ActionDecalSequence',             'Frame-by-frame material animation on a URP decal',               'Animated decals'],
+      ['ActionDecalSequenceLibrary',      'Switches between multiple named decal sequences',                'Characters with multiple animation states'],
       ['ActionBlinkDecal',                'Automatically blinks a character eye decal',                     'Any character that needs blinking'],
     ],
   },
@@ -814,6 +815,17 @@ const TABLES = [
       ['GameAudioManager',      'Controls background music and ambient audio',              'Music system, crossfades'],
       ['GameCameraManager',     'Switches between Cinemachine cameras by name',            'Multiple angles, cutscenes'],
       ['GameUIManager',         'Connects managers to HUD UI elements',                    'HUD wiring'],
+      ['GameSceneManager',      'Loads scenes additively with spawn point coordination',   'Multi-level games and hub worlds'],
+    ],
+  },
+  {
+    name: 'Multi-Scene Data', color: COLORS.teal,
+    tint: 'rgba(45,212,191,.04)',
+    cols: ['Asset Type', 'What It Does', 'Good For'],
+    rows: [
+      ['IntVariable',    'ScriptableObject holding an int that persists across scene loads',   'Persistent health, score, lives'],
+      ['FloatVariable',  'ScriptableObject holding a float that persists across scene loads',  'Persistent timer, percentage stats'],
+      ['SpawnPoint',     'Marks where the player spawns; supports checkpoint and ID priority', 'Level entry points, scene transitions'],
     ],
   },
   {
@@ -849,6 +861,14 @@ const TABLES = [
       ['PuzzleSwitch',          'A switch that can be activated and deactivated',              'Any interactive switch or button'],
       ['PuzzleSwitchChecker',   'Fires when all assigned switches are activated',              'Combination puzzles'],
       ['PuzzleSequenceChecker', 'Fires when switches are activated in the correct order',     'Sequence puzzles'],
+    ],
+  },
+  {
+    name: 'UI & Utilities', color: COLORS.slate,
+    tint: 'rgba(148,163,200,.04)',
+    cols: ['Component', 'What It Does', 'Good For'],
+    rows: [
+      ['FadeInFromBlackOnRestart', 'Fades the screen in from black every time the scene loads', 'Scene transitions and respawn fade-in'],
     ],
   },
 ];
