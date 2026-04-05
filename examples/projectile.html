@@ -321,6 +321,17 @@
   }
   .page-footer a { color: var(--blue); text-decoration: none; }
   .page-footer a:hover { text-decoration: underline; }
+
+  @media (max-width: 768px) {
+    .topnav { padding: 0 20px; gap: 12px; }
+    .topnav-sep, .topnav a:not(.topnav-logo):not(.topnav-back) { display: none; }
+    .hero { padding: 40px 20px 32px; }
+    .hero-title { font-size: 36px; }
+    .hero-desc { font-size: 15px; margin-bottom: 24px; }
+    .section { padding: 0 20px 48px; }
+    .arch-tiers { grid-template-columns: 1fr; }
+    .page-footer { padding: 20px; flex-direction: column; gap: 8px; text-align: center; }
+  }
 </style>
 </head>
 <body>

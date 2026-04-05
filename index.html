@@ -170,6 +170,18 @@
   .footer-right { font-size: 13px; color: var(--text3); }
   .footer-right a { color: var(--blue); text-decoration: none; }
   .footer-right a:hover { text-decoration: underline; }
+
+  @media (max-width: 768px) {
+    .hero { padding: 56px 20px 40px; }
+    .hero-title { font-size: 52px; }
+    .principle-strip { flex-direction: column; width: 100%; }
+    .ps-arrow { display: none; }
+    .ps-block { border-right: none; border-bottom: 1px solid var(--rule); }
+    .ps-block:last-child { border-bottom: none; }
+    .cards-section { padding: 0 20px 60px; }
+    .cards-grid { grid-template-columns: 1fr; }
+    footer { padding: 24px 20px; flex-direction: column; gap: 8px; text-align: center; }
+  }
 </style>
 </head>
 <body>
