@@ -6,6 +6,7 @@
 <title>EGTK — UI Implementation</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script>if(localStorage.getItem('theme')==='light')document.documentElement.setAttribute('data-theme','light');</script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
@@ -108,6 +109,30 @@
     .da { min-width: 0; width: 100%; }
     .page-footer { padding: 20px; flex-direction: column; gap: 8px; text-align: center; }
   }
+
+  /* ── Light mode ───────────────────────────────────── */
+  [data-theme="light"] {
+    --bg:      #F4F6FA;
+    --surface: #FFFFFF;
+    --surf2:   #EEF1F7;
+    --text1:   #0D0F14;
+    --text2:   #3E4461;
+    --text3:   #6B718F;
+    --rule:    #DDE1EF;
+  }
+  [data-theme="light"] .topnav { background: rgba(244,246,250,.92); }
+  [data-theme="light"] .graph-wrap { background: #171B24; }
+
+  /* ── Theme toggle button ──────────────────────────── */
+  #theme-btn {
+    position: fixed; bottom: 20px; right: 20px; z-index: 300;
+    background: var(--surface); border: 1px solid var(--rule);
+    border-radius: 8px; padding: 7px 11px; font-size: 15px;
+    line-height: 1; cursor: pointer; color: var(--text2);
+    box-shadow: 0 2px 8px rgba(0,0,0,.15);
+    transition: border-color .15s, box-shadow .15s;
+  }
+  #theme-btn:hover { border-color: var(--blue); box-shadow: 0 2px 12px rgba(0,0,0,.2); }
 </style>
 <script>
 function drawGraph(svgId, {nodes, edges, w, h}) {

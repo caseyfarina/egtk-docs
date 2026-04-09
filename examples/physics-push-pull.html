@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EGTK — First-Person Push &amp; Pull</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script>if(localStorage.getItem('theme')==='light')document.documentElement.setAttribute('data-theme','light');</script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg:#0D0F14; --surface:#171B24; --surf2:#1C2130;
+    --text1:#F0F2F8; --text2:#8B8FA8; --text3:#5E6280;
+    --rule:#21283C; --blue:#4F8EF7; --purple:#9B72F7;
+    --green:#34D399; --orange:#FB923C; --teal:#2DD4BF;
+    --pink:#F472B6; --slate:#94A3C8; --yellow:#F59E0B; --red:#EF4444;
+  }
+  html { scroll-behavior: smooth; }
+  body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text1); -webkit-font-smoothing:antialiased; }
+  .dot-grid { background-image:radial-gradient(circle,rgba(148,163,200,.065) 1px,transparent 1px); background-size:28px 28px; }
+
+  /* ── Top nav ── */
+  .topnav { position:sticky; top:0; z-index:100; background:rgba(13,15,20,.88); backdrop-filter:blur(12px); border-bottom:1px solid var(--rule); padding:0 80px; display:flex; align-items:center; gap:32px; height:52px; }
+  .topnav-logo { font-size:13px; font-weight:700; color:var(--text1); text-decoration:none; letter-spacing:-.01em; }
+  .topnav-logo span { color:var(--blue); }
+  .topnav-sep { width:1px; height:16px; background:var(--rule); }
+  .topnav a { font-size:12px; font-weight:500; color:var(--text3); text-decoration:none; transition:color .15s; }
+  .topnav a:hover { color:var(--text1); }
+  .topnav-back { margin-left:auto; font-size:12px; font-weight:500; color:var(--text3); text-decoration:none; }
+  .topnav-back:hover { color:var(--blue); }
+
+  /* ── Hero ── */
+  .hero { padding:80px 80px 48px; max-width:1200px; margin:0 auto; }
+  .breadcrumb { font-size:12px; color:var(--text3); margin-bottom:20px; }
+  .breadcrumb a { color:var(--text3); text-decoration:none; }
+  .breadcrumb a:hover { color:var(--blue); }
+  .breadcrumb span { margin:0 8px; }
+  .hero-pill { display:inline-flex; align-items:center; font-size:10px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; padding:5px 12px; border-radius:20px; background:rgba(251,146,60,.1); color:var(--orange); margin-bottom:20px; }
+  .hero-title { font-size:52px; font-weight:700; letter-spacing:-.03em; line-height:1.1; color:var(--text1); margin-bottom:16px; }
+  .hero-desc { font-size:17px; color:var(--text2); line-height:1.7; max-width:620px; margin-bottom:32px; }
+  .outcome-row { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:48px; }
+  .outcome-chip { display:flex; align-items:center; gap:6px; background:var(--surface); border:1px solid var(--rule); border-radius:8px; padding:6px 12px; font-size:12px; font-weight:500; color:var(--text2); }
+  .outcome-chip .dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+
+  /* ── Section ── */
+  .section { max-width:1200px; margin:0 auto; padding:0 80px 72px; }
+  .sec-label { font-size:10px; font-weight:600; letter-spacing:.12em; text-transform:uppercase; color:var(--text3); margin-bottom:12px; display:block; }
+  .sec-title { font-size:28px; font-weight:700; letter-spacing:-.02em; color:var(--text1); margin-bottom:10px; }
+  .sec-desc { font-size:15px; color:var(--text2); line-height:1.7; max-width:680px; margin-bottom:32px; }
+  hr.rule { border:none; border-top:1px solid var(--rule); max-width:1200px; margin:0 auto; }
+
+  /* ── Steps ── */
+  .steps-list { list-style:none; display:flex; flex-direction:column; gap:12px; margin-bottom:32px; }
+  .step-item { display:flex; gap:16px; align-items:flex-start; background:var(--surface); border:1px solid var(--rule); border-radius:10px; padding:16px 20px; }
+  .step-badge { width:28px; height:28px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; color:var(--orange); background:rgba(251,146,60,.12); margin-top:1px; }
+  .step-title { font-size:14px; font-weight:600; color:var(--text1); margin-bottom:4px; }
+  .step-body { font-size:13px; color:var(--text2); line-height:1.6; }
+  .step-body code { font-family:'SF Mono','Fira Mono',monospace; font-size:12px; padding:1px 5px; border-radius:4px; background:rgba(255,255,255,.07); color:var(--text1); }
+  .step-body strong { color:var(--text1); font-weight:600; }
+
+  /* ── Graph ── */
+  .graph-wrap { border-radius:12px; overflow:hidden; margin-bottom:24px; background:var(--bg); }
+
+  /* ── Callout ── */
+  .callout { border-radius:12px; padding:20px 24px; border:1px solid; display:flex; gap:16px; align-items:flex-start; margin-bottom:24px; }
+  .callout-icon { font-size:20px; flex-shrink:0; margin-top:1px; }
+  .callout-title { font-size:14px; font-weight:700; margin-bottom:5px; }
+  .callout-body { font-size:13px; color:var(--text2); line-height:1.7; }
+  .callout-body code { font-family:'SF Mono','Fira Mono',monospace; font-size:12px; padding:1px 5px; border-radius:4px; background:rgba(255,255,255,.07); color:var(--text1); }
+
+  /* ── Two-column option cards ── */
+  .option-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:32px; }
+  .option-card { background:var(--surface); border:1px solid var(--rule); border-radius:12px; overflow:hidden; }
+  .option-header { padding:14px 20px; border-bottom:1px solid var(--rule); }
+  .option-label { font-size:10px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; margin-bottom:4px; }
+  .option-title { font-size:15px; font-weight:700; color:var(--text1); }
+  .option-body { padding:16px 20px; font-size:13px; color:var(--text2); line-height:1.7; }
+  .option-body code { font-family:'SF Mono','Fira Mono',monospace; font-size:12px; padding:1px 5px; border-radius:4px; background:rgba(255,255,255,.07); color:var(--text1); }
+
+  /* ── Inspector field table ── */
+  .field-table { width:100%; border-collapse:collapse; border:1px solid var(--rule); border-radius:10px; overflow:hidden; margin-bottom:24px; }
+  .field-table th { font-size:9px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--text3); padding:9px 16px; text-align:left; background:rgba(255,255,255,.03); border-bottom:1px solid var(--rule); }
+  .field-table td { padding:9px 16px; font-size:13px; border-bottom:1px solid rgba(33,40,60,.5); vertical-align:top; }
+  .field-table tr:last-child td { border-bottom:none; }
+  .field-table tr:nth-child(even) td { background:var(--surf2); }
+  .field-name { font-family:'SF Mono','Fira Mono',monospace; font-size:12px; color:var(--orange); font-weight:500; }
+  .field-desc { color:var(--text2); }
+  .field-note { font-size:12px; color:var(--text3); }
+
+  /* ── Hierarchy diagram ── */
+  .hier { background:var(--surface); border:1px solid var(--rule); border-radius:12px; padding:24px 28px; margin-bottom:24px; font-family:'SF Mono','Fira Mono',monospace; font-size:13px; line-height:2; }
+  .hier-obj { color:var(--text1); }
+  .hier-indent { padding-left:24px; border-left:1px solid var(--rule); margin-left:8px; }
+  .hier-comp { color:var(--orange); }
+  .hier-note { color:var(--text3); font-size:11px; font-family:'Inter',sans-serif; font-weight:400; margin-left:8px; }
+
+  /* ── Footer ── */
+  .page-footer { border-top:1px solid var(--rule); padding:32px 80px; max-width:1200px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; font-size:13px; color:var(--text3); }
+  .page-footer a { color:var(--blue); text-decoration:none; }
+  .page-footer a:hover { text-decoration:underline; }
+
+  @media (max-width: 768px) {
+    .topnav { padding:0 20px; gap:12px; }
+    .topnav-sep, .topnav a:not(.topnav-logo):not(.topnav-back) { display:none; }
+    .hero { padding:40px 20px 32px; }
+    .hero-title { font-size:36px; }
+    .hero-desc { font-size:15px; margin-bottom:24px; }
+    .section { padding:0 20px 48px; }
+    .option-grid { grid-template-columns:1fr; }
+    .field-table { display:block; overflow-x:auto; }
+    .page-footer { padding:20px; flex-direction:column; gap:8px; text-align:center; }
+  }
+
+  /* ── Light mode ── */
+  [data-theme="light"] {
+    --bg:#F4F6FA; --surface:#FFFFFF; --surf2:#EEF1F7;
+    --text1:#0D0F14; --text2:#3E4461; --text3:#6B718F; --rule:#DDE1EF;
+  }
+  [data-theme="light"] .topnav { background:rgba(244,246,250,.92); }
+  [data-theme="light"] .graph-wrap { background:#171B24; }
+
+  /* ── Theme toggle ── */
+  #theme-btn {
+    position:fixed; bottom:20px; right:20px; z-index:300;
+    background:var(--surface); border:1px solid var(--rule);
+    border-radius:8px; padding:7px 11px; font-size:15px;
+    line-height:1; cursor:pointer; color:var(--text2);
+    box-shadow:0 2px 8px rgba(0,0,0,.15); transition:border-color .15s,box-shadow .15s;
+  }
+  #theme-btn:hover { border-color:var(--blue); box-shadow:0 2px 12px rgba(0,0,0,.2); }
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <a href="../index.html" class="topnav-logo">EGTK<span>.</span></a>
+  <div class="topnav-sep"></div>
+  <a href="#setup">Setup</a>
+  <a href="#wiring">Wiring</a>
+  <a href="#tuning">Tuning</a>
+  <a href="#variants">Variants</a>
+  <a href="../index.html" class="topnav-back">← All Docs</a>
+</nav>
+
+<div class="hero">
+  <div class="breadcrumb"><a href="../index.html">EGTK Docs</a><span>/</span>Examples<span>/</span>First-Person Push &amp; Pull</div>
+  <div class="hero-pill">Example</div>
+  <h1 class="hero-title">First-Person<br>Push &amp; Pull</h1>
+  <p class="hero-desc">Give the player the ability to push and pull tagged physics objects using separate key presses. No code required — two <strong style="color:var(--text1)">PhysicsForceZone</strong> components and two <strong style="color:var(--text1)">InputKeyPress</strong> components do the work.</p>
+  <div class="outcome-row">
+    <div class="outcome-chip"><div class="dot" style="background:var(--orange);box-shadow:0 0 6px var(--orange)"></div>E key pushes objects away</div>
+    <div class="outcome-chip"><div class="dot" style="background:var(--teal);box-shadow:0 0 6px var(--teal)"></div>Q key pulls objects toward player</div>
+    <div class="outcome-chip"><div class="dot" style="background:var(--blue);box-shadow:0 0 6px var(--blue)"></div>Only tagged objects are affected</div>
+    <div class="outcome-chip"><div class="dot" style="background:var(--green);box-shadow:0 0 6px var(--green)"></div>Adjustable reach and force</div>
+  </div>
+</div>
+
+<hr class="rule">
+
+<!-- ── HOW IT WORKS ─────────────────────────────────────────── -->
+<div class="section" style="padding-top:60px">
+  <span class="sec-label">The Idea</span>
+  <h2 class="sec-title">Two zones, one player</h2>
+  <p class="sec-desc">A <strong style="color:var(--text1)">PhysicsForceZone</strong> is an invisible trigger that tracks Rigidbody objects inside it and applies a force when told to. With the new <strong style="color:var(--text1)">Target Mode</strong>, the direction of that force is computed relative to the player — so the same component handles both push and pull depending on how it's configured.</p>
+  <p class="sec-desc" style="margin-top:-16px">Add two of them to the player. Wire each to a different key. Done.</p>
+
+  <div class="option-grid">
+    <div class="option-card">
+      <div class="option-header" style="background:rgba(251,146,60,.05)">
+        <div class="option-label" style="color:var(--orange)">Push Zone</div>
+        <div class="option-title">Away From Target</div>
+      </div>
+      <div class="option-body">
+        Target Mode set to <code>Away From Target</code>. When <code>ApplyForce()</code> is called, every <code>Moveable</code>-tagged Rigidbody inside the trigger is launched <strong>away from the player</strong>. Direction is calculated per object at the moment of the key press.
+      </div>
+    </div>
+    <div class="option-card">
+      <div class="option-header" style="background:rgba(45,212,191,.05)">
+        <div class="option-label" style="color:var(--teal)">Pull Zone</div>
+        <div class="option-title">Toward Target</div>
+      </div>
+      <div class="option-body">
+        Target Mode set to <code>Toward Target</code>. Same trigger radius, same tag filter — but direction is reversed. Each Rigidbody is pulled <strong>toward the player</strong>. Leave Direction Target empty and the player is found automatically by tag.
+      </div>
+    </div>
+  </div>
+</div>
+
+<hr class="rule">
+
+<!-- ── SETUP ───────────────────────────────────────────────── -->
+<div class="section" id="setup" style="padding-top:60px">
+  <span class="sec-label">Step by Step</span>
+  <h2 class="sec-title">Setting up the push &amp; pull system</h2>
+  <p class="sec-desc">Everything lives on the player. The moveable objects are just tagged Rigidbodies — no components needed on them.</p>
+
+  <ol class="steps-list">
+    <li class="step-item">
+      <div class="step-badge">1</div>
+      <div>
+        <div class="step-title">Tag the player and verify the Player tag</div>
+        <div class="step-body">Select the player GameObject. In the top of the Inspector, confirm the <strong>Tag</strong> is set to <code>Player</code>. The force zones use this to auto-find the player when computing push/pull direction — no manual wiring needed.</div>
+      </div>
+    </li>
+    <li class="step-item">
+      <div class="step-badge">2</div>
+      <div>
+        <div class="step-title">Tag your moveable objects and add Rigidbodies</div>
+        <div class="step-body">Select each object you want to be pushable/pullable. Set its <strong>Tag</strong> to <code>Moveable</code> (or any tag you choose — just use it consistently in the next step). Make sure each has a <strong>Rigidbody</strong> component — the force zones only affect Rigidbodies. A regular Collider (not trigger) is needed for physics to resolve.</div>
+      </div>
+    </li>
+    <li class="step-item">
+      <div class="step-badge">3</div>
+      <div>
+        <div class="step-title">Add a Sphere Collider to the player and set it to Is Trigger</div>
+        <div class="step-body">Select the player. Click <strong>Add Component → Physics → Sphere Collider</strong>. Check <strong>Is Trigger</strong>. Set the <code>Radius</code> to the desired reach — <code>3</code> is a good starting point. This one collider is shared by both force zones.</div>
+      </div>
+    </li>
+    <li class="step-item">
+      <div class="step-badge">4</div>
+      <div>
+        <div class="step-title">Add two PhysicsForceZone components to the player</div>
+        <div class="step-body">
+          Click <strong>Add Component → PhysicsForceZone</strong> twice. Configure them as follows:<br><br>
+          <strong>Push Zone (first one):</strong><br>
+          &nbsp;&nbsp;Target Tag: <code>Moveable</code><br>
+          &nbsp;&nbsp;Target Mode: <code>Away From Target</code><br>
+          &nbsp;&nbsp;Direction Target: <em>leave empty</em><br>
+          &nbsp;&nbsp;Min Force / Max Force: <code>8</code> / <code>12</code><br>
+          &nbsp;&nbsp;Force Mode: <code>Impulse</code><br>
+          &nbsp;&nbsp;One Force Per Stay: <code>off</code><br><br>
+          <strong>Pull Zone (second one):</strong><br>
+          &nbsp;&nbsp;Target Tag: <code>Moveable</code><br>
+          &nbsp;&nbsp;Target Mode: <code>Toward Target</code><br>
+          &nbsp;&nbsp;Direction Target: <em>leave empty</em><br>
+          &nbsp;&nbsp;Min Force / Max Force: <code>8</code> / <code>12</code><br>
+          &nbsp;&nbsp;Force Mode: <code>Impulse</code><br>
+          &nbsp;&nbsp;One Force Per Stay: <code>off</code>
+        </div>
+      </div>
+    </li>
+    <li class="step-item">
+      <div class="step-badge">5</div>
+      <div>
+        <div class="step-title">Add two InputKeyPress components and wire them</div>
+        <div class="step-body">
+          Click <strong>Add Component → InputKeyPress</strong> twice.<br><br>
+          <strong>First InputKeyPress:</strong> Set <code>This Key</code> to <code>E</code>. In <strong>On Press Event</strong>, drag the player in, select <code>PhysicsForceZone → ApplyForce()</code> — choose the <em>Push Zone</em> (Away From Target).<br><br>
+          <strong>Second InputKeyPress:</strong> Set <code>This Key</code> to <code>Q</code>. Wire <strong>On Press Event</strong> to the <em>Pull Zone</em>'s <code>ApplyForce()</code>.
+        </div>
+      </div>
+    </li>
+  </ol>
+
+  <div class="callout" style="border-color:rgba(251,146,60,.2);background:rgba(251,146,60,.04)">
+    <div class="callout-icon">💡</div>
+    <div>
+      <div class="callout-title" style="color:var(--orange)">Selecting the right PhysicsForceZone in the event dropdown</div>
+      <div class="callout-body">When the player has two PhysicsForceZone components, the UnityEvent dropdown shows both. Hover over each <code>ApplyForce()</code> entry — Unity highlights the matching component in the Inspector so you can tell which is which. Alternatively, rename the two components in the Inspector header to "Push Zone" and "Pull Zone" for clarity.</div>
+    </div>
+  </div>
+</div>
+
+<hr class="rule">
+
+<!-- ── HIERARCHY ───────────────────────────────────────────── -->
+<div class="section" style="padding-top:60px">
+  <span class="sec-label">Scene Structure</span>
+  <h2 class="sec-title">What the Hierarchy looks like</h2>
+  <p class="sec-desc">All force logic lives on the player. Moveable objects are standalone — no wiring on them at all.</p>
+
+  <div class="hier">
+    <div class="hier-obj">📁 Player <span class="hier-note">tag: Player</span></div>
+    <div class="hier-indent">
+      <div><span class="hier-comp">CharacterControllerFP</span></div>
+      <div><span class="hier-comp">Sphere Collider</span> <span class="hier-note">Is Trigger ✓ · Radius 3</span></div>
+      <div><span class="hier-comp">PhysicsForceZone</span> <span class="hier-note">Target Mode: Away From Target (Push)</span></div>
+      <div><span class="hier-comp">PhysicsForceZone</span> <span class="hier-note">Target Mode: Toward Target (Pull)</span></div>
+      <div><span class="hier-comp">InputKeyPress</span> <span class="hier-note">Key: E → Push Zone ApplyForce()</span></div>
+      <div><span class="hier-comp">InputKeyPress</span> <span class="hier-note">Key: Q → Pull Zone ApplyForce()</span></div>
+    </div>
+    <div class="hier-obj" style="margin-top:12px">📦 Crate <span class="hier-note">tag: Moveable · has Rigidbody</span></div>
+    <div class="hier-obj">📦 Barrel <span class="hier-note">tag: Moveable · has Rigidbody</span></div>
+    <div class="hier-obj">📦 Boulder <span class="hier-note">tag: Moveable · has Rigidbody</span></div>
+  </div>
+</div>
+
+<hr class="rule">
+
+<!-- ── WIRING DIAGRAM ──────────────────────────────────────── -->
+<div class="section" id="wiring" style="padding-top:60px">
+  <span class="sec-label">Event Flow</span>
+  <h2 class="sec-title">Complete wiring for this example</h2>
+  <p class="sec-desc">Each key fires one event. That event calls <code>ApplyForce()</code> on the matching zone. The zone computes direction relative to the player at that instant and launches every <code>Moveable</code> Rigidbody inside its radius.</p>
+
+  <div class="graph-wrap dot-grid">
+    <svg id="pushpull-graph" style="border-radius:12px;overflow:visible;display:block"></svg>
+  </div>
+
+  <div class="callout" style="border-color:rgba(79,142,247,.2);background:rgba(79,142,247,.04)">
+    <div class="callout-icon">ℹ️</div>
+    <div>
+      <div class="callout-title" style="color:var(--blue)">Direction is computed per object at the moment of the key press</div>
+      <div class="callout-body">If three crates are inside the trigger when E is pressed, each gets a force vector pointing away from the player's position <em>at that exact frame</em>. Objects that are closer don't get stronger force — that's a future enhancement. All objects in the zone get the same magnitude, in slightly different directions.</div>
+    </div>
+  </div>
+</div>
+
+<hr class="rule">
+
+<!-- ── TUNING ──────────────────────────────────────────────── -->
+<div class="section" id="tuning" style="padding-top:60px">
+  <span class="sec-label">Inspector Reference</span>
+  <h2 class="sec-title">Key fields to tune</h2>
+  <p class="sec-desc">These are the settings most likely to need adjustment when testing. Both zones share the same fields — tune them independently.</p>
+
+  <table class="field-table">
+    <thead><tr><th>Field</th><th>What it does</th><th>Recommendation</th></tr></thead>
+    <tbody>
+      <tr>
+        <td class="field-name">Target Tag</td>
+        <td class="field-desc">Only Rigidbodies with this tag are tracked and affected</td>
+        <td class="field-note">Use a dedicated tag like <code>Moveable</code> — don't reuse <code>Player</code> or Unity built-ins</td>
+      </tr>
+      <tr>
+        <td class="field-name">Target Mode</td>
+        <td class="field-desc">Sets whether force pushes away or pulls toward the player</td>
+        <td class="field-note">Away From Target = push · Toward Target = pull</td>
+      </tr>
+      <tr>
+        <td class="field-name">Direction Target</td>
+        <td class="field-desc">The reference point for direction. Leave empty to auto-find the Player tag</td>
+        <td class="field-note">Leave empty for this setup — auto-find handles it</td>
+      </tr>
+      <tr>
+        <td class="field-name">Min / Max Force</td>
+        <td class="field-desc">A random magnitude is chosen in this range each time a force is applied</td>
+        <td class="field-note">Start with 8–12 for Impulse mode; increase for heavier Rigidbodies</td>
+      </tr>
+      <tr>
+        <td class="field-name">Force Mode</td>
+        <td class="field-desc">How the force is applied to the Rigidbody</td>
+        <td class="field-note"><code>Impulse</code> feels snappy and responsive. <code>Force</code> feels gradual and wind-like</td>
+      </tr>
+      <tr>
+        <td class="field-name">One Force Per Stay</td>
+        <td class="field-desc">Each object can only be forced once per stay if checked</td>
+        <td class="field-note">Turn <strong>off</strong> for push/pull — you want to force on every key press, not just once per approach</td>
+      </tr>
+      <tr>
+        <td class="field-name">Apply To First Only</td>
+        <td class="field-desc">If on, only the first object found in the zone is forced per key press</td>
+        <td class="field-note">Leave <strong>off</strong> to affect everything in reach. Turn on if you want precise single-object selection</td>
+      </tr>
+      <tr>
+        <td class="field-name">Sphere Collider Radius</td>
+        <td class="field-desc">The reach of the force — on the Sphere Collider, not on PhysicsForceZone</td>
+        <td class="field-note">3 units works for arm's length. Increase for a larger gravity-gun style radius</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout" style="border-color:rgba(239,68,68,.2);background:rgba(239,68,68,.04)">
+    <div class="callout-icon">⚠️</div>
+    <div>
+      <div class="callout-title" style="color:var(--red)">Heavy objects may not move much</div>
+      <div class="callout-body">Unity's physics simulation applies forces relative to an object's <code>mass</code>. A Rigidbody with mass 100 will barely budge at force 10. Either increase Min/Max Force, or reduce the Rigidbody's mass on your moveable objects. The Rigidbody's <code>Drag</code> setting also affects how far objects travel after being hit.</div>
+    </div>
+  </div>
+</div>
+
+<hr class="rule">
+
+<!-- ── VARIANTS ────────────────────────────────────────────── -->
+<div class="section" id="variants" style="padding-top:60px">
+  <span class="sec-label">Variants &amp; Ideas</span>
+  <h2 class="sec-title">What you can build from here</h2>
+  <p class="sec-desc">This setup is a starting point. Small changes open up different mechanics.</p>
+
+  <div class="option-grid" style="margin-bottom:16px">
+    <div class="option-card">
+      <div class="option-header" style="background:rgba(155,114,247,.05)">
+        <div class="option-label" style="color:var(--purple)">Variant</div>
+        <div class="option-title">Explosion on Key Press</div>
+      </div>
+      <div class="option-body">Set Target Mode to <code>Away From Target</code>, increase Min/Max Force to <code>20–40</code>, and set Sphere Collider Radius to <code>6</code>. Wire a single key press. Everything tagged <code>Moveable</code> within 6 units gets blasted outward — instant explosion effect.</div>
+    </div>
+    <div class="option-card">
+      <div class="option-header" style="background:rgba(52,211,153,.05)">
+        <div class="option-label" style="color:var(--green)">Variant</div>
+        <div class="option-title">Continuous Pull (Wind / Gravity Well)</div>
+      </div>
+      <div class="option-body">Set <code>Apply On Enter</code> to true on the Pull Zone and set Force Mode to <code>Force</code>. Objects are continuously pulled toward the player as long as they're in the trigger — no key press needed. Combine with a large radius for a gravity-well feel.</div>
+    </div>
+    <div class="option-card">
+      <div class="option-header" style="background:rgba(244,114,182,.05)">
+        <div class="option-label" style="color:var(--pink)">Variant</div>
+        <div class="option-title">Puzzle: Push Block onto a Pressure Plate</div>
+      </div>
+      <div class="option-body">Tag a single box as <code>Moveable</code>. Use the push mechanic to slide it. On the pressure plate, add an <strong>InputTriggerZone</strong> with Target Tag <code>Moveable</code> — wire its <code>On Enter</code> to whatever the plate should trigger. No code, pure events.</div>
+    </div>
+    <div class="option-card">
+      <div class="option-header" style="background:rgba(245,158,11,.05)">
+        <div class="option-label" style="color:var(--yellow)">Variant</div>
+        <div class="option-title">Pull to Collect (Magnetic Pickup)</div>
+      </div>
+      <div class="option-body">Set <code>Apply On Enter</code> to true on the Pull Zone with Force Mode <code>Force</code> and a small radius. Tag coins or pickups as <code>Moveable</code>. They'll drift toward the player when nearby. Wire an <strong>InputTriggerZone</strong> (even smaller radius) to actually collect them on overlap.</div>
+    </div>
+  </div>
+
+  <div class="callout" style="border-color:rgba(148,163,200,.15);background:rgba(148,163,200,.04)">
+    <div class="callout-icon">💡</div>
+    <div>
+      <div class="callout-title" style="color:var(--slate)">Multiple tags? Use multiple zones</div>
+      <div class="callout-body">PhysicsForceZone filters by a single tag. If you want push/pull to affect <code>Crate</code>-tagged objects differently from <code>Enemy</code>-tagged objects (different forces), add additional PhysicsForceZone components — one per tag. Each zone independently tracks its own set of Rigidbodies and can be wired to any key.</div>
+    </div>
+  </div>
+</div>
+
+<div class="page-footer">
+  <span>EGTK — Event Game Toolkit</span>
+  <span><a href="../index.html">← All Docs</a> &nbsp;·&nbsp; <a href="projectile.html">Projectile System →</a></span>
+</div>
+
+<!-- ── Graph drawing function ── -->
+<script>
+function drawGraph(svgId, {nodes, edges, w, h}) {
+  const NS = 'http://www.w3.org/2000/svg';
+  const svg = document.getElementById(svgId);
+  if (!svg) return;
+  svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+  svg.setAttribute('width', '100%');
+  svg.style.display = 'block';
+
+  const defs = document.createElementNS(NS, 'defs');
+  const pat = document.createElementNS(NS, 'pattern');
+  pat.setAttribute('id', svgId+'-dots'); pat.setAttribute('x','0'); pat.setAttribute('y','0');
+  pat.setAttribute('width','28'); pat.setAttribute('height','28'); pat.setAttribute('patternUnits','userSpaceOnUse');
+  const dc = document.createElementNS(NS, 'circle');
+  dc.setAttribute('cx','1'); dc.setAttribute('cy','1'); dc.setAttribute('r','1'); dc.setAttribute('fill','rgba(148,163,200,0.055)');
+  pat.appendChild(dc); defs.appendChild(pat);
+
+  const uniqueColors = [...new Set([...nodes.map(n=>n.color), ...edges.map(e=>e.color)])];
+  const cfm = {};
+  uniqueColors.forEach((color, i) => {
+    const grad = document.createElementNS(NS, 'linearGradient');
+    grad.setAttribute('id', svgId+'-g'+i); grad.setAttribute('x1','0%'); grad.setAttribute('y1','0%'); grad.setAttribute('x2','100%'); grad.setAttribute('y2','0%');
+    const s = document.createElementNS(NS, 'stop'); s.setAttribute('offset','0%'); s.setAttribute('stop-color', color); s.setAttribute('stop-opacity','1');
+    const e2 = document.createElementNS(NS, 'stop'); e2.setAttribute('offset','100%'); e2.setAttribute('stop-color', color); e2.setAttribute('stop-opacity','.4');
+    grad.appendChild(s); grad.appendChild(e2); defs.appendChild(grad);
+    cfm[color] = svgId+'-g'+i;
+  });
+  svg.appendChild(defs);
+
+  // bg
+  const bgr = document.createElementNS(NS, 'rect');
+  bgr.setAttribute('width', w); bgr.setAttribute('height', h); bgr.setAttribute('fill', '#0D0F14');
+  svg.appendChild(bgr);
+  const bgp = document.createElementNS(NS, 'rect');
+  bgp.setAttribute('width', w); bgp.setAttribute('height', h); bgp.setAttribute('fill', `url(#${svgId}-dots)`);
+  svg.appendChild(bgp);
+
+  function mk(tag, attrs) {
+    const el = document.createElementNS(NS, tag);
+    Object.entries(attrs).forEach(([k,v]) => el.setAttribute(k,v));
+    return el;
+  }
+
+  // port positions
+  function portPos(node, portKey) {
+    const p = node.ports[portKey];
+    const x = p.side === 'out' ? node.x + node.w : node.x;
+    const y = node.y + p.dy;
+    return {x, y};
+  }
+
+  // draw edges first
+  edges.forEach(edge => {
+    const fromNode = nodes.find(n => n.id === edge.from);
+    const toNode   = nodes.find(n => n.id === edge.to);
+    const fp = portPos(fromNode, edge.fromPort);
+    const tp = portPos(toNode, edge.toPort);
+    const cx1 = fp.x + (tp.x - fp.x) * 0.45;
+    const cx2 = tp.x - (tp.x - fp.x) * 0.45;
+
+    const pathD = `M ${fp.x} ${fp.y} C ${cx1} ${fp.y}, ${cx2} ${tp.y}, ${tp.x} ${tp.y}`;
+    const pathBg = mk('path', {d: pathD, fill: 'none', stroke: edge.color, 'stroke-width': '1.5', 'stroke-opacity': '0.15'});
+    svg.appendChild(pathBg);
+
+    const pathLen = 200;
+    const pathFg = mk('path', {
+      d: pathD, fill: 'none', stroke: edge.color,
+      'stroke-width': '1.5', 'stroke-opacity': '0.85',
+      'stroke-dasharray': pathLen, 'stroke-dashoffset': pathLen,
+      'stroke-linecap': 'round'
+    });
+    const anim = mk('animate', {
+      attributeName: 'stroke-dashoffset',
+      from: pathLen, to: '0',
+      dur: edge.dur || '2s', begin: edge.delay || '0s',
+      repeatCount: 'indefinite', calcMode: 'spline',
+      keySplines: '0.4 0 0.2 1', keyTimes: '0;1'
+    });
+    pathFg.appendChild(anim); svg.appendChild(pathFg);
+
+    if (edge.label) {
+      const mx = (fp.x + tp.x) / 2;
+      const my = (fp.y + tp.y) / 2 - 10;
+      const lbl = mk('text', {x: mx, y: my, 'text-anchor': 'middle', fill: edge.color, 'font-size': '9', 'font-family': 'Inter,sans-serif', 'font-weight': '500', 'fill-opacity': '.8'});
+      lbl.textContent = edge.label;
+      svg.appendChild(lbl);
+    }
+  });
+
+  // draw nodes
+  nodes.forEach(node => {
+    const g = document.createElementNS(NS, 'g');
+
+    // card bg
+    const rx = 10;
+    const bg = mk('rect', {x: node.x, y: node.y, width: node.w, height: node.h, rx, ry: rx, fill: '#171B24', stroke: '#21283C', 'stroke-width': '1'});
+    g.appendChild(bg);
+
+    // colored top bar
+    const bar = mk('rect', {x: node.x, y: node.y, width: node.w, height: 3, rx: 0, fill: node.color, 'fill-opacity': '0.9'});
+    g.appendChild(bar);
+
+    // colored left accent
+    const accent = mk('rect', {x: node.x, y: node.y+3, width: 3, height: node.h-3, fill: node.color, 'fill-opacity': '0.18'});
+    g.appendChild(accent);
+
+    // label
+    const lbl = mk('text', {x: node.x+14, y: node.y+20, fill: node.color, 'font-size': '9', 'font-family': 'Inter,sans-serif', 'font-weight': '600', 'letter-spacing': '0.08em', 'text-transform': 'uppercase', 'fill-opacity': '0.9'});
+    lbl.textContent = node.label.toUpperCase();
+    g.appendChild(lbl);
+
+    // name
+    const nm = mk('text', {x: node.x+14, y: node.y+36, fill: '#F0F2F8', 'font-size': '12', 'font-family': 'SF Mono,Fira Mono,monospace', 'font-weight': '600'});
+    nm.textContent = node.name;
+    g.appendChild(nm);
+
+    // detail
+    if (node.detail) {
+      const dt = mk('text', {x: node.x+14, y: node.y+52, fill: '#5E6280', 'font-size': '10', 'font-family': 'Inter,sans-serif'});
+      dt.textContent = node.detail;
+      g.appendChild(dt);
+    }
+
+    // port dots
+    Object.values(node.ports).forEach(p => {
+      const px = p.side === 'out' ? node.x + node.w : node.x;
+      const py = node.y + p.dy;
+      const dot = mk('circle', {cx: px, cy: py, r: 4, fill: node.color, 'fill-opacity': '0.8', stroke: '#0D0F14', 'stroke-width': '2'});
+      g.appendChild(dot);
+    });
+
+    svg.appendChild(g);
+  });
+}
+
+drawGraph('pushpull-graph', {w: 900, h: 260, nodes: [
+  {id:'kpe',      x:16,  y:28,  w:165, h:68, label:'Input',   name:'InputKeyPress',   detail:'Key: E',                  color:'#4F8EF7',
+   ports:{out:{side:'out', dy:34}}},
+  {id:'kpq',      x:16,  y:164, w:165, h:68, label:'Input',   name:'InputKeyPress',   detail:'Key: Q',                  color:'#4F8EF7',
+   ports:{out:{side:'out', dy:34}}},
+  {id:'pfzpush',  x:248, y:28,  w:210, h:68, label:'Physics', name:'PhysicsForceZone',detail:'Away From Target (Push)',  color:'#FB923C',
+   ports:{in:{side:'in',  dy:34}, out:{side:'out', dy:34}}},
+  {id:'pfzpull',  x:248, y:164, w:210, h:68, label:'Physics', name:'PhysicsForceZone',detail:'Toward Target (Pull)',     color:'#2DD4BF',
+   ports:{in:{side:'in',  dy:34}, out:{side:'out', dy:34}}},
+  {id:'moveable', x:538, y:96,  w:180, h:68, label:'Object',  name:'Moveable',        detail:'Rigidbody · tag: Moveable',color:'#34D399',
+   ports:{in:{side:'in',  dy:20}, in2:{side:'in',  dy:48}}},
+], edges: [
+  {from:'kpe',     fromPort:'out',  to:'pfzpush', toPort:'in',  label:'onPressEvent → ApplyForce()', color:'#4F8EF7', delay:'0s',   dur:'2s'},
+  {from:'kpq',     fromPort:'out',  to:'pfzpull', toPort:'in',  label:'onPressEvent → ApplyForce()', color:'#4F8EF7', delay:'0.5s', dur:'2s'},
+  {from:'pfzpush', fromPort:'out',  to:'moveable',toPort:'in',  label:'pushes away ↗',              color:'#FB923C', delay:'0.4s', dur:'2.2s'},
+  {from:'pfzpull', fromPort:'out',  to:'moveable',toPort:'in2', label:'pulls toward ↙',             color:'#2DD4BF', delay:'0.9s', dur:'2.2s'},
+]});
+</script>
+
+<button id="theme-btn" aria-label="Toggle light/dark mode"></button>
+<script>
+(function(){
+  var btn = document.getElementById('theme-btn');
+  function sync() { btn.textContent = document.documentElement.getAttribute('data-theme') === 'light' ? '☾' : '☀'; }
+  btn.addEventListener('click', function() {
+    var light = document.documentElement.getAttribute('data-theme') === 'light';
+    document.documentElement.setAttribute('data-theme', light ? 'dark' : 'light');
+    localStorage.setItem('theme', light ? 'dark' : 'light');
+    sync();
+  });
+  sync();
+})();
+</script>
+</body>
+</html>

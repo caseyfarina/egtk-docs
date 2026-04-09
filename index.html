@@ -6,6 +6,7 @@
 <title>EGTK — Event Game Toolkit</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script>if(localStorage.getItem('theme')==='light')document.documentElement.setAttribute('data-theme','light');</script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -247,6 +248,28 @@
     .ref-col-row, .ref-row { grid-template-columns: 160px 1fr; }
     .ref-col-label:last-child, .ref-row > .ref-use { display: none; }
   }
+
+  /* ── Light mode ───────────────────────────────────── */
+  [data-theme="light"] {
+    --bg:      #F4F6FA;
+    --surface: #FFFFFF;
+    --surf2:   #EEF1F7;
+    --text1:   #0D0F14;
+    --text2:   #3E4461;
+    --text3:   #6B718F;
+    --rule:    #DDE1EF;
+  }
+
+  /* ── Theme toggle button ──────────────────────────── */
+  #theme-btn {
+    position: fixed; bottom: 20px; right: 20px; z-index: 300;
+    background: var(--surface); border: 1px solid var(--rule);
+    border-radius: 8px; padding: 7px 11px; font-size: 15px;
+    line-height: 1; cursor: pointer; color: var(--text2);
+    box-shadow: 0 2px 8px rgba(0,0,0,.15);
+    transition: border-color .15s, box-shadow .15s;
+  }
+  #theme-btn:hover { border-color: var(--blue); box-shadow: 0 2px 12px rgba(0,0,0,.2); }
 </style>
 </head>
 <body>
@@ -344,6 +367,20 @@
         <span class="tag">PuzzleSwitch</span>
         <span class="tag">PuzzleSwitchChecker</span>
         <span class="tag">PuzzleSequenceChecker</span>
+      </div>
+      <span class="card-arrow">↗</span>
+    </a>
+
+    <!-- Push & Pull -->
+    <a href="examples/physics-push-pull.html" class="nav-card" style="--card-color: var(--orange)">
+      <div class="card-label">Example</div>
+      <div class="card-title">First-Person Push &amp; Pull</div>
+      <div class="card-desc">Give the player physics-based push and pull abilities using separate keys. Tagged objects are launched toward or away from the player — no code required.</div>
+      <div class="card-tags">
+        <span class="tag">PhysicsForceZone</span>
+        <span class="tag">InputKeyPress</span>
+        <span class="tag">Target Mode</span>
+        <span class="tag">Rigidbody</span>
       </div>
       <span class="card-arrow">↗</span>
     </a>
@@ -520,5 +557,21 @@ TABLES.forEach(cat => {
 });
 </script>
 
+<button id="theme-btn" aria-label="Toggle light/dark mode"></button>
+<script>
+(function(){
+  var btn = document.getElementById('theme-btn');
+  function sync() {
+    btn.textContent = document.documentElement.getAttribute('data-theme') === 'light' ? '☾' : '☀';
+  }
+  btn.addEventListener('click', function() {
+    var light = document.documentElement.getAttribute('data-theme') === 'light';
+    document.documentElement.setAttribute('data-theme', light ? 'dark' : 'light');
+    localStorage.setItem('theme', light ? 'dark' : 'light');
+    sync();
+  });
+  sync();
+})();
+</script>
 </body>
 </html>
