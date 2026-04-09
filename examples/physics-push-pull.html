@@ -214,7 +214,8 @@
       <div class="step-badge">3</div>
       <div>
         <div class="step-title">Add a Sphere Collider to the player and set it to Is Trigger</div>
-        <div class="step-body">Select the player. Click <strong>Add Component → Physics → Sphere Collider</strong>. Check <strong>Is Trigger</strong>. Set the <code>Radius</code> to the desired reach — <code>3</code> is a good starting point. This one collider is shared by both force zones.</div>
+        <div class="step-body">Select the player. Click <strong>Add Component → Physics → Sphere Collider</strong>. Check <strong>Is Trigger</strong>. Set the <code>Radius</code> to the desired reach — <code>3</code> is a good starting point.<br><br>
+        <strong>Important:</strong> this single collider is shared by both PhysicsForceZone components — push and pull will have the same reach. If you want different radii (e.g. pull range of 2, push range of 5), see <em>Two Separate Trigger Colliders</em> below.</div>
       </div>
     </li>
     <li class="step-item">
@@ -253,6 +254,23 @@
     </li>
   </ol>
 
+  <div class="callout" style="border-color:rgba(45,212,191,.2);background:rgba(45,212,191,.04)" id="two-colliders">
+    <div class="callout-icon">📐</div>
+    <div>
+      <div class="callout-title" style="color:var(--teal)">Two Separate Trigger Colliders — for different push and pull reach</div>
+      <div class="callout-body">
+        When both PhysicsForceZone components sit on the same GameObject, they share every trigger collider on that object. Both zones respond to the same radius.<br><br>
+        To give push and pull <strong>independent radii</strong>, move each PhysicsForceZone onto its own child GameObject:
+        <br><br>
+        <strong>1.</strong> On the player, create two empty child GameObjects: name them <code>PushZone</code> and <code>PullZone</code>.<br>
+        <strong>2.</strong> Add a <strong>Sphere Collider (Is Trigger)</strong> and one <strong>PhysicsForceZone</strong> to each child — Push on <code>PushZone</code>, Pull on <code>PullZone</code>.<br>
+        <strong>3.</strong> Set the collider <code>Radius</code> independently on each child.<br>
+        <strong>4.</strong> Keep the two <strong>InputKeyPress</strong> components on the player. In each event, drag in the corresponding child GameObject and select its <code>ApplyForce()</code>.<br><br>
+        The <code>InputKeyPress</code> components stay on the player — only the collider and PhysicsForceZone move to the children. The hierarchy then looks like the <em>Two-collider variant</em> shown in Scene Structure below.
+      </div>
+    </div>
+  </div>
+
   <div class="callout" style="border-color:rgba(251,146,60,.2);background:rgba(251,146,60,.04)">
     <div class="callout-icon">💡</div>
     <div>
@@ -270,19 +288,41 @@
   <h2 class="sec-title">What the Hierarchy looks like</h2>
   <p class="sec-desc">All force logic lives on the player. Moveable objects are standalone — no wiring on them at all.</p>
 
-  <div class="hier">
+  <h3 style="font-size:13px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);margin-bottom:10px">Option A — Shared collider (same reach for push and pull)</h3>
+  <div class="hier" style="margin-bottom:24px">
     <div class="hier-obj">📁 Player <span class="hier-note">tag: Player</span></div>
     <div class="hier-indent">
       <div><span class="hier-comp">CharacterControllerFP</span></div>
-      <div><span class="hier-comp">Sphere Collider</span> <span class="hier-note">Is Trigger ✓ · Radius 3</span></div>
-      <div><span class="hier-comp">PhysicsForceZone</span> <span class="hier-note">Target Mode: Away From Target (Push)</span></div>
-      <div><span class="hier-comp">PhysicsForceZone</span> <span class="hier-note">Target Mode: Toward Target (Pull)</span></div>
+      <div><span class="hier-comp">Sphere Collider</span> <span class="hier-note">Is Trigger ✓ · Radius 3 · shared by both zones</span></div>
+      <div><span class="hier-comp">PhysicsForceZone</span> <span class="hier-note">Away From Target (Push)</span></div>
+      <div><span class="hier-comp">PhysicsForceZone</span> <span class="hier-note">Toward Target (Pull)</span></div>
       <div><span class="hier-comp">InputKeyPress</span> <span class="hier-note">Key: E → Push Zone ApplyForce()</span></div>
       <div><span class="hier-comp">InputKeyPress</span> <span class="hier-note">Key: Q → Pull Zone ApplyForce()</span></div>
     </div>
     <div class="hier-obj" style="margin-top:12px">📦 Crate <span class="hier-note">tag: Moveable · has Rigidbody</span></div>
     <div class="hier-obj">📦 Barrel <span class="hier-note">tag: Moveable · has Rigidbody</span></div>
-    <div class="hier-obj">📦 Boulder <span class="hier-note">tag: Moveable · has Rigidbody</span></div>
+  </div>
+
+  <h3 style="font-size:13px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);margin-bottom:10px">Option B — Separate child GOs (independent reach per zone)</h3>
+  <div class="hier">
+    <div class="hier-obj">📁 Player <span class="hier-note">tag: Player</span></div>
+    <div class="hier-indent">
+      <div><span class="hier-comp">CharacterControllerFP</span></div>
+      <div><span class="hier-comp">InputKeyPress</span> <span class="hier-note">Key: E → PushZone child → ApplyForce()</span></div>
+      <div><span class="hier-comp">InputKeyPress</span> <span class="hier-note">Key: Q → PullZone child → ApplyForce()</span></div>
+      <div style="margin-top:8px"><span class="hier-obj">📁 PushZone</span> <span class="hier-note">(empty child GO)</span></div>
+      <div class="hier-indent">
+        <div><span class="hier-comp">Sphere Collider</span> <span class="hier-note">Is Trigger ✓ · Radius 5 (wider push range)</span></div>
+        <div><span class="hier-comp">PhysicsForceZone</span> <span class="hier-note">Away From Target</span></div>
+      </div>
+      <div style="margin-top:8px"><span class="hier-obj">📁 PullZone</span> <span class="hier-note">(empty child GO)</span></div>
+      <div class="hier-indent">
+        <div><span class="hier-comp">Sphere Collider</span> <span class="hier-note">Is Trigger ✓ · Radius 2 (tighter pull range)</span></div>
+        <div><span class="hier-comp">PhysicsForceZone</span> <span class="hier-note">Toward Target</span></div>
+      </div>
+    </div>
+    <div class="hier-obj" style="margin-top:12px">📦 Crate <span class="hier-note">tag: Moveable · has Rigidbody</span></div>
+    <div class="hier-obj">📦 Barrel <span class="hier-note">tag: Moveable · has Rigidbody</span></div>
   </div>
 </div>
 
