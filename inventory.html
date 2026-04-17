@@ -121,6 +121,7 @@
   <a href="#setup">Setup</a>
   <a href="#slots">Slots</a>
   <a href="#api">API</a>
+  <a href="#combination">Combination</a>
   <a href="#reference">Reference</a>
   <a href="index.html" class="topnav-back">← All Docs</a>
 </nav>
@@ -135,6 +136,7 @@
     <div class="outcome-chip"><div class="dot" style="background:var(--teal);box-shadow:0 0 6px var(--teal)"></div>Per-slot full, empty, and change events</div>
     <div class="outcome-chip"><div class="dot" style="background:var(--orange);box-shadow:0 0 6px var(--orange)"></div>Icon card UI row (auto-generated)</div>
     <div class="outcome-chip"><div class="dot" style="background:var(--blue);box-shadow:0 0 6px var(--blue)"></div>Persists between scenes</div>
+    <div class="outcome-chip"><div class="dot" style="background:var(--purple);box-shadow:0 0 6px var(--purple)"></div>Combination check — fire an event when multiple items are collected</div>
   </div>
 </div>
 
@@ -271,6 +273,72 @@
 
 <hr class="rule">
 
+<!-- Combination Check -->
+<div class="section" id="combination" style="padding-top:60px">
+  <span class="sec-label">Multi-item unlock</span>
+  <h2 class="sec-title">Combination Check</h2>
+  <p class="sec-desc">Fire an event the moment a player holds the right combination of items simultaneously — no extra components needed. Define the required counts in the <strong>Combination Check</strong> section and wire <strong>On Combination Met</strong> to any response.</p>
+
+  <ul class="steps-list">
+    <li class="step-item">
+      <div class="step-badge">1</div>
+      <div>
+        <div class="step-title">Add requirements</div>
+        <div class="step-body">In the <strong>Combination Check</strong> section, click + to add requirements. Each entry has an <strong>Item Name</strong> (must match a slot's Item Name exactly) and a <strong>Required Count</strong>.</div>
+      </div>
+    </li>
+    <li class="step-item">
+      <div class="step-badge">2</div>
+      <div>
+        <div class="step-title">Wire On Combination Met</div>
+        <div class="step-body">The <strong>On Combination Met</strong> event appears once you add at least one requirement. Wire it to whatever should happen — unlock a door, trigger a cutscene, load the next scene.</div>
+      </div>
+    </li>
+    <li class="step-item">
+      <div class="step-badge">3</div>
+      <div>
+        <div class="step-title">Play — it fires automatically</div>
+        <div class="step-body">No extra scripting needed. The manager checks the combination after every <code>Increment</code> or <code>Decrement</code> and fires the event the first time all requirements are met.</div>
+      </div>
+    </li>
+  </ul>
+
+  <div class="recipe-grid" style="margin-bottom:24px">
+    <div class="recipe-card">
+      <div class="recipe-hdr">
+        <div class="recipe-title">Example — unlock the boss door</div>
+        <div class="recipe-sub">Requires 3 keys and 1 sword</div>
+      </div>
+      <div class="recipe-body">
+        <div class="recipe-row"><span class="recipe-key">Requirement 1</span><span class="recipe-val">Keys → 3</span></div>
+        <div class="recipe-row"><span class="recipe-key">Requirement 2</span><span class="recipe-val">Sword → 1</span></div>
+        <div class="recipe-row"><span class="recipe-key">On Combination Met</span><span class="recipe-val">Door.SetActive(false)</span></div>
+      </div>
+    </div>
+    <div class="recipe-card">
+      <div class="recipe-hdr">
+        <div class="recipe-title">Example — craft a potion</div>
+        <div class="recipe-sub">Consume ingredients, spawn result</div>
+      </div>
+      <div class="recipe-body">
+        <div class="recipe-row"><span class="recipe-key">Requirement 1</span><span class="recipe-val">Herbs → 2</span></div>
+        <div class="recipe-row"><span class="recipe-key">Requirement 2</span><span class="recipe-val">Water → 1</span></div>
+        <div class="recipe-row"><span class="recipe-key">On Combination Met</span><span class="recipe-val">ActionSpawnObject.Spawn</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout" style="background:rgba(155,114,247,.05);border-color:rgba(155,114,247,.2)">
+    <div class="callout-icon">🔁</div>
+    <div>
+      <div class="callout-title" style="color:var(--purple)">Re-fires if broken and re-met</div>
+      <div class="callout-body">The event fires once each time the combination transitions from <em>not met</em> to <em>met</em>. If the player spends items (breaking the combination) and then re-collects enough, it fires again. Collecting extras beyond the requirement does <strong>not</strong> re-fire the event.</div>
+    </div>
+  </div>
+</div>
+
+<hr class="rule">
+
 <!-- Reference -->
 <div class="section" id="reference" style="padding-top:60px">
   <span class="sec-label">Inspector reference</span>
@@ -286,6 +354,8 @@
       <tr><td><span class="field-name">UI Position</span></td><td class="field-default">(60, -120)</td><td class="field-desc">Top-left origin screen position for the first card. Cards extend to the right.</td></tr>
       <tr><td><span class="field-name">Card Size</span></td><td class="field-default">(70, 70)</td><td class="field-desc">Width and height of each card in pixels (at 1920×1080).</td></tr>
       <tr><td><span class="field-name">Card Spacing</span></td><td class="field-default">8</td><td class="field-desc">Gap in pixels between cards.</td></tr>
+      <tr><td><span class="field-name">Requirements</span></td><td class="field-default">empty</td><td class="field-desc">List of item + count pairs for the combination check. Each entry's Item Name must match a slot's Item Name exactly.</td></tr>
+      <tr><td><span class="field-name">onCombinationMet</span></td><td class="field-default">—</td><td class="field-desc">Fires when every requirement in the list is satisfied simultaneously. Only appears in the Inspector when at least one requirement is defined.</td></tr>
     </tbody>
   </table>
 </div>
