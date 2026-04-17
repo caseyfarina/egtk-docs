@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EGTK — Inventory System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script>if(localStorage.getItem('theme')==='light')document.documentElement.setAttribute('data-theme','light');</script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg:#0D0F14; --surface:#171B24; --surf2:#1C2130;
+    --text1:#F0F2F8; --text2:#8B8FA8; --text3:#5E6280;
+    --rule:#21283C; --blue:#4F8EF7; --purple:#9B72F7;
+    --green:#34D399; --orange:#FB923C; --teal:#2DD4BF;
+    --red:#EF4444; --slate:#94A3C8; --yellow:#F59E0B;
+  }
+  html { scroll-behavior: smooth; }
+  body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text1); -webkit-font-smoothing:antialiased; }
+
+  .topnav { position:sticky; top:0; z-index:100; background:rgba(13,15,20,.88); backdrop-filter:blur(12px); border-bottom:1px solid var(--rule); padding:0 80px; display:flex; align-items:center; gap:32px; height:52px; }
+  .topnav-logo { font-size:13px; font-weight:700; color:var(--text1); text-decoration:none; }
+  .topnav-logo span { color:var(--blue); }
+  .topnav-sep { width:1px; height:16px; background:var(--rule); }
+  .topnav a { font-size:12px; font-weight:500; color:var(--text3); text-decoration:none; transition:color .15s; }
+  .topnav a:hover { color:var(--text1); }
+  .topnav-back { margin-left:auto; font-size:12px; font-weight:500; color:var(--text3); text-decoration:none; }
+  .topnav-back:hover { color:var(--blue); }
+
+  .hero { padding:80px 80px 48px; max-width:1200px; margin:0 auto; }
+  .breadcrumb { font-size:12px; color:var(--text3); margin-bottom:20px; }
+  .breadcrumb a { color:var(--text3); text-decoration:none; }
+  .breadcrumb a:hover { color:var(--blue); }
+  .breadcrumb span { margin:0 8px; }
+  .hero-pill { display:inline-flex; align-items:center; font-size:10px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; padding:5px 12px; border-radius:20px; background:rgba(52,211,153,.1); color:var(--green); margin-bottom:20px; }
+  .hero-title { font-size:52px; font-weight:700; letter-spacing:-.03em; line-height:1.1; color:var(--text1); margin-bottom:16px; }
+  .hero-desc { font-size:17px; color:var(--text2); line-height:1.7; max-width:640px; margin-bottom:32px; }
+  .outcome-row { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:48px; }
+  .outcome-chip { display:flex; align-items:center; gap:6px; background:var(--surface); border:1px solid var(--rule); border-radius:8px; padding:6px 12px; font-size:12px; font-weight:500; color:var(--text2); }
+  .outcome-chip .dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+
+  .section { max-width:1200px; margin:0 auto; padding:0 80px 72px; }
+  .sec-label { font-size:10px; font-weight:600; letter-spacing:.12em; text-transform:uppercase; color:var(--text3); margin-bottom:12px; display:block; }
+  .sec-title { font-size:28px; font-weight:700; letter-spacing:-.02em; color:var(--text1); margin-bottom:10px; }
+  .sec-desc { font-size:15px; color:var(--text2); line-height:1.7; max-width:680px; margin-bottom:32px; }
+  hr.rule { border:none; border-top:1px solid var(--rule); max-width:1200px; margin:0 auto; }
+
+  .steps-list { list-style:none; display:flex; flex-direction:column; gap:12px; margin-bottom:32px; }
+  .step-item { display:flex; gap:16px; align-items:flex-start; background:var(--surface); border:1px solid var(--rule); border-radius:10px; padding:16px 20px; }
+  .step-badge { width:28px; height:28px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; color:var(--green); background:rgba(52,211,153,.12); margin-top:1px; }
+  .step-title { font-size:14px; font-weight:600; color:var(--text1); margin-bottom:4px; }
+  .step-body { font-size:13px; color:var(--text2); line-height:1.6; }
+  .step-body code { font-family:'SF Mono','Fira Mono',monospace; font-size:12px; padding:1px 5px; border-radius:4px; background:rgba(255,255,255,.07); color:var(--text1); }
+  .step-body strong { color:var(--text1); font-weight:600; }
+
+  .callout { border-radius:12px; padding:20px 24px; border:1px solid; display:flex; gap:16px; align-items:flex-start; margin-bottom:24px; }
+  .callout-icon { font-size:20px; flex-shrink:0; margin-top:1px; }
+  .callout-title { font-size:14px; font-weight:700; margin-bottom:5px; }
+  .callout-body { font-size:13px; color:var(--text2); line-height:1.7; }
+  .callout-body code { font-family:'SF Mono','Fira Mono',monospace; font-size:12px; padding:1px 5px; border-radius:4px; background:rgba(255,255,255,.07); color:var(--text1); }
+  .callout-body strong { color:var(--text1); font-weight:600; }
+
+  .field-table { width:100%; border-collapse:collapse; border:1px solid var(--rule); border-radius:10px; overflow:hidden; margin-bottom:24px; }
+  .field-table th { font-size:9px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--text3); padding:9px 16px; text-align:left; background:rgba(255,255,255,.03); border-bottom:1px solid var(--rule); }
+  .field-table td { padding:9px 16px; font-size:13px; border-bottom:1px solid rgba(33,40,60,.5); vertical-align:top; }
+  .field-table tr:last-child td { border-bottom:none; }
+  .field-table tr:nth-child(even) td { background:var(--surf2); }
+  .field-name { font-family:'SF Mono','Fira Mono',monospace; font-size:12px; color:var(--green); font-weight:500; }
+  .field-default { font-family:'SF Mono','Fira Mono',monospace; font-size:11px; color:var(--text3); }
+  .field-desc { color:var(--text2); }
+  .field-desc code { font-family:'SF Mono','Fira Mono',monospace; font-size:12px; padding:1px 5px; border-radius:4px; background:rgba(255,255,255,.07); color:var(--text1); }
+
+  .vs-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:32px; }
+  @media(max-width:900px) { .vs-row { grid-template-columns:1fr; } }
+  .vs-card { background:var(--surface); border:1px solid var(--rule); border-radius:12px; padding:20px 24px; }
+  .vs-title { font-size:14px; font-weight:700; color:var(--text1); margin-bottom:8px; }
+  .vs-body { font-size:13px; color:var(--text2); line-height:1.7; }
+  .vs-body code { font-family:'SF Mono','Fira Mono',monospace; font-size:12px; padding:1px 5px; border-radius:4px; background:rgba(255,255,255,.07); color:var(--text1); }
+
+  .recipe-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:32px; }
+  @media(max-width:900px) { .recipe-grid { grid-template-columns:1fr; } }
+  .recipe-card { background:var(--surface); border:1px solid var(--rule); border-radius:12px; overflow:hidden; }
+  .recipe-hdr { padding:14px 20px; border-bottom:1px solid var(--rule); }
+  .recipe-title { font-size:14px; font-weight:700; color:var(--text1); margin-bottom:2px; }
+  .recipe-sub { font-size:12px; color:var(--text3); }
+  .recipe-body { padding:14px 20px; }
+  .recipe-row { display:flex; gap:8px; align-items:baseline; padding:5px 0; border-bottom:1px solid rgba(33,40,60,.4); font-size:12px; }
+  .recipe-row:last-child { border-bottom:none; }
+  .recipe-key { color:var(--text3); min-width:100px; flex-shrink:0; }
+  .recipe-val { font-family:'SF Mono','Fira Mono',monospace; font-size:11px; color:var(--green); }
+  .recipe-note { color:var(--text2); font-size:12px; }
+
+  .page-footer { border-top:1px solid var(--rule); padding:32px 80px; max-width:1200px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; font-size:13px; color:var(--text3); }
+  .page-footer a { color:var(--blue); text-decoration:none; }
+  .page-footer a:hover { text-decoration:underline; }
+
+  @media(max-width:768px) {
+    .topnav { padding:0 20px; gap:12px; }
+    .topnav-sep, .topnav a:not(.topnav-logo):not(.topnav-back) { display:none; }
+    .hero { padding:40px 20px 32px; }
+    .hero-title { font-size:36px; }
+    .section { padding:0 20px 48px; }
+    .field-table { display:block; overflow-x:auto; }
+    .page-footer { padding:20px; flex-direction:column; gap:8px; text-align:center; }
+  }
+
+  [data-theme="light"] { --bg:#F4F6FA; --surface:#FFFFFF; --surf2:#EEF1F7; --text1:#0D0F14; --text2:#3E4461; --text3:#6B718F; --rule:#DDE1EF; }
+  [data-theme="light"] .topnav { background:rgba(244,246,250,.92); }
+
+  #theme-btn { position:fixed; bottom:20px; right:20px; z-index:300; background:var(--surface); border:1px solid var(--rule); border-radius:8px; padding:7px 11px; font-size:15px; line-height:1; cursor:pointer; color:var(--text2); box-shadow:0 2px 8px rgba(0,0,0,.15); transition:border-color .15s; }
+  #theme-btn:hover { border-color:var(--blue); }
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <a href="index.html" class="topnav-logo">EGTK<span>.</span></a>
+  <div class="topnav-sep"></div>
+  <a href="#vs">vs Collection</a>
+  <a href="#setup">Setup</a>
+  <a href="#slots">Slots</a>
+  <a href="#api">API</a>
+  <a href="#reference">Reference</a>
+  <a href="index.html" class="topnav-back">← All Docs</a>
+</nav>
+
+<div class="hero">
+  <div class="breadcrumb"><a href="index.html">EGTK Docs</a><span>/</span>Inventory System</div>
+  <div class="hero-pill">Game Manager</div>
+  <h1 class="hero-title">Inventory System</h1>
+  <p class="hero-desc">Track multiple item types in a single component. Each slot has its own name, icon, capacity, and events — call <code>Increment("Keys")</code> or <code>Increment(0)</code> from any trigger. Optional card UI generates automatically.</p>
+  <div class="outcome-row">
+    <div class="outcome-chip"><div class="dot" style="background:var(--green);box-shadow:0 0 6px var(--green)"></div>Multiple item types in one component</div>
+    <div class="outcome-chip"><div class="dot" style="background:var(--teal);box-shadow:0 0 6px var(--teal)"></div>Per-slot full, empty, and change events</div>
+    <div class="outcome-chip"><div class="dot" style="background:var(--orange);box-shadow:0 0 6px var(--orange)"></div>Icon card UI row (auto-generated)</div>
+    <div class="outcome-chip"><div class="dot" style="background:var(--blue);box-shadow:0 0 6px var(--blue)"></div>Persists between scenes</div>
+  </div>
+</div>
+
+<hr class="rule">
+
+<!-- vs Collection -->
+<div class="section" id="vs" style="padding-top:60px">
+  <span class="sec-label">Choosing the right manager</span>
+  <h2 class="sec-title">Inventory vs Collection</h2>
+  <p class="sec-desc">They look similar but serve different purposes.</p>
+  <div class="vs-row">
+    <div class="vs-card" style="border-color:rgba(52,211,153,.3)">
+      <div class="vs-title" style="color:var(--green)">GameInventoryManager — use when you have multiple item types</div>
+      <div class="vs-body">Keys, arrows, potions, gems — different things that need to be tracked separately. Each slot has its own name, icon, max capacity, and full/empty events. <code>Increment("Keys")</code> only adds to the Keys slot.</div>
+    </div>
+    <div class="vs-card" style="border-color:rgba(79,142,247,.3)">
+      <div class="vs-title" style="color:var(--blue)">GameCollectionManager — use for a single score or currency</div>
+      <div class="vs-body">One number with threshold events — coins collected, score, lives. Simpler setup. Also used as the currency source for <code>GameStoreManager</code>. If you only need one number, use this.</div>
+    </div>
+  </div>
+</div>
+
+<hr class="rule">
+
+<!-- Setup -->
+<div class="section" id="setup" style="padding-top:60px">
+  <span class="sec-label">Getting started</span>
+  <h2 class="sec-title">Minimal setup</h2>
+
+  <ul class="steps-list">
+    <li class="step-item">
+      <div class="step-badge">1</div>
+      <div>
+        <div class="step-title">Add GameInventoryManager to a GameObject</div>
+        <div class="step-body">Create an empty "Managers" object and add the component. By default it starts with one slot named "Item".</div>
+      </div>
+    </li>
+    <li class="step-item">
+      <div class="step-badge">2</div>
+      <div>
+        <div class="step-title">Configure your slots</div>
+        <div class="step-body">Expand <strong>Inventory Slots</strong>. For each item type: set <strong>Item Name</strong>, <strong>Max Capacity</strong>, and optionally a <strong>Sprite Icon</strong>. Add more slots with the + button. Use names you'll remember — you can call <code>Increment("Keys")</code> by name.</div>
+      </div>
+    </li>
+    <li class="step-item">
+      <div class="step-badge">3</div>
+      <div>
+        <div class="step-title">Wire pickups to Increment</div>
+        <div class="step-body">On each collectible, add an <code>InputTriggerZone</code> with tag <strong>Player</strong>. Wire <strong>On Enter</strong> → <code>GameInventoryManager.Increment(0)</code> (slot index) or <code>IncrementByName("Keys")</code>. Then disable or destroy the collectible in the same event.</div>
+      </div>
+    </li>
+    <li class="step-item">
+      <div class="step-badge">4</div>
+      <div>
+        <div class="step-title">(Optional) Enable Show UI</div>
+        <div class="step-body">Check <strong>Show UI</strong> for a row of icon cards — one per slot — automatically created at runtime. Each card shows the icon and current count. Position the row with <strong>UI Position</strong> and adjust card size and spacing.</div>
+      </div>
+    </li>
+  </ul>
+</div>
+
+<hr class="rule">
+
+<!-- Slots -->
+<div class="section" id="slots" style="padding-top:60px">
+  <span class="sec-label">Configuration</span>
+  <h2 class="sec-title">Slot fields and events</h2>
+
+  <table class="field-table" style="margin-bottom:32px">
+    <thead><tr><th>Slot Field</th><th>Default</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr><td><span class="field-name">Item Name</span></td><td class="field-default">Item</td><td class="field-desc">The name used by <code>IncrementByName()</code> and <code>DecrementByName()</code>. Make it unique and descriptive ("Keys", "Arrows", "Potions").</td></tr>
+      <tr><td><span class="field-name">Icon</span></td><td class="field-default">none</td><td class="field-desc">Sprite shown in the UI card when Show UI is enabled.</td></tr>
+      <tr><td><span class="field-name">Max Capacity</span></td><td class="field-default">10</td><td class="field-desc">Increment stops at this value. onFull fires when the count reaches it.</td></tr>
+      <tr><td><span class="field-name">Current Count</span></td><td class="field-default">0</td><td class="field-desc">Starting count for this slot. Can be set above 0 to start with items.</td></tr>
+      <tr><td><span class="field-name">onFull</span></td><td class="field-default">—</td><td class="field-desc">Fires once when the count reaches Max Capacity. Wire to a "slot full" effect.</td></tr>
+      <tr><td><span class="field-name">onEmpty</span></td><td class="field-default">—</td><td class="field-desc">Fires once when the count drops to zero. Wire to a "out of ammo" or "no keys" response.</td></tr>
+      <tr><td><span class="field-name">onChanged</span></td><td class="field-default">—</td><td class="field-desc">Fires on every count change, passing the new count (int) as a parameter. Wire to a custom text display.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout" style="background:rgba(52,211,153,.05);border-color:rgba(52,211,153,.2)">
+    <div class="callout-icon">💡</div>
+    <div>
+      <div class="callout-title" style="color:var(--green)">Initial events fire on Start</div>
+      <div class="callout-body">On scene load, all slots fire <strong>onChanged</strong> with their starting count. This means any external text display wired to onChanged will show the correct value immediately without any extra setup.</div>
+    </div>
+  </div>
+</div>
+
+<hr class="rule">
+
+<!-- API -->
+<div class="section" id="api" style="padding-top:60px">
+  <span class="sec-label">Calling from UnityEvents</span>
+  <h2 class="sec-title">Public methods</h2>
+  <p class="sec-desc">All methods are callable from UnityEvents. By-index is faster; by-name is more readable and survives slot reordering.</p>
+
+  <div class="recipe-grid">
+    <div class="recipe-card">
+      <div class="recipe-hdr">
+        <div class="recipe-title">By index</div>
+        <div class="recipe-sub">Slot 0 = first slot in the list</div>
+      </div>
+      <div class="recipe-body">
+        <div class="recipe-row"><span class="recipe-key">Add item</span><span class="recipe-val">Increment(0, 1)</span></div>
+        <div class="recipe-row"><span class="recipe-key">Remove item</span><span class="recipe-val">Decrement(0, 1)</span></div>
+        <div class="recipe-row"><span class="recipe-key">Use if available</span><span class="recipe-val">UseItem(0, 1)</span></div>
+        <div class="recipe-row"><span class="recipe-key">Read count</span><span class="recipe-val">GetCount(0)</span></div>
+      </div>
+    </div>
+    <div class="recipe-card">
+      <div class="recipe-hdr">
+        <div class="recipe-title">By name</div>
+        <div class="recipe-sub">Matches Item Name in the slot config</div>
+      </div>
+      <div class="recipe-body">
+        <div class="recipe-row"><span class="recipe-key">Add item</span><span class="recipe-val">IncrementByName("Keys")</span></div>
+        <div class="recipe-row"><span class="recipe-key">Remove item</span><span class="recipe-val">DecrementByName("Keys")</span></div>
+        <div class="recipe-row"><span class="recipe-key">Read count</span><span class="recipe-val">GetCountByName("Keys")</span></div>
+        <div class="recipe-note" style="padding-top:8px;font-size:12px;color:var(--text3)">Logs a warning in Console if no slot with that name exists.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout" style="background:rgba(251,146,60,.05);border-color:rgba(251,146,60,.2)">
+    <div class="callout-icon">🔑</div>
+    <div>
+      <div class="callout-title" style="color:var(--orange)">UseItem — consume only if you have enough</div>
+      <div class="callout-body"><code>UseItem(0, 1)</code> calls <code>Decrement</code> only if <code>currentCount >= amount</code>. It does nothing if the slot is empty — perfect for door locks that should only open when the player actually has a key. Use it anywhere a "can I afford this?" check is needed.</div>
+    </div>
+  </div>
+</div>
+
+<hr class="rule">
+
+<!-- Reference -->
+<div class="section" id="reference" style="padding-top:60px">
+  <span class="sec-label">Inspector reference</span>
+  <h2 class="sec-title">Manager-level fields</h2>
+
+  <table class="field-table">
+    <thead><tr><th>Field</th><th>Default</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr><td><span class="field-name">Persist Across Scenes</span></td><td class="field-default">false</td><td class="field-desc">Carries slot counts when loading a new scene. Limited to the first 20 slots.</td></tr>
+      <tr><td><span class="field-name">On Restart</span></td><td class="field-default">Reset To Default</td><td class="field-desc">When RestartScene() is called: Reset To Default clears counts; Keep Value preserves them.</td></tr>
+      <tr><td><span class="field-name">Show UI</span></td><td class="field-default">false</td><td class="field-desc">Creates a row of icon + count cards at runtime. One card per slot, laid out left to right.</td></tr>
+      <tr><td><span class="field-name">Show Count</span></td><td class="field-default">true</td><td class="field-desc">Shows the numeric count inside each card. Uncheck for icon-only display (e.g. key slots where you just want to see the icon).</td></tr>
+      <tr><td><span class="field-name">UI Position</span></td><td class="field-default">(60, -120)</td><td class="field-desc">Top-left origin screen position for the first card. Cards extend to the right.</td></tr>
+      <tr><td><span class="field-name">Card Size</span></td><td class="field-default">(70, 70)</td><td class="field-desc">Width and height of each card in pixels (at 1920×1080).</td></tr>
+      <tr><td><span class="field-name">Card Spacing</span></td><td class="field-default">8</td><td class="field-desc">Gap in pixels between cards.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<footer class="page-footer">
+  <span>EGTK Documentation</span>
+  <span><a href="index.html">← Back to all docs</a></span>
+</footer>
+
+<button id="theme-btn" title="Toggle light/dark">☀️</button>
+<script>
+  const btn = document.getElementById('theme-btn');
+  const html = document.documentElement;
+  btn.addEventListener('click', () => {
+    const isLight = html.getAttribute('data-theme') === 'light';
+    if (isLight) { html.removeAttribute('data-theme'); localStorage.removeItem('theme'); btn.textContent = '☀️'; }
+    else { html.setAttribute('data-theme', 'light'); localStorage.setItem('theme', 'light'); btn.textContent = '🌙'; }
+  });
+  if (html.getAttribute('data-theme') === 'light') btn.textContent = '🌙';
+</script>
+</body>
+</html>

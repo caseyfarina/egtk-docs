@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EGTK — Game Store Manager</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script>if(localStorage.getItem('theme')==='light')document.documentElement.setAttribute('data-theme','light');</script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg:#0D0F14; --surface:#171B24; --surf2:#1C2130;
+    --text1:#F0F2F8; --text2:#8B8FA8; --text3:#5E6280;
+    --rule:#21283C; --blue:#4F8EF7; --purple:#9B72F7;
+    --green:#34D399; --orange:#FB923C; --teal:#2DD4BF;
+    --slate:#94A3C8; --yellow:#F59E0B; --pink:#F472B6;
+  }
+  html { scroll-behavior: smooth; }
+  body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text1); -webkit-font-smoothing:antialiased; }
+  .dot-grid { background-image:radial-gradient(circle,rgba(148,163,200,.065) 1px,transparent 1px); background-size:28px 28px; }
+
+  .topnav { position:sticky; top:0; z-index:100; background:rgba(13,15,20,.88); backdrop-filter:blur(12px); border-bottom:1px solid var(--rule); padding:0 80px; display:flex; align-items:center; gap:32px; height:52px; }
+  .topnav-logo { font-size:13px; font-weight:700; color:var(--text1); text-decoration:none; }
+  .topnav-logo span { color:var(--blue); }
+  .topnav-sep { width:1px; height:16px; background:var(--rule); }
+  .topnav a { font-size:12px; font-weight:500; color:var(--text3); text-decoration:none; transition:color .15s; }
+  .topnav a:hover { color:var(--text1); }
+  .topnav-back { margin-left:auto; font-size:12px; font-weight:500; color:var(--text3); text-decoration:none; }
+  .topnav-back:hover { color:var(--blue); }
+
+  .hero { padding:80px 80px 48px; max-width:1200px; margin:0 auto; }
+  .breadcrumb { font-size:12px; color:var(--text3); margin-bottom:20px; }
+  .breadcrumb a { color:var(--text3); text-decoration:none; }
+  .breadcrumb a:hover { color:var(--blue); }
+  .breadcrumb span { margin:0 8px; }
+  .hero-pill { display:inline-flex; align-items:center; font-size:10px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; padding:5px 12px; border-radius:20px; background:rgba(251,146,60,.1); color:var(--orange); margin-bottom:20px; }
+  .hero-title { font-size:52px; font-weight:700; letter-spacing:-.03em; line-height:1.1; color:var(--text1); margin-bottom:16px; }
+  .hero-desc { font-size:17px; color:var(--text2); line-height:1.7; max-width:640px; margin-bottom:32px; }
+  .outcome-row { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:48px; }
+  .outcome-chip { display:flex; align-items:center; gap:6px; background:var(--surface); border:1px solid var(--rule); border-radius:8px; padding:6px 12px; font-size:12px; font-weight:500; color:var(--text2); }
+  .outcome-chip .dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+
+  .section { max-width:1200px; margin:0 auto; padding:0 80px 72px; }
+  .sec-label { font-size:10px; font-weight:600; letter-spacing:.12em; text-transform:uppercase; color:var(--text3); margin-bottom:12px; display:block; }
+  .sec-title { font-size:28px; font-weight:700; letter-spacing:-.02em; color:var(--text1); margin-bottom:10px; }
+  .sec-desc { font-size:15px; color:var(--text2); line-height:1.7; max-width:680px; margin-bottom:32px; }
+  hr.rule { border:none; border-top:1px solid var(--rule); max-width:1200px; margin:0 auto; }
+
+  /* Steps */
+  .steps-list { list-style:none; display:flex; flex-direction:column; gap:12px; margin-bottom:32px; }
+  .step-item { display:flex; gap:16px; align-items:flex-start; background:var(--surface); border:1px solid var(--rule); border-radius:10px; padding:16px 20px; }
+  .step-badge { width:28px; height:28px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; color:var(--orange); background:rgba(251,146,60,.12); margin-top:1px; }
+  .step-title { font-size:14px; font-weight:600; color:var(--text1); margin-bottom:4px; }
+  .step-body { font-size:13px; color:var(--text2); line-height:1.6; }
+  .step-body code { font-family:'SF Mono','Fira Mono',monospace; font-size:12px; padding:1px 5px; border-radius:4px; background:rgba(255,255,255,.07); color:var(--text1); }
+  .step-body strong { color:var(--text1); font-weight:600; }
+
+  /* Field table */
+  .field-table { width:100%; border-collapse:collapse; border:1px solid var(--rule); border-radius:10px; overflow:hidden; margin-bottom:24px; }
+  .field-table th { font-size:9px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--text3); padding:9px 16px; text-align:left; background:rgba(255,255,255,.03); border-bottom:1px solid var(--rule); }
+  .field-table td { padding:9px 16px; font-size:13px; border-bottom:1px solid rgba(33,40,60,.5); vertical-align:top; }
+  .field-table tr:last-child td { border-bottom:none; }
+  .field-table tr:nth-child(even) td { background:var(--surf2); }
+  .field-name { font-family:'SF Mono','Fira Mono',monospace; font-size:12px; color:var(--orange); font-weight:500; }
+  .field-default { font-family:'SF Mono','Fira Mono',monospace; font-size:11px; color:var(--text3); }
+  .field-desc { color:var(--text2); }
+  .field-desc code { font-family:'SF Mono','Fira Mono',monospace; font-size:12px; padding:1px 5px; border-radius:4px; background:rgba(255,255,255,.07); color:var(--text1); }
+
+  /* Callout */
+  .callout { border-radius:12px; padding:20px 24px; border:1px solid; display:flex; gap:16px; align-items:flex-start; margin-bottom:24px; }
+  .callout-icon { font-size:20px; flex-shrink:0; margin-top:1px; }
+  .callout-title { font-size:14px; font-weight:700; margin-bottom:5px; }
+  .callout-body { font-size:13px; color:var(--text2); line-height:1.7; }
+  .callout-body code { font-family:'SF Mono','Fira Mono',monospace; font-size:12px; padding:1px 5px; border-radius:4px; background:rgba(255,255,255,.07); color:var(--text1); }
+  .callout-body strong { color:var(--text1); font-weight:600; }
+
+  /* Two column */
+  .two-col { display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:32px; }
+  @media(max-width:900px) { .two-col { grid-template-columns:1fr; } }
+
+  /* Mode card */
+  .mode-card { background:var(--surface); border:1px solid var(--rule); border-radius:12px; overflow:hidden; }
+  .mode-hdr { padding:16px 20px; border-bottom:1px solid var(--rule); display:flex; align-items:center; gap:12px; }
+  .mode-badge { font-size:10px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; padding:4px 10px; border-radius:6px; flex-shrink:0; }
+  .mode-title { font-size:15px; font-weight:700; color:var(--text1); }
+  .mode-body { padding:16px 20px; font-size:13px; color:var(--text2); line-height:1.7; }
+  .mode-body code { font-family:'SF Mono','Fira Mono',monospace; font-size:12px; padding:1px 5px; border-radius:4px; background:rgba(255,255,255,.07); color:var(--text1); }
+  .mode-body strong { color:var(--text1); font-weight:600; }
+  .mode-steps { list-style:none; display:flex; flex-direction:column; gap:6px; margin-top:12px; }
+  .mode-step { display:flex; gap:10px; align-items:flex-start; font-size:12px; color:var(--text2); }
+  .mode-step-n { width:18px; height:18px; border-radius:50%; flex-shrink:0; background:rgba(255,255,255,.06); display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:700; color:var(--text3); margin-top:1px; }
+
+  /* Recipe cards */
+  .recipe-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:32px; }
+  @media(max-width:900px) { .recipe-grid { grid-template-columns:1fr; } }
+  .recipe-card { background:var(--surface); border:1px solid var(--rule); border-radius:12px; overflow:hidden; }
+  .recipe-hdr { padding:14px 20px; border-bottom:1px solid var(--rule); }
+  .recipe-title { font-size:14px; font-weight:700; color:var(--text1); margin-bottom:2px; }
+  .recipe-sub { font-size:12px; color:var(--text3); }
+  .recipe-body { padding:14px 20px; }
+  .recipe-row { display:flex; gap:8px; align-items:baseline; padding:5px 0; border-bottom:1px solid rgba(33,40,60,.4); font-size:12px; }
+  .recipe-row:last-child { border-bottom:none; }
+  .recipe-key { color:var(--text3); min-width:120px; flex-shrink:0; }
+  .recipe-val { font-family:'SF Mono','Fira Mono',monospace; font-size:11px; color:var(--orange); }
+  .recipe-note { color:var(--text2); font-size:12px; }
+
+  /* Persist item cards */
+  .persist-row { display:flex; gap:16px; flex-wrap:wrap; margin-bottom:32px; }
+  .persist-card { flex:1; min-width:180px; background:var(--surface); border:1px solid var(--rule); border-radius:10px; padding:16px 20px; }
+  .persist-card-name { font-size:13px; font-family:'SF Mono','Fira Mono',monospace; font-weight:600; margin-bottom:6px; }
+  .persist-card-note { font-size:12px; color:var(--text3); line-height:1.5; }
+  .on-tag { display:inline-block; font-size:10px; font-weight:700; padding:2px 8px; border-radius:4px; margin-bottom:8px; }
+
+  .page-footer { border-top:1px solid var(--rule); padding:32px 80px; max-width:1200px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; font-size:13px; color:var(--text3); }
+  .page-footer a { color:var(--blue); text-decoration:none; }
+  .page-footer a:hover { text-decoration:underline; }
+
+  @media (max-width: 768px) {
+    .topnav { padding: 0 20px; gap: 12px; }
+    .topnav-sep, .topnav a:not(.topnav-logo):not(.topnav-back) { display: none; }
+    .hero { padding: 40px 20px 32px; }
+    .hero-title { font-size: 36px; }
+    .hero-desc { font-size: 15px; }
+    .section { padding: 0 20px 48px; }
+    .field-table { display: block; overflow-x: auto; }
+    .persist-row { flex-direction: column; }
+    .page-footer { padding: 20px; flex-direction: column; gap: 8px; text-align: center; }
+  }
+
+  /* Light mode */
+  [data-theme="light"] {
+    --bg: #F4F6FA; --surface: #FFFFFF; --surf2: #EEF1F7;
+    --text1: #0D0F14; --text2: #3E4461; --text3: #6B718F; --rule: #DDE1EF;
+  }
+  [data-theme="light"] .topnav { background: rgba(244,246,250,.92); }
+
+  /* Theme toggle */
+  #theme-btn {
+    position:fixed; bottom:20px; right:20px; z-index:300;
+    background:var(--surface); border:1px solid var(--rule);
+    border-radius:8px; padding:7px 11px; font-size:15px;
+    line-height:1; cursor:pointer; color:var(--text2);
+    box-shadow:0 2px 8px rgba(0,0,0,.15);
+    transition:border-color .15s, box-shadow .15s;
+  }
+  #theme-btn:hover { border-color:var(--blue); box-shadow:0 2px 12px rgba(0,0,0,.2); }
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <a href="index.html" class="topnav-logo">EGTK<span>.</span></a>
+  <div class="topnav-sep"></div>
+  <a href="#setup">Setup</a>
+  <a href="#items">Items</a>
+  <a href="#open-mode">Open Mode</a>
+  <a href="#persistence">Persistence</a>
+  <a href="#reference">Reference</a>
+  <a href="index.html" class="topnav-back">← All Docs</a>
+</nav>
+
+<div class="hero dot-grid">
+  <div class="breadcrumb"><a href="index.html">EGTK Docs</a><span>/</span>Game Store Manager</div>
+  <div class="hero-pill">Game Manager</div>
+  <h1 class="hero-title">Game Store Manager</h1>
+  <p class="hero-desc">Add a fully self-contained in-game shop to your project — scrollable item list, buy buttons, balance display, and sound effects. Wire purchase events to any game effect. No UI setup required.</p>
+  <div class="outcome-row">
+    <div class="outcome-chip"><div class="dot" style="background:var(--orange);box-shadow:0 0 6px var(--orange)"></div>Currency deducted automatically</div>
+    <div class="outcome-chip"><div class="dot" style="background:var(--green);box-shadow:0 0 6px var(--green)"></div>Per-item purchase events</div>
+    <div class="outcome-chip"><div class="dot" style="background:var(--purple);box-shadow:0 0 6px var(--purple)"></div>Permanent upgrades persist between levels</div>
+    <div class="outcome-chip"><div class="dot" style="background:var(--teal);box-shadow:0 0 6px var(--teal)"></div>Walk-up shopkeeper support</div>
+  </div>
+</div>
+
+<hr class="rule">
+
+<!-- Minimal Setup -->
+<div class="section" id="setup" style="padding-top:60px">
+  <span class="sec-label">Getting started</span>
+  <h2 class="sec-title">Minimal setup</h2>
+  <p class="sec-desc">Three steps and the store is playable. Everything else — UI, audio, persistence — is optional.</p>
+
+  <ul class="steps-list">
+    <li class="step-item">
+      <div class="step-badge">1</div>
+      <div>
+        <div class="step-title">Add GameStoreManager to a GameObject</div>
+        <div class="step-body">Create an empty GameObject and add the <code>GameStoreManager</code> component. It can live anywhere in the scene — on the player, on an NPC, or on its own object.</div>
+      </div>
+    </li>
+    <li class="step-item">
+      <div class="step-badge">2</div>
+      <div>
+        <div class="step-title">Assign a Currency Source</div>
+        <div class="step-body">Drag a <code>GameCollectionManager</code> into the <strong>Currency Source</strong> slot. The store reads and deducts from this manager's value automatically. Students collect currency by wiring pickups to <code>GameCollectionManager.Increment()</code> as usual.</div>
+      </div>
+    </li>
+    <li class="step-item">
+      <div class="step-badge">3</div>
+      <div>
+        <div class="step-title">Add items and press Play</div>
+        <div class="step-body">Expand <strong>Store Items</strong>, set a name and price for each item, and wire <strong>On Purchased</strong> to a game effect. Press Play — the store opens with <code>B</code> by default and shows a fully styled panel with buy buttons and a live balance display.</div>
+      </div>
+    </li>
+  </ul>
+
+  <div class="callout" style="background:rgba(251,146,60,.05);border-color:rgba(251,146,60,.2)">
+    <div class="callout-icon">🎯</div>
+    <div>
+      <div class="callout-title" style="color:var(--orange)">Wire On Purchased to game effects, not UI</div>
+      <div class="callout-body">The store handles its own sound effects, button states, and balance display. Wire <strong>On Purchased</strong> to things that affect gameplay: <code>PlayerController.EnableDoubleJump()</code>, <code>GameHealthManager.Heal(25)</code>, <code>Spawner.SetActive(true)</code>. This event also re-fires when a persistent item is restored on scene load — so game state is always correct.</div>
+    </div>
+  </div>
+</div>
+
+<hr class="rule">
+
+<!-- Store Items -->
+<div class="section" id="items" style="padding-top:60px">
+  <span class="sec-label">Configuration</span>
+  <h2 class="sec-title">Store Items</h2>
+  <p class="sec-desc">Each item in the list is independently configured. Mix consumables, one-time unlocks, and stackable upgrades in the same store.</p>
+
+  <table class="field-table" style="margin-bottom:32px">
+    <thead><tr><th>Field</th><th>Default</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr><td><span class="field-name">Item Name</span></td><td class="field-default">Item</td><td class="field-desc">Display name shown in the store row.</td></tr>
+      <tr><td><span class="field-name">Icon</span></td><td class="field-default">none</td><td class="field-desc">Optional sprite shown on the left of the row.</td></tr>
+      <tr><td><span class="field-name">Price</span></td><td class="field-default">10</td><td class="field-desc">Cost deducted from the Currency Source on each purchase.</td></tr>
+      <tr><td><span class="field-name">Max Purchases</span></td><td class="field-default">0</td><td class="field-desc"><code>0</code> = unlimited (consumable). <code>1</code> = one-time unlock. <code>3</code> = up to three times. The Buy button greys out when the limit is reached.</td></tr>
+      <tr><td><span class="field-name">Persist Purchase</span></td><td class="field-default">true</td><td class="field-desc">Remember the purchase count across scene loads. Leave on for permanent unlocks and upgrades. Turn off for consumables like health packs — they don't need to be remembered.</td></tr>
+      <tr><td><span class="field-name">On Purchased</span></td><td class="field-default">—</td><td class="field-desc">Fires on each successful purchase. Wire to gameplay effects only — sounds and UI are automatic.</td></tr>
+      <tr><td><span class="field-name">On Cannot Afford</span></td><td class="field-default">—</td><td class="field-desc">Fires when the player tries to buy but lacks the funds. Wire to a shake, flash, or audio cue if desired.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout" style="background:rgba(52,211,153,.05);border-color:rgba(52,211,153,.2)">
+    <div class="callout-icon">💡</div>
+    <div>
+      <div class="callout-title" style="color:var(--green)">Stackable upgrades fire once per purchase on restore</div>
+      <div class="callout-body">If a player buys a speed upgrade twice (<code>Max Purchases: 3</code>, <code>Persist Purchase: on</code>), <strong>On Purchased</strong> fires twice when the scene reloads — applying both upgrades correctly. You don't need to track anything manually.</div>
+    </div>
+  </div>
+</div>
+
+<hr class="rule">
+
+<!-- Open Mode -->
+<div class="section" id="open-mode" style="padding-top:60px">
+  <span class="sec-label">How the store opens</span>
+  <h2 class="sec-title">Open Mode</h2>
+  <p class="sec-desc">Choose between a global key shortcut or event-driven opening for a walk-up shopkeeper in game space.</p>
+
+  <div class="two-col">
+    <div class="mode-card">
+      <div class="mode-hdr">
+        <div class="mode-badge" style="background:rgba(79,142,247,.1);color:var(--blue)">Key</div>
+        <div class="mode-title">Global keyboard shortcut</div>
+      </div>
+      <div class="mode-body">
+        Press a key (default: <code>B</code>) from anywhere to toggle the store open and closed. Good for inventory-style shops accessible at any time.
+        <br><br>
+        Change the key in the <strong>Open / Close Key</strong> field below the mode selector.
+      </div>
+    </div>
+    <div class="mode-card">
+      <div class="mode-hdr">
+        <div class="mode-badge" style="background:rgba(251,146,60,.1);color:var(--orange)">Event Only</div>
+        <div class="mode-title">Walk-up shopkeeper</div>
+      </div>
+      <div class="mode-body">
+        The store only opens when <code>OpenStore()</code> is called from a UnityEvent. Place the shopkeeper anywhere in the world — the player must walk up to buy.
+        <ul class="mode-steps">
+          <li class="mode-step"><div class="mode-step-n">1</div>Set Open Mode → <strong>Event Only</strong></li>
+          <li class="mode-step"><div class="mode-step-n">2</div>Add <code>InputTriggerZone</code> to a collider near the NPC</li>
+          <li class="mode-step"><div class="mode-step-n">3</div>Wire <strong>On Enter</strong> → <code>GameStoreManager.OpenStore()</code></li>
+          <li class="mode-step"><div class="mode-step-n">4</div>Wire <strong>On Exit</strong> → <code>GameStoreManager.CloseStore()</code> (optional — the ✕ button also closes)</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout" style="background:rgba(155,114,247,.05);border-color:rgba(155,114,247,.2)">
+    <div class="callout-icon">🕹️</div>
+    <div>
+      <div class="callout-title" style="color:var(--purple)">Character controllers are paused automatically</div>
+      <div class="callout-body">Assign the player's controller in the <strong>Character Controller</strong> section. <code>CharacterControllerFP</code> has its look input disabled and cursor released. <code>CharacterControllerCC</code> has movement disabled. Both are restored when the store closes.</div>
+    </div>
+  </div>
+</div>
+
+<hr class="rule">
+
+<!-- Persistence -->
+<div class="section" id="persistence" style="padding-top:60px">
+  <span class="sec-label">Multi-scene games</span>
+  <h2 class="sec-title">Persistence across scene loads</h2>
+  <p class="sec-desc">Items with <strong>Persist Purchase</strong> enabled remember how many times they've been bought — even when the scene changes. The store restores game state automatically on load.</p>
+
+  <div class="persist-row">
+    <div class="persist-card">
+      <div class="on-tag" style="background:rgba(251,146,60,.1);color:var(--orange)">Persist Purchase ON</div>
+      <div class="persist-card-name" style="color:var(--text1)">Double Jump Unlock</div>
+      <div class="persist-card-note">Max Purchases: 1. Bought in Level 1 → still unlocked in Level 2. On Purchased re-fires on load to re-enable the ability.</div>
+    </div>
+    <div class="persist-card">
+      <div class="on-tag" style="background:rgba(251,146,60,.1);color:var(--orange)">Persist Purchase ON</div>
+      <div class="persist-card-name" style="color:var(--text1)">Speed Upgrade</div>
+      <div class="persist-card-note">Max Purchases: 3. Bought twice → On Purchased fires twice on next scene load, applying both upgrades.</div>
+    </div>
+    <div class="persist-card">
+      <div class="on-tag" style="background:rgba(94,98,128,.15);color:var(--text3)">Persist Purchase OFF</div>
+      <div class="persist-card-name" style="color:var(--text1)">Health Pack</div>
+      <div class="persist-card-note">Max Purchases: 0 (unlimited). Nothing to remember — each purchase is a one-time heal. Persisting a consumable count does nothing useful.</div>
+    </div>
+  </div>
+
+  <h3 style="font-size:18px;font-weight:700;letter-spacing:-.01em;color:var(--text1);margin-bottom:12px">On Restart</h3>
+  <p style="font-size:15px;color:var(--text2);line-height:1.7;margin-bottom:20px;max-width:640px">When a scene is loaded via <code>GameSceneManager.RestartScene()</code> — for example after the player dies — the <strong>On Restart</strong> setting controls what happens to purchase history.</p>
+
+  <table class="field-table" style="max-width:640px;margin-bottom:24px">
+    <thead><tr><th>On Restart</th><th>Behavior</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><span class="field-name">Keep Value</span> <span style="font-size:10px;color:var(--green);font-weight:600;margin-left:6px">default</span></td>
+        <td class="field-desc">Purchase history survives death. The player keeps the double jump they worked to unlock — recommended for permanent upgrades.</td>
+      </tr>
+      <tr>
+        <td><span class="field-name">Reset To Default</span></td>
+        <td class="field-desc">All purchase counts clear on restart. Use for roguelike-style runs where you lose everything on death.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout" style="background:rgba(79,142,247,.05);border-color:rgba(79,142,247,.2)">
+    <div class="callout-icon">🔁</div>
+    <div>
+      <div class="callout-title" style="color:var(--blue)">RestartScene vs LoadScene</div>
+      <div class="callout-body">Use <code>GameSceneManager.RestartScene("Level1")</code> for death/failure restarts — this is what triggers the On Restart behavior. Use <code>LoadScene("Level2")</code> for progression — purchase history always carries forward regardless of On Restart setting.</div>
+    </div>
+  </div>
+</div>
+
+<hr class="rule">
+
+<!-- Recipes -->
+<div class="section" id="recipes" style="padding-top:60px">
+  <span class="sec-label">Common patterns</span>
+  <h2 class="sec-title">Recipes</h2>
+  <p class="sec-desc">Copy these configurations directly into the Store Items list.</p>
+
+  <div class="recipe-grid">
+    <div class="recipe-card">
+      <div class="recipe-hdr">
+        <div class="recipe-title">Permanent unlock</div>
+        <div class="recipe-sub">One-time ability or area unlock</div>
+      </div>
+      <div class="recipe-body">
+        <div class="recipe-row"><span class="recipe-key">Max Purchases</span><span class="recipe-val">1</span></div>
+        <div class="recipe-row"><span class="recipe-key">Persist Purchase</span><span class="recipe-val">true</span></div>
+        <div class="recipe-row"><span class="recipe-key">On Restart</span><span class="recipe-val">Keep Value</span></div>
+        <div class="recipe-row"><span class="recipe-key">On Purchased →</span><span class="recipe-note">Enable ability, open door, activate spawner</span></div>
+      </div>
+    </div>
+    <div class="recipe-card">
+      <div class="recipe-hdr">
+        <div class="recipe-title">Consumable</div>
+        <div class="recipe-sub">Health pack, ammo, one-use boost</div>
+      </div>
+      <div class="recipe-body">
+        <div class="recipe-row"><span class="recipe-key">Max Purchases</span><span class="recipe-val">0 (unlimited)</span></div>
+        <div class="recipe-row"><span class="recipe-key">Persist Purchase</span><span class="recipe-val">false</span></div>
+        <div class="recipe-row"><span class="recipe-key">On Purchased →</span><span class="recipe-note">GameHealthManager.Heal(25)</span></div>
+      </div>
+    </div>
+    <div class="recipe-card">
+      <div class="recipe-hdr">
+        <div class="recipe-title">Stackable upgrade</div>
+        <div class="recipe-sub">Buy multiple tiers of the same boost</div>
+      </div>
+      <div class="recipe-body">
+        <div class="recipe-row"><span class="recipe-key">Max Purchases</span><span class="recipe-val">3</span></div>
+        <div class="recipe-row"><span class="recipe-key">Persist Purchase</span><span class="recipe-val">true</span></div>
+        <div class="recipe-row"><span class="recipe-key">On Purchased →</span><span class="recipe-note">PlayerController.IncreaseSpeed(5) — fires once per tier on restore</span></div>
+      </div>
+    </div>
+    <div class="recipe-card">
+      <div class="recipe-hdr">
+        <div class="recipe-title">Walk-up shopkeeper</div>
+        <div class="recipe-sub">Store in world space, open on approach</div>
+      </div>
+      <div class="recipe-body">
+        <div class="recipe-row"><span class="recipe-key">Open Mode</span><span class="recipe-val">Event Only</span></div>
+        <div class="recipe-row"><span class="recipe-key">InputTriggerZone</span><span class="recipe-note">On Enter → OpenStore()</span></div>
+        <div class="recipe-row"><span class="recipe-key">InputTriggerZone</span><span class="recipe-note">On Exit → CloseStore()</span></div>
+        <div class="recipe-row"><span class="recipe-key">CC Controller</span><span class="recipe-note">Assign player to freeze movement</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<hr class="rule">
+
+<!-- Reference -->
+<div class="section" id="reference" style="padding-top:60px">
+  <span class="sec-label">Inspector reference</span>
+  <h2 class="sec-title">All fields and events</h2>
+  <p class="sec-desc">The defaults work for most setups. Only the Currency Source and Store Items require configuration.</p>
+
+  <table class="field-table" style="margin-bottom:40px">
+    <thead><tr><th>Field</th><th>Default</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr><td><span class="field-name">Currency Source</span></td><td class="field-default">—</td><td class="field-desc">Required. The <code>GameCollectionManager</code> whose value is spent on purchases.</td></tr>
+      <tr><td><span class="field-name">Open Mode</span></td><td class="field-default">Key</td><td class="field-desc"><code>Key</code>: toggle with a keypress. <code>Event Only</code>: open/close via UnityEvents.</td></tr>
+      <tr><td><span class="field-name">Open / Close Key</span></td><td class="field-default">B</td><td class="field-desc">Key used when Open Mode is Key. Hidden when Event Only is selected.</td></tr>
+      <tr><td><span class="field-name">FP Controller</span></td><td class="field-default">none</td><td class="field-desc">Optional. Disables look input and releases cursor while the store is open.</td></tr>
+      <tr><td><span class="field-name">CC Controller</span></td><td class="field-default">none</td><td class="field-desc">Optional. Disables movement while the store is open.</td></tr>
+      <tr><td><span class="field-name">One Per Visit</span></td><td class="field-default">false</td><td class="field-desc">If on, each item can only be bought once per store opening, regardless of Max Purchases.</td></tr>
+      <tr><td><span class="field-name">On Restart</span></td><td class="field-default">Keep Value</td><td class="field-desc">What happens to persistent purchase counts when <code>RestartScene()</code> is called.</td></tr>
+      <tr><td><span class="field-name">Audio Manager</span></td><td class="field-default">none</td><td class="field-desc">Optional <code>GameAudioManager</code> for music switching when the store opens and closes.</td></tr>
+      <tr><td><span class="field-name">Store Music</span></td><td class="field-default">none</td><td class="field-desc">Music to play while the store is open. Requires Audio Manager.</td></tr>
+      <tr><td><span class="field-name">Previous Music</span></td><td class="field-default">none</td><td class="field-desc">Music to restore on close. Requires Audio Manager.</td></tr>
+      <tr><td><span class="field-name">Purchase Sound</span></td><td class="field-default">none</td><td class="field-desc">Plays on each successful purchase via the assigned Audio Source.</td></tr>
+      <tr><td><span class="field-name">Can't Afford Sound</span></td><td class="field-default">none</td><td class="field-desc">Plays when the player tries to buy but cannot afford the item.</td></tr>
+      <tr><td><span class="field-name">Show UI</span></td><td class="field-default">true</td><td class="field-desc">Creates a self-contained store panel at runtime. Disable if you want to build your own UI and call <code>PurchaseItem(index)</code> manually.</td></tr>
+      <tr><td><span class="field-name">Store Title</span></td><td class="field-default">STORE</td><td class="field-desc">Text shown at the top of the panel.</td></tr>
+    </tbody>
+  </table>
+
+  <table class="field-table">
+    <thead><tr><th>Event</th><th>When it fires</th></tr></thead>
+    <tbody>
+      <tr><td><span class="field-name">onStoreOpened</span></td><td class="field-desc">Store panel becomes visible. Wire to a pause overlay, background dim, or audio trigger.</td></tr>
+      <tr><td><span class="field-name">onStoreClosed</span></td><td class="field-desc">Store panel is hidden. Wire to resume gameplay elements.</td></tr>
+      <tr><td><span class="field-name">onAnyPurchase</span></td><td class="field-desc">Fires whenever any item is successfully purchased. Wire to a shared feedback effect.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<footer class="page-footer">
+  <span>EGTK Documentation</span>
+  <span><a href="index.html">← Back to all docs</a></span>
+</footer>
+
+<button id="theme-btn" title="Toggle light/dark">☀️</button>
+<script>
+  const btn = document.getElementById('theme-btn');
+  const html = document.documentElement;
+  btn.addEventListener('click', () => {
+    const isLight = html.getAttribute('data-theme') === 'light';
+    if (isLight) { html.removeAttribute('data-theme'); localStorage.removeItem('theme'); btn.textContent = '☀️'; }
+    else { html.setAttribute('data-theme', 'light'); localStorage.setItem('theme', 'light'); btn.textContent = '🌙'; }
+  });
+  if (html.getAttribute('data-theme') === 'light') btn.textContent = '🌙';
+</script>
+</body>
+</html>

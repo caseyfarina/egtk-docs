@@ -307,11 +307,11 @@
     <a href="intro.html" class="nav-card" style="--card-color: var(--blue)">
       <div class="card-label">Start Here</div>
       <div class="card-title">Introduction &amp; Quick Reference</div>
-      <div class="card-desc">The first principle, how to wire components, and a one-line reference for all 61 components organized by category.</div>
+      <div class="card-desc">The first principle, how to wire components, and a one-line reference for all 65 components organized by category.</div>
       <div class="card-tags">
         <span class="tag">First Principle</span>
         <span class="tag">Goal Cards</span>
-        <span class="tag">All 61 Components</span>
+        <span class="tag">All 65 Components</span>
       </div>
       <span class="card-arrow">↗</span>
     </a>
@@ -399,6 +399,76 @@
       <span class="card-arrow">↗</span>
     </a>
 
+    <!-- Store -->
+    <a href="store.html" class="nav-card" style="--card-color: var(--teal)">
+      <div class="card-label">Deep Dive</div>
+      <div class="card-title">In-Game Store</div>
+      <div class="card-desc">Build a scrollable item shop with buy buttons, balance display, and persistent unlocks — no code required. Supports walk-up shopkeepers and consumable vs permanent items.</div>
+      <div class="card-tags">
+        <span class="tag">GameStoreManager</span>
+        <span class="tag">Persistence</span>
+        <span class="tag">InputTriggerZone</span>
+        <span class="tag">Shopkeeper</span>
+      </div>
+      <span class="card-arrow">↗</span>
+    </a>
+
+    <!-- Health System -->
+    <a href="health.html" class="nav-card" style="--card-color: var(--red)">
+      <div class="card-label">Deep Dive</div>
+      <div class="card-title">Health System</div>
+      <div class="card-desc">Set up player and enemy health with damage, healing, death events, and low-health warnings. Includes self-contained UI with text display and gradient fill bar.</div>
+      <div class="card-tags">
+        <span class="tag">GameHealthManager</span>
+        <span class="tag">TakeDamage</span>
+        <span class="tag">onDeath</span>
+        <span class="tag">showBar</span>
+      </div>
+      <span class="card-arrow">↗</span>
+    </a>
+
+    <!-- Character Controllers -->
+    <a href="character-controllers.html" class="nav-card" style="--card-color: var(--red)">
+      <div class="card-label">Deep Dive</div>
+      <div class="card-title">Character Controllers</div>
+      <div class="card-desc">Third-person and first-person player movement. Covers required components, Cinemachine setup, spawn points, moving platform support, and dodge mode.</div>
+      <div class="card-tags">
+        <span class="tag">CharacterControllerCC</span>
+        <span class="tag">CharacterControllerFP</span>
+        <span class="tag">Cinemachine</span>
+        <span class="tag">SpawnPoint</span>
+      </div>
+      <span class="card-arrow">↗</span>
+    </a>
+
+    <!-- Inventory System -->
+    <a href="inventory.html" class="nav-card" style="--card-color: var(--green)">
+      <div class="card-label">Deep Dive</div>
+      <div class="card-title">Inventory System</div>
+      <div class="card-desc">Track multiple named item slots with counts, capacity limits, and per-slot events. Built-in icon card UI, scene persistence, and full/empty callbacks.</div>
+      <div class="card-tags">
+        <span class="tag">GameInventoryManager</span>
+        <span class="tag">InventorySlot</span>
+        <span class="tag">onFull</span>
+        <span class="tag">Persistence</span>
+      </div>
+      <span class="card-arrow">↗</span>
+    </a>
+
+    <!-- Dialogue System -->
+    <a href="dialogue.html" class="nav-card" style="--card-color: var(--purple)">
+      <div class="card-label">Deep Dive</div>
+      <div class="card-title">Dialogue System</div>
+      <div class="card-desc">Sequential character dialogue with animated portraits and typewriter text. Wire any trigger to start. Optional decision panel lets players branch to different events.</div>
+      <div class="card-tags">
+        <span class="tag">ActionDialogueSequence</span>
+        <span class="tag">Typewriter</span>
+        <span class="tag">Portraits</span>
+        <span class="tag">Decisions</span>
+      </div>
+      <span class="card-arrow">↗</span>
+    </a>
+
   </div>
 </div>
 
@@ -478,6 +548,9 @@ const TABLES = [
       ['GameCameraManager',     'Switches between Cinemachine cameras by name',           'Multiple angles, cutscenes'],
       ['GameUIManager',         'Connects managers to HUD UI elements',                   'HUD wiring'],
       ['GameSceneManager',      'Loads scenes additively with spawn point coordination',  'Multi-level games and hub worlds'],
+      ['GameStoreManager',      'In-game shop with buy buttons, balance display, and persistent unlocks', 'Upgrade shops, vendors, item stores'],
+      ['GameFlagManager',       'Named boolean flags that persist across scene loads',    'One-time pickups, doors opened, events seen'],
+      ['GameFlagListener',      'Fires events based on a flag state on scene load',       'Restore world state when returning to a scene'],
     ],
   },
   {
