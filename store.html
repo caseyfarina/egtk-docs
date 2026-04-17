@@ -186,7 +186,7 @@
       <div class="step-badge">1</div>
       <div>
         <div class="step-title">Add GameStoreManager to a GameObject</div>
-        <div class="step-body">Create an empty GameObject and add the <code>GameStoreManager</code> component. It can live anywhere in the scene — on the player, on an NPC, or on its own object.</div>
+        <div class="step-body">Create an empty GameObject named <strong>StoreManager</strong> and add the <code>GameStoreManager</code> component. Keep it on its own object — not on the player or an NPC.</div>
       </div>
     </li>
     <li class="step-item">
@@ -220,7 +220,7 @@
 <div class="section" id="items" style="padding-top:60px">
   <span class="sec-label">Configuration</span>
   <h2 class="sec-title">Store Items</h2>
-  <p class="sec-desc">Each item in the list is independently configured. Mix consumables, one-time unlocks, and stackable upgrades in the same store.</p>
+  <p class="sec-desc">Each item in the list is independently configured. Give it a name, a price, and wire <strong>On Purchased</strong> to whatever should happen when the player buys it.</p>
 
   <table class="field-table" style="margin-bottom:32px">
     <thead><tr><th>Field</th><th>Default</th><th>What it does</th></tr></thead>

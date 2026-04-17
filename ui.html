@@ -280,14 +280,14 @@ function drawGraph(svgId, {nodes, edges, w, h}) {
   <div class="breadcrumb"><a href="index.html">EGTK Docs</a><span>/</span>UI Implementation</div>
   <div class="hero-pill">Deep Dive</div>
   <h1 class="hero-title">UI Implementation</h1>
-  <p class="hero-desc">Two approaches to showing score, health, and timer on screen. Option A gives you the most per-element control — each manager has its own independent styling. Option B gives you a single consistent HUD look with shared styling. Both are valid; pick based on what you need.</p>
+  <p class="hero-desc">Two approaches to showing score, health, and timer on screen. <strong style="color:var(--text1)">Start with Option A</strong> — enable showUI on each manager and it works immediately, no extra setup. Option B (GameUIManager) is for when you want all your HUD elements to share one consistent look and font.</p>
 </div>
 
 <hr class="rule">
 
 <!-- Option A -->
 <div class="section" id="option-a" style="padding-top:60px">
-  <span class="sec-label">Option A — Most flexible</span>
+  <span class="sec-label">Option A — Start here</span>
 
   <div class="option-card">
     <div class="option-hdr" style="background:rgba(52,211,153,.04)">
@@ -324,7 +324,7 @@ function drawGraph(svgId, {nodes, edges, w, h}) {
 
 <!-- Option B -->
 <div class="section" id="option-b" style="padding-top:60px">
-  <span class="sec-label">Option B — Consistent look</span>
+  <span class="sec-label">Option B — Advanced: unified HUD</span>
 
   <div class="option-card">
     <div class="option-hdr" style="background:rgba(79,142,247,.04)">
