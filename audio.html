@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>EGTK — Audio Manager</title>
+<title>EGTK — Audio</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script>if(localStorage.getItem('theme')==='light')document.documentElement.setAttribute('data-theme','light');</script>
@@ -104,6 +104,7 @@
   .event-params { font-family:'SF Mono','Fira Mono',monospace; font-size:11px; color:var(--text3); }
 
   .sec-sub { font-size:16px; font-weight:700; color:var(--text1); margin-bottom:10px; margin-top:32px; }
+  .component-badge { display:inline-flex; align-items:center; gap:6px; font-size:11px; font-weight:600; letter-spacing:.06em; text-transform:uppercase; padding:4px 10px; border-radius:6px; margin-bottom:16px; }
 
   .page-footer { border-top:1px solid var(--rule); padding:32px 80px; max-width:1200px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; font-size:13px; color:var(--text3); }
   .page-footer a { color:var(--blue); text-decoration:none; }
@@ -132,7 +133,8 @@
   <a href="index.html" class="topnav-logo">EGTK<span>.</span></a>
   <div class="topnav-sep"></div>
   <a href="#setup">Setup</a>
-  <a href="#channels">Channels</a>
+  <a href="#channels">Music &amp; Ambient</a>
+  <a href="#sfx">Sound Effects</a>
   <a href="#events">Events</a>
   <a href="#patterns">Patterns</a>
   <a href="#reference">Reference</a>
@@ -140,14 +142,14 @@
 </nav>
 
 <div class="hero">
-  <div class="breadcrumb"><a href="index.html">EGTK Docs</a><span>/</span>Audio Manager</div>
-  <div class="hero-pill">Game Manager</div>
-  <h1 class="hero-title">Audio Manager</h1>
-  <p class="hero-desc">One component handles your entire audio world — background music, ambient sound, and sound effects. Wire any event to <code>PlayMusic()</code> or <code>PlaySoundEffect()</code> and get smooth crossfades, volume control, and mixer integration for free.</p>
+  <div class="breadcrumb"><a href="index.html">EGTK Docs</a><span>/</span>Audio</div>
+  <div class="hero-pill">Game Manager + Action</div>
+  <h1 class="hero-title">Audio</h1>
+  <p class="hero-desc">Two components handle your entire audio world. <strong>GameAudioManager</strong> owns looping music and ambient tracks with automatic crossfading and global volume control. <strong>ActionPlaySound</strong> plays one-shot sound effects from any object in the scene with randomized pitch and volume variation.</p>
   <div class="outcome-row">
     <div class="outcome-chip"><div class="dot" style="background:var(--teal);box-shadow:0 0 6px var(--teal)"></div>Music with automatic crossfading</div>
     <div class="outcome-chip"><div class="dot" style="background:var(--blue);box-shadow:0 0 6px var(--blue)"></div>Ambient layer, independent of music</div>
-    <div class="outcome-chip"><div class="dot" style="background:var(--orange);box-shadow:0 0 6px var(--orange)"></div>Sound effects by index or clip</div>
+    <div class="outcome-chip"><div class="dot" style="background:var(--orange);box-shadow:0 0 6px var(--orange)"></div>One-shot SFX with pitch &amp; volume variation</div>
     <div class="outcome-chip"><div class="dot" style="background:var(--purple);box-shadow:0 0 6px var(--purple)"></div>Gradual volume fades via events</div>
   </div>
 </div>
@@ -158,73 +160,56 @@
 <div class="section" id="setup" style="padding-top:60px">
   <span class="sec-label">Getting started</span>
   <h2 class="sec-title">Minimal setup</h2>
-  <p class="sec-desc">AudioSources are created automatically — you just need the component and some clips. An AudioMixer is optional but recommended if you want separate volume sliders.</p>
+  <p class="sec-desc">Music and ambient tracks are managed centrally by one GameAudioManager. Sound effects are attached to individual objects using ActionPlaySound.</p>
 
   <ul class="steps-list">
     <li class="step-item">
       <div class="step-badge">1</div>
       <div>
         <div class="step-title">Add GameAudioManager to a GameObject</div>
-        <div class="step-body">Create an empty GameObject named <strong>AudioManager</strong> and attach <code>GameAudioManager</code>. Three child AudioSources (Music Source, SFX Source, Ambient Source) are created automatically at runtime — you don't need to add them manually.</div>
+        <div class="step-body">Create an empty GameObject named <strong>AudioManager</strong> and attach <code>GameAudioManager</code>. Two child AudioSources (Music Source and Ambient Source) are created automatically at runtime — you don't need to add them manually.</div>
       </div>
     </li>
     <li class="step-item">
       <div class="step-badge">2</div>
       <div>
-        <div class="step-title">Add sound effects to the array</div>
-        <div class="step-body">In the Inspector, expand <strong>Sound Effects</strong> and add your AudioClips. Each clip gets an index starting at 0. You'll call <code>PlaySoundEffect(0)</code>, <code>PlaySoundEffect(1)</code>, etc. from UnityEvents.</div>
+        <div class="step-title">(Optional) Set a starting music clip</div>
+        <div class="step-body">Drag an AudioClip into the <strong>Starting Music Clip</strong> field and enable <strong>Play On Start</strong> to have music fade in automatically when the scene loads. Leave empty to start silent and trigger music from a UnityEvent.</div>
       </div>
     </li>
     <li class="step-item">
       <div class="step-badge">3</div>
       <div>
-        <div class="step-title">Wire events to PlayMusic() or PlaySoundEffect()</div>
-        <div class="step-body">On a trigger, button, or scene start event, wire to <code>GameAudioManager.PlayMusic(AudioClip)</code> or <code>PlaySoundEffect(int)</code>. Drag your clip into the UnityEvent's AudioClip slot, or use the index to reference the array.</div>
+        <div class="step-title">Add ActionPlaySound for sound effects</div>
+        <div class="step-body">On any GameObject that needs to play a sound (a coin, a button, a door), add <code>ActionPlaySound</code>. Drag one or more AudioClips into its <strong>Audio Clips</strong> array. Wire any UnityEvent (e.g. an <code>InputTriggerZone.onEnter</code>) to <code>ActionPlaySound.Play()</code>.</div>
       </div>
     </li>
     <li class="step-item">
       <div class="step-badge">4</div>
       <div>
-        <div class="step-title">(Optional) Assign an AudioMixer</div>
-        <div class="step-body">Create an AudioMixer asset (<strong>Assets → Create → Audio → Audio Mixer</strong>). Add groups named exactly <strong>Music</strong>, <strong>SFX</strong>, and <strong>Ambient</strong> (case-sensitive). Drag the mixer into the <strong>Audio Mixer</strong> field. This unlocks <code>SetMasterVolume()</code>, <code>SetMusicVolume()</code>, and <code>SetSFXVolume()</code>.</div>
+        <div class="step-title">(Optional) Link ActionPlaySound to the audio manager</div>
+        <div class="step-body">Enable <strong>Route Through Audio Manager</strong> on an <code>ActionPlaySound</code> component to make its volume respect the <strong>SFX Volume</strong> slider on <code>GameAudioManager</code>. This lets a single slider control all opted-in sound effects at once — useful for a settings menu.</div>
       </div>
     </li>
   </ul>
-
-  <div class="callout" style="background:rgba(45,212,191,.05);border-color:rgba(45,212,191,.2)">
-    <div class="callout-icon">💡</div>
-    <div>
-      <div class="callout-title" style="color:var(--teal)">AudioMixer group names are case-sensitive</div>
-      <div class="callout-body">The manager searches for groups named exactly <strong>Music</strong>, <strong>SFX</strong>, and <strong>Ambient</strong>. If a group isn't found you'll see a warning in the Console, and that channel will play without mixer routing. Double-check spelling if volume control isn't working.</div>
-    </div>
-  </div>
 </div>
 
 <hr class="rule">
 
 <!-- Channels -->
 <div class="section" id="channels" style="padding-top:60px">
-  <span class="sec-label">How it works</span>
-  <h2 class="sec-title">Three audio channels</h2>
-  <p class="sec-desc">The manager maintains three independent audio layers. Each has its own source, volume control, and events. They never interfere with each other.</p>
+  <span class="sec-label">GameAudioManager</span>
+  <h2 class="sec-title">Music &amp; Ambient channels</h2>
+  <p class="sec-desc">GameAudioManager maintains two independent looping audio layers. Each has its own source, volume control, and events. They never interfere with each other.</p>
 
-  <div class="three-col">
+  <div class="two-col">
     <div class="channel-card">
       <div class="channel-hdr">
         <div class="channel-pill" style="background:rgba(45,212,191,.1);color:var(--teal)">Music</div>
         <div style="font-size:14px;font-weight:700;color:var(--text1)">Background track</div>
       </div>
       <div class="channel-body">
-        Looping background music. Calling <code>PlayMusic()</code> while music is already playing <strong>automatically crossfades</strong> to the new track — no extra setup required. Supports fade in, fade out, pause, and resume.
-      </div>
-    </div>
-    <div class="channel-card">
-      <div class="channel-hdr">
-        <div class="channel-pill" style="background:rgba(251,146,60,.1);color:var(--orange)">SFX</div>
-        <div style="font-size:14px;font-weight:700;color:var(--text1)">Sound effects</div>
-      </div>
-      <div class="channel-body">
-        One-shot sounds played via <code>PlayOneShot</code>, so multiple effects can overlap. Add clips to the <strong>Sound Effects</strong> array in the Inspector and trigger them by index. The source never interrupts itself.
+        Looping background music. Calling <code>PlayMusic(clip)</code> while music is already playing <strong>automatically crossfades</strong> to the new track — no extra setup required. Supports fade in, fade out, pause, and resume.
       </div>
     </div>
     <div class="channel-card">
@@ -233,7 +218,7 @@
         <div style="font-size:14px;font-weight:700;color:var(--text1)">Ambient layer</div>
       </div>
       <div class="channel-body">
-        A second looping layer, independent of music. Use it for environmental sound (wind, rain, cave drips) that should persist regardless of what's happening with the music track. Also crossfades automatically.
+        A second looping layer, independent of music. Use it for environmental sound (wind, rain, cave drips) that should persist regardless of what's happening with the music track. Also crossfades automatically when you call <code>PlayAmbient(clip)</code> while it's running.
       </div>
     </div>
   </div>
@@ -245,6 +230,66 @@
       <div class="callout-body">If music (or ambient) is already playing when you call <code>PlayMusic(clip)</code>, the manager creates a temporary AudioSource, fades the old track out and the new track in simultaneously, then cleans up. You never hear a hard cut. The crossfade duration is controlled by <strong>Default Fade Duration</strong> (default: 2 seconds).</div>
     </div>
   </div>
+
+  <p class="sec-sub">Volume</p>
+  <p style="font-size:14px;color:var(--text2);line-height:1.7;margin-bottom:20px;">All four volume sliders are independent. <strong>Master Volume</strong> controls <code>AudioListener.volume</code> — the global Unity volume that affects everything in the scene. The others control their respective AudioSource volumes directly. No AudioMixer is required.</p>
+
+  <table class="field-table">
+    <thead><tr><th>Slider</th><th>Default</th><th>What it controls</th></tr></thead>
+    <tbody>
+      <tr><td><span class="field-name">Master Volume</span></td><td class="field-default">1</td><td class="field-desc">Global Unity <code>AudioListener.volume</code>. Scales all audio in the scene.</td></tr>
+      <tr><td><span class="field-name">Music Volume</span></td><td class="field-default">1</td><td class="field-desc">Volume of the music AudioSource.</td></tr>
+      <tr><td><span class="field-name">SFX Volume</span></td><td class="field-default">1</td><td class="field-desc">Shared scalar for <code>ActionPlaySound</code> components with <strong>Route Through Audio Manager</strong> enabled. Has no effect on sounds that don't opt in.</td></tr>
+      <tr><td><span class="field-name">Ambient Volume</span></td><td class="field-default">1</td><td class="field-desc">Volume of the ambient AudioSource.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<hr class="rule">
+
+<!-- SFX / ActionPlaySound -->
+<div class="section" id="sfx" style="padding-top:60px">
+  <span class="sec-label">ActionPlaySound</span>
+  <h2 class="sec-title">Sound effects</h2>
+  <p class="sec-desc">Sound effects are handled by <code>ActionPlaySound</code> — a component you place directly on the object that should make the sound. Each component has its own pool of clips, randomized pitch and volume, and fires an event when it plays. Add as many as you need.</p>
+
+  <div class="callout" style="background:rgba(45,212,191,.05);border-color:rgba(45,212,191,.2)">
+    <div class="callout-icon">💡</div>
+    <div>
+      <div class="callout-title" style="color:var(--teal)">One component, one AudioSource</div>
+      <div class="callout-body"><code>ActionPlaySound</code> automatically adds an <code>AudioSource</code> to the same GameObject if one doesn't exist. It uses <code>PlayOneShot</code>, so multiple calls overlap naturally — the source never interrupts itself. Multiple sounds can play from the same object at the same time.</div>
+    </div>
+  </div>
+
+  <p class="sec-sub">Inspector fields</p>
+  <table class="field-table" style="margin-bottom:32px">
+    <thead><tr><th>Field</th><th>Default</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr><td><span class="field-name">Audio Clips</span></td><td class="field-default">empty</td><td class="field-desc">Array of AudioClips to randomly choose from. One clip is picked at random each time <code>Play()</code> is called. Add multiple clips for natural variation (e.g. three slightly different footstep sounds).</td></tr>
+      <tr><td><span class="field-name">Volume Min / Max</span></td><td class="field-default">0.8 / 1.0</td><td class="field-desc">A random volume between these two values is chosen each time. Set both to the same value for a fixed volume. If <strong>Route Through Audio Manager</strong> is on, this value is then multiplied by the SFX Volume scalar.</td></tr>
+      <tr><td><span class="field-name">Route Through Audio Manager</span></td><td class="field-default">off</td><td class="field-desc">When enabled, this component looks for a <code>GameAudioManager</code> in the scene and multiplies its volume by the manager's <strong>SFX Volume</strong>. Lets a single slider control all opted-in effects at once.</td></tr>
+      <tr><td><span class="field-name">Output Mixer Group</span></td><td class="field-default">none</td><td class="field-desc">Optional AudioMixerGroup to route this sound through (e.g. SFX, Music, Ambience). Leave empty to use the default output.</td></tr>
+      <tr><td><span class="field-name">Pitch Min / Max</span></td><td class="field-default">1.0 / 1.0</td><td class="field-desc">A random pitch between these two values is chosen each time. Values below 1 lower the pitch; values above 1 raise it. Try 0.9–1.1 for subtle variation, 0.8–1.2 for noticeable randomness.</td></tr>
+    </tbody>
+  </table>
+
+  <p class="sec-sub">Events</p>
+  <table class="event-table" style="margin-bottom:32px">
+    <thead><tr><th>Event</th><th>Parameters</th><th>When it fires</th></tr></thead>
+    <tbody>
+      <tr><td><span class="event-name">onPlay</span></td><td class="event-params">—</td><td class="field-desc">Fires each time a clip is successfully played. Wire to a visual flash, particle burst, or animation trigger.</td></tr>
+    </tbody>
+  </table>
+
+  <p class="sec-sub">Methods</p>
+  <table class="field-table">
+    <thead><tr><th>Method</th><th>Parameter</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr><td><span class="field-name">Play()</span></td><td class="field-default">—</td><td class="field-desc">Picks a random clip from the array, applies random pitch and volume, and plays it. Wire this to any UnityEvent source such as <code>InputKeyPress</code> or <code>InputTriggerZone</code>.</td></tr>
+      <tr><td><span class="field-name">SetVolume()</span></td><td class="field-default">float 0–1</td><td class="field-desc">Sets a fixed volume with no variation (both min and max are set to the same value). Useful for a volume slider in a settings UI.</td></tr>
+      <tr><td><span class="field-name">SetPitch()</span></td><td class="field-default">float 0.1–3</td><td class="field-desc">Sets a fixed pitch with no variation (both min and max are set to the same value).</td></tr>
+    </tbody>
+  </table>
 </div>
 
 <hr class="rule">
@@ -255,15 +300,23 @@
   <h2 class="sec-title">Events</h2>
   <p class="sec-desc">Wire these to UI, lighting, or other managers to react to audio state changes without polling.</p>
 
-  <table class="event-table">
+  <p class="sec-sub" style="margin-top:0">GameAudioManager events</p>
+  <table class="event-table" style="margin-bottom:32px">
     <thead><tr><th>Event</th><th>Parameters</th><th>When it fires</th></tr></thead>
     <tbody>
       <tr><td><span class="event-name">onMusicStarted</span></td><td class="event-params">—</td><td class="field-desc">Music begins playing (or crossfade completes). Wire to a "Now Playing" UI update or a synced visual effect.</td></tr>
       <tr><td><span class="event-name">onMusicStopped</span></td><td class="event-params">—</td><td class="field-desc">Music finishes fading out and the source stops. Wire to trigger silence-based effects.</td></tr>
-      <tr><td><span class="event-name">onSoundEffectPlayed</span></td><td class="event-params">—</td><td class="field-desc">Fires every time a sound effect plays. Wire to a visual flash or counter.</td></tr>
       <tr><td><span class="event-name">onAmbientStarted</span></td><td class="event-params">—</td><td class="field-desc">Ambient track begins (or ambient crossfade completes).</td></tr>
       <tr><td><span class="event-name">onAmbientStopped</span></td><td class="event-params">—</td><td class="field-desc">Ambient track stops after fading out.</td></tr>
-      <tr><td><span class="event-name">onVolumeChangeComplete</span></td><td class="event-params">—</td><td class="field-desc">Fires when any gradual volume change (<code>SetMusicVolumeGradual</code>, etc.) finishes. Wire to trigger the next audio action in a sequence.</td></tr>
+      <tr><td><span class="event-name">onVolumeChangeComplete</span></td><td class="event-params">—</td><td class="field-desc">Fires when any gradual volume change (<code>SetMusicVolumeGradual</code>, <code>SetMasterVolumeGradual</code>, etc.) finishes. Wire to trigger the next audio action in a sequence.</td></tr>
+    </tbody>
+  </table>
+
+  <p class="sec-sub">ActionPlaySound events</p>
+  <table class="event-table">
+    <thead><tr><th>Event</th><th>Parameters</th><th>When it fires</th></tr></thead>
+    <tbody>
+      <tr><td><span class="event-name">onPlay</span></td><td class="event-params">—</td><td class="field-desc">Fires each time <code>Play()</code> successfully plays a clip. Wire to particles, animation, or other feedback.</td></tr>
     </tbody>
   </table>
 </div>
@@ -282,9 +335,9 @@
         <div class="recipe-sub">Play a track as soon as the scene loads</div>
       </div>
       <div class="recipe-body">
-        <div class="recipe-row"><span class="recipe-key">InputOnStart</span><span class="recipe-note">onStart event</span></div>
-        <div class="recipe-row"><span class="recipe-key">→</span><span class="recipe-note">GameAudioManager.PlayMusic(yourClip)</span></div>
-        <div class="recipe-row"><span class="recipe-key">Fade In</span><span class="recipe-val">true (default)</span></div>
+        <div class="recipe-row"><span class="recipe-key">Starting Music Clip</span><span class="recipe-note">drag your clip here</span></div>
+        <div class="recipe-row"><span class="recipe-key">Play On Start</span><span class="recipe-val">true</span></div>
+        <div class="recipe-row"><span class="recipe-key">Result</span><span class="recipe-note">music fades in automatically</span></div>
       </div>
     </div>
     <div class="recipe-card">
@@ -304,9 +357,10 @@
         <div class="recipe-sub">Play a sound when the player picks up an item</div>
       </div>
       <div class="recipe-body">
-        <div class="recipe-row"><span class="recipe-key">Sound Effects[0]</span><span class="recipe-note">coin pickup clip</span></div>
-        <div class="recipe-row"><span class="recipe-key">InputTriggerZone → </span><span class="recipe-note">PlaySoundEffect(0)</span></div>
-        <div class="recipe-row"><span class="recipe-key">Also wire → </span><span class="recipe-note">GameCollectionManager.Increment(1)</span></div>
+        <div class="recipe-row"><span class="recipe-key">ActionPlaySound</span><span class="recipe-note">on the collectible GameObject</span></div>
+        <div class="recipe-row"><span class="recipe-key">Audio Clips[0]</span><span class="recipe-note">coin pickup clip</span></div>
+        <div class="recipe-row"><span class="recipe-key">InputTriggerZone →</span><span class="recipe-note">ActionPlaySound.Play()</span></div>
+        <div class="recipe-row"><span class="recipe-key">Also wire →</span><span class="recipe-note">GameCollectionManager.Increment(1)</span></div>
       </div>
     </div>
     <div class="recipe-card">
@@ -315,8 +369,8 @@
         <div class="recipe-sub">Wind indoors, rain outdoors — swap on zone enter</div>
       </div>
       <div class="recipe-body">
-        <div class="recipe-row"><span class="recipe-key">Outdoor zone enters</span><span class="recipe-note">PlayAmbient(rainClip)</span></div>
-        <div class="recipe-row"><span class="recipe-key">Outdoor zone exits</span><span class="recipe-note">StopAmbient()</span></div>
+        <div class="recipe-row"><span class="recipe-key">Outdoor zone enter</span><span class="recipe-note">PlayAmbient(rainClip)</span></div>
+        <div class="recipe-row"><span class="recipe-key">Outdoor zone exit</span><span class="recipe-note">StopAmbient()</span></div>
         <div class="recipe-row"><span class="recipe-key">Music</span><span class="recipe-note">keeps playing independently</span></div>
       </div>
     </div>
@@ -333,13 +387,13 @@
     </div>
     <div class="recipe-card">
       <div class="recipe-hdr">
-        <div class="recipe-title">Victory fanfare</div>
-        <div class="recipe-sub">Stop music, play a sting, silence everything</div>
+        <div class="recipe-title">Global SFX volume slider</div>
+        <div class="recipe-sub">One slider controls all opted-in sound effects</div>
       </div>
       <div class="recipe-body">
-        <div class="recipe-row"><span class="recipe-key">GameStateManager</span><span class="recipe-note">onVictory</span></div>
-        <div class="recipe-row"><span class="recipe-key">→</span><span class="recipe-note">StopMusic()</span></div>
-        <div class="recipe-row"><span class="recipe-key">→</span><span class="recipe-note">PlaySoundEffect(0) — fanfare clip</span></div>
+        <div class="recipe-row"><span class="recipe-key">ActionPlaySound</span><span class="recipe-note">Route Through Audio Manager: on</span></div>
+        <div class="recipe-row"><span class="recipe-key">Settings slider →</span><span class="recipe-note">GameAudioManager.SetSFXVolume(value)</span></div>
+        <div class="recipe-row"><span class="recipe-key">Result</span><span class="recipe-note">all opted-in SFX scale together</span></div>
       </div>
     </div>
   </div>
@@ -352,18 +406,21 @@
   <span class="sec-label">Inspector reference</span>
   <h2 class="sec-title">All fields &amp; methods</h2>
 
-  <p class="sec-sub">Inspector fields</p>
+  <!-- GameAudioManager -->
+  <div class="component-badge" style="background:rgba(45,212,191,.08);color:var(--teal);border:1px solid rgba(45,212,191,.2)">GameAudioManager</div>
+
+  <p class="sec-sub" style="margin-top:8px">Inspector fields</p>
   <table class="field-table" style="margin-bottom:32px">
     <thead><tr><th>Field</th><th>Default</th><th>What it does</th></tr></thead>
     <tbody>
-      <tr><td><span class="field-name">Audio Mixer</span></td><td class="field-default">none</td><td class="field-desc">Optional AudioMixer asset. Required for <code>SetMasterVolume()</code>, <code>SetMusicVolume()</code>, and <code>SetSFXVolume()</code>. Without it the manager still works — volume methods just have no effect.</td></tr>
-      <tr><td><span class="field-name">Master Volume Parameter</span></td><td class="field-default">"MasterVolume"</td><td class="field-desc">Name of the exposed parameter on the mixer for master volume. Must match exactly.</td></tr>
-      <tr><td><span class="field-name">Music Volume Parameter</span></td><td class="field-default">"MusicVolume"</td><td class="field-desc">Name of the exposed mixer parameter for music volume.</td></tr>
-      <tr><td><span class="field-name">SFX Volume Parameter</span></td><td class="field-default">"SFXVolume"</td><td class="field-desc">Name of the exposed mixer parameter for SFX volume.</td></tr>
+      <tr><td><span class="field-name">Starting Music Clip</span></td><td class="field-default">none</td><td class="field-desc">AudioClip to play automatically when the scene starts. Only used when <strong>Play On Start</strong> is enabled.</td></tr>
+      <tr><td><span class="field-name">Play On Start</span></td><td class="field-default">off</td><td class="field-desc">When on, the <strong>Starting Music Clip</strong> fades in automatically at scene start.</td></tr>
+      <tr><td><span class="field-name">Master Volume</span></td><td class="field-default">1</td><td class="field-desc">Sets <code>AudioListener.volume</code> at startup. Scales all audio in the scene.</td></tr>
+      <tr><td><span class="field-name">Music Volume</span></td><td class="field-default">1</td><td class="field-desc">Initial volume of the music AudioSource.</td></tr>
+      <tr><td><span class="field-name">SFX Volume</span></td><td class="field-default">1</td><td class="field-desc">Shared scalar that <code>ActionPlaySound</code> components opt into via <strong>Route Through Audio Manager</strong>. Has no effect on sounds that don't opt in.</td></tr>
+      <tr><td><span class="field-name">Ambient Volume</span></td><td class="field-default">1</td><td class="field-desc">Initial volume of the ambient AudioSource.</td></tr>
       <tr><td><span class="field-name">Music Source</span></td><td class="field-default">auto</td><td class="field-desc">AudioSource used for music playback. Created automatically if left empty. Assign your own to control loop, pitch, and mixer group manually.</td></tr>
       <tr><td><span class="field-name">Default Fade Duration</span></td><td class="field-default">2</td><td class="field-desc">Duration in seconds for fade in, fade out, and crossfade transitions on music and ambient.</td></tr>
-      <tr><td><span class="field-name">SFX Source</span></td><td class="field-default">auto</td><td class="field-desc">AudioSource used for sound effect playback via <code>PlayOneShot</code>. Created automatically if left empty.</td></tr>
-      <tr><td><span class="field-name">Sound Effects</span></td><td class="field-default">empty</td><td class="field-desc">Array of AudioClips for <code>PlaySoundEffect(int index)</code>. Index 0 is the first clip. Add as many as you need.</td></tr>
       <tr><td><span class="field-name">Ambient Source</span></td><td class="field-default">auto</td><td class="field-desc">AudioSource used for ambient playback. Created automatically if left empty.</td></tr>
     </tbody>
   </table>
@@ -379,14 +436,6 @@
     </tbody>
   </table>
 
-  <p class="sec-sub">Sound effect methods</p>
-  <table class="field-table" style="margin-bottom:32px">
-    <thead><tr><th>Method</th><th>Parameter</th><th>What it does</th></tr></thead>
-    <tbody>
-      <tr><td><span class="field-name">PlaySoundEffect()</span></td><td class="field-default">int index</td><td class="field-desc">Plays the clip at the given index in the Sound Effects array. Use this from UnityEvents.</td></tr>
-    </tbody>
-  </table>
-
   <p class="sec-sub">Ambient methods</p>
   <table class="field-table" style="margin-bottom:32px">
     <thead><tr><th>Method</th><th>Parameter</th><th>What it does</th></tr></thead>
@@ -399,27 +448,45 @@
   </table>
 
   <p class="sec-sub">Volume methods</p>
-  <table class="field-table" style="margin-bottom:32px">
+  <table class="field-table" style="margin-bottom:24px">
     <thead><tr><th>Method</th><th>Parameter</th><th>What it does</th></tr></thead>
     <tbody>
-      <tr><td><span class="field-name">SetMasterVolume()</span></td><td class="field-default">float 0–1</td><td class="field-desc">Sets master mixer volume instantly. Requires AudioMixer assigned with a matching exposed parameter.</td></tr>
-      <tr><td><span class="field-name">SetMusicVolume()</span></td><td class="field-default">float 0–1</td><td class="field-desc">Sets music mixer volume instantly. Requires AudioMixer.</td></tr>
-      <tr><td><span class="field-name">SetSFXVolume()</span></td><td class="field-default">float 0–1</td><td class="field-desc">Sets SFX mixer volume instantly. Requires AudioMixer.</td></tr>
+      <tr><td><span class="field-name">SetMasterVolume()</span></td><td class="field-default">float 0–1</td><td class="field-desc">Sets <code>AudioListener.volume</code> instantly, scaling all audio in the scene.</td></tr>
+      <tr><td><span class="field-name">SetMusicVolume()</span></td><td class="field-default">float 0–1</td><td class="field-desc">Sets music AudioSource volume instantly.</td></tr>
+      <tr><td><span class="field-name">SetSFXVolume()</span></td><td class="field-default">float 0–1</td><td class="field-desc">Sets the shared SFX scalar instantly. Only affects <code>ActionPlaySound</code> components with <strong>Route Through Audio Manager</strong> on.</td></tr>
+      <tr><td><span class="field-name">SetAmbientVolume()</span></td><td class="field-default">float 0–1</td><td class="field-desc">Sets ambient AudioSource volume instantly.</td></tr>
+      <tr><td><span class="field-name">SetMasterVolumeGradual()</span></td><td class="field-default">float 0–1</td><td class="field-desc">Fades <code>AudioListener.volume</code> to the target over the default fade duration. Fires <code>onVolumeChangeComplete</code> when done.</td></tr>
       <tr><td><span class="field-name">SetMusicVolumeGradual()</span></td><td class="field-default">float 0–1</td><td class="field-desc">Fades music AudioSource volume to the target over the default fade duration. Fires <code>onVolumeChangeComplete</code> when done.</td></tr>
-      <tr><td><span class="field-name">SetSFXVolumeGradual()</span></td><td class="field-default">float 0–1</td><td class="field-desc">Fades SFX AudioSource volume to the target over the default fade duration.</td></tr>
-      <tr><td><span class="field-name">SetAmbientVolumeGradual()</span></td><td class="field-default">float 0–1</td><td class="field-desc">Fades ambient AudioSource volume to the target over the default fade duration.</td></tr>
-      <tr><td><span class="field-name">SetMasterVolumeGradual()</span></td><td class="field-default">float 0–1</td><td class="field-desc">Fades master mixer volume to the target over the default fade duration. Requires AudioMixer.</td></tr>
-      <tr><td><span class="field-name">StopAllAudio()</span></td><td class="field-default">—</td><td class="field-desc">Stops music, ambient, and SFX immediately with no fade. Useful for game over or scene transitions.</td></tr>
+      <tr><td><span class="field-name">SetSFXVolumeGradual()</span></td><td class="field-default">float 0–1</td><td class="field-desc">Fades the shared SFX scalar to the target over the default fade duration. Fires <code>onVolumeChangeComplete</code> when done.</td></tr>
+      <tr><td><span class="field-name">SetAmbientVolumeGradual()</span></td><td class="field-default">float 0–1</td><td class="field-desc">Fades ambient AudioSource volume to the target over the default fade duration. Fires <code>onVolumeChangeComplete</code> when done.</td></tr>
+      <tr><td><span class="field-name">StopAllAudio()</span></td><td class="field-default">—</td><td class="field-desc">Stops music and ambient immediately with no fade. Useful for game over or scene transitions.</td></tr>
     </tbody>
   </table>
 
-  <div class="callout" style="background:rgba(251,146,60,.05);border-color:rgba(251,146,60,.2)">
-    <div class="callout-icon">⚠️</div>
-    <div>
-      <div class="callout-title" style="color:var(--orange)">Gradual volume vs. mixer volume</div>
-      <div class="callout-body"><code>SetMusicVolumeGradual()</code> fades the <strong>AudioSource volume</strong> — no mixer required, works immediately. <code>SetMusicVolume()</code> sets the <strong>mixer group fader</strong> — requires an AudioMixer, but respects any mixer effects and send levels. For most student projects, <code>SetMusicVolumeGradual()</code> is simpler and covers the common cases.</div>
-    </div>
-  </div>
+  <!-- ActionPlaySound -->
+  <div class="component-badge" style="background:rgba(251,146,60,.08);color:var(--orange);border:1px solid rgba(251,146,60,.2);margin-top:40px">ActionPlaySound</div>
+
+  <p class="sec-sub" style="margin-top:8px">Inspector fields</p>
+  <table class="field-table" style="margin-bottom:32px">
+    <thead><tr><th>Field</th><th>Default</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr><td><span class="field-name">Audio Clips</span></td><td class="field-default">empty</td><td class="field-desc">Array of AudioClips to randomly choose from each time <code>Play()</code> is called.</td></tr>
+      <tr><td><span class="field-name">Volume Min / Max</span></td><td class="field-default">0.8 / 1.0</td><td class="field-desc">Random volume range per play. Set both to the same value for a fixed volume.</td></tr>
+      <tr><td><span class="field-name">Route Through Audio Manager</span></td><td class="field-default">off</td><td class="field-desc">When on, multiplies this sound's playback volume by <code>GameAudioManager.SFXVolume</code>.</td></tr>
+      <tr><td><span class="field-name">Output Mixer Group</span></td><td class="field-default">none</td><td class="field-desc">Optional AudioMixerGroup to route this sound through.</td></tr>
+      <tr><td><span class="field-name">Pitch Min / Max</span></td><td class="field-default">1.0 / 1.0</td><td class="field-desc">Random pitch range per play. Try 0.9–1.1 for subtle variation, wider for noticeable randomness.</td></tr>
+    </tbody>
+  </table>
+
+  <p class="sec-sub">Methods</p>
+  <table class="field-table">
+    <thead><tr><th>Method</th><th>Parameter</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr><td><span class="field-name">Play()</span></td><td class="field-default">—</td><td class="field-desc">Picks a random clip, applies random pitch and volume, and plays it via <code>PlayOneShot</code>.</td></tr>
+      <tr><td><span class="field-name">SetVolume()</span></td><td class="field-default">float 0–1</td><td class="field-desc">Sets a fixed volume (both min and max) with no variation.</td></tr>
+      <tr><td><span class="field-name">SetPitch()</span></td><td class="field-default">float 0.1–3</td><td class="field-desc">Sets a fixed pitch (both min and max) with no variation.</td></tr>
+    </tbody>
+  </table>
 </div>
 
 <footer class="page-footer">
