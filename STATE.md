@@ -2,7 +2,7 @@
 project: egtk-docs
 category: docs
 status: active
-updated: 2026-09-11
+updated: 2026-10-13
 ---
 
 ## Now
@@ -30,6 +30,9 @@ updates itself.
 
 3. **Add a 2D page.** Which components work with `Collider2D`, `CharacterController2D`
    setup, and the Ground Layer trap that silently stops jumping.
+   Since 2026-10-13 it also needs: the Animator parameters it drives (`Speed`, `Grounded`,
+   `VerticalVelocity` — missing ones are skipped), **Visual Root** for characters made of
+   several sprites, and **Art Faces Left**.
 
 4. **Add an input page.** Keys are now bound through an Input Action in the Inspector, not
    picked from a dropdown. Existing projects must set their keys again.
