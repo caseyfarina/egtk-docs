@@ -43,7 +43,5 @@ updates itself.
 
 ## Known issues
 
-- `gameToolKit/Assets/eventGameToolKit/Documentation/egtk-intro.html` is a **stale copy** of
-  this site's intro page that ships inside the package, and it still lists components
-  deleted long ago. Either delete it or regenerate it; maintaining two copies is what let
-  it drift.
+- none. (The stale in-package copy `Documentation/egtk-intro.html` was deleted 2026-10-13;
+  the site is the only copy of these pages.)
