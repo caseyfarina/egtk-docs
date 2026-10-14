@@ -307,11 +307,39 @@
     <a href="intro.html" class="nav-card" style="--card-color: var(--blue)">
       <div class="card-label">Start Here</div>
       <div class="card-title">Introduction &amp; Quick Reference</div>
-      <div class="card-desc">The first principle, how to wire components, and a one-line reference for all 65 components organized by category.</div>
+      <div class="card-desc">The first principle, how to wire components, and a one-line reference for all <span class="egtk-count">75</span> components organized by category.</div>
       <div class="card-tags">
         <span class="tag">First Principle</span>
         <span class="tag">Goal Cards</span>
-        <span class="tag">All 65 Components</span>
+        <span class="tag">All <span class="egtk-count">75</span> Components</span>
+      </div>
+      <span class="card-arrow">↗</span>
+    </a>
+
+    <!-- Input & Keys -->
+    <a href="input.html" class="nav-card" style="--card-color: var(--blue)">
+      <div class="card-label">Deep Dive</div>
+      <div class="card-title">Input &amp; Keys</div>
+      <div class="card-desc">Keys are set by pressing Listen, not picked from a dropdown. Which input component to use, the managers' shortcut keys, and what changed for older projects.</div>
+      <div class="card-tags">
+        <span class="tag">InputKeyPress</span>
+        <span class="tag">Bindings</span>
+        <span class="tag">Player Input</span>
+        <span class="tag">Upgrading</span>
+      </div>
+      <span class="card-arrow">↗</span>
+    </a>
+
+    <!-- 2D Games -->
+    <a href="2d.html" class="nav-card" style="--card-color: var(--red)">
+      <div class="card-label">Deep Dive</div>
+      <div class="card-title">Making a 2D Game</div>
+      <div class="card-desc">Put a Collider 2D on a sprite and the toolkit works out the rest. Platformer and top-down players, what works in 2D, and the Ground Layer setting that stops jumping when it's wrong.</div>
+      <div class="card-tags">
+        <span class="tag">CharacterController2D</span>
+        <span class="tag">Collider 2D</span>
+        <span class="tag">Moving Platforms</span>
+        <span class="tag">Ground Layer</span>
       </div>
       <span class="card-arrow">↗</span>
     </a>
@@ -492,7 +520,7 @@
     <div style="font-size:20px;flex-shrink:0">👋</div>
     <div>
       <div style="font-size:14px;font-weight:700;color:var(--text1);margin-bottom:6px">New to EGTK? Start here</div>
-      <div style="font-size:13px;color:var(--text2);line-height:1.65">Add a character controller, drop a trigger zone in the scene, wire its <code style="font-family:'SF Mono','Fira Mono',monospace;font-size:12px;padding:1px 5px;border-radius:4px;background:rgba(255,255,255,.07);color:var(--text1)">onEnter</code> event to an action (like <code style="font-family:'SF Mono','Fira Mono',monospace;font-size:12px;padding:1px 5px;border-radius:4px;background:rgba(255,255,255,.07);color:var(--text1)">ActionDisplayText</code>), and press Play. That's the whole pattern — everything else in EGTK is built the same way.</div>
+      <div style="font-size:13px;color:var(--text2);line-height:1.65">Add a character controller, drop a trigger zone in the scene, wire its <code style="font-family:'SF Mono','Fira Mono',monospace;font-size:12px;padding:1px 5px;border-radius:4px;background:rgba(255,255,255,.07);color:var(--text1)">onTriggerEnterEvent</code> event to an action (like <code style="font-family:'SF Mono','Fira Mono',monospace;font-size:12px;padding:1px 5px;border-radius:4px;background:rgba(255,255,255,.07);color:var(--text1)">ActionDisplayText</code>), and press Play. That's the whole pattern — everything else in EGTK is built the same way.</div>
     </div>
   </div>
 </div>
@@ -512,119 +540,10 @@
   <div class="footer-right"><a href="https://github.com/caseyfarina/egtk-docs">GitHub</a></div>
 </footer>
 
+<script src="components.js"></script>
 <script>
-const TABLES = [
-  {
-    name: 'Input', color: '#4F8EF7',
-    tint: 'rgba(79,142,247,.04)',
-    rows: [
-      ['InputKeyPress',           'Fires when a key is pressed',                                    'Key pressed → call any function'],
-      ['InputOnStart',            'Fires when the scene starts',                                   'Auto-run something on scene load'],
-      ['InputTriggerZone',        'Fires when a tagged object enters or exits a collider',          'Player walks into area → call a function'],
-      ['InputCheckpointZone',     'A trigger zone that also saves a spawn point',                  'Checkpoints and respawn points'],
-      ['InputInteractionZone',    'Shows a prompt sprite; fires when the player presses Interact', 'Player presses E or Triangle → call any function'],
-      ['InputMouseInteraction',   'Fires when the mouse clicks or hovers over this object',        'Clickable objects with a free cursor'],
-      ['InputFPMouseInteraction', 'Same but raycasts from screen center',                         'Clickable objects in a first-person game'],
-      ['InputClickDrag',          'Makes this object draggable',                                  'Drag-and-drop puzzles and sliders'],
-      ['InputClickRotate',        'Makes this object rotatable by dragging',                      'Dials, wheels, rotating puzzles'],
-      ['InputActionEvent',        'Fires from any Unity Input System action',                     'Custom controller and keyboard bindings'],
-      ['InputKeyCountdown',       'Counts down while a key is held',                              'Hold-to-open doors and charge mechanics'],
-      ['InputCollisionEnter',     'Fires on physics collision with a tagged object',               'Bullet hits and physical triggers'],
-    ],
-  },
-  {
-    name: 'Actions', color: '#9B72F7',
-    tint: 'rgba(155,114,247,.04)',
-    rows: [
-      ['ActionPlaySound',                  'Plays a sound with randomized volume and pitch',                  'Any sound effect'],
-      ['ActionDisplayText',                'Shows text on screen with optional typewriter effect',            'Subtitles, hints, UI messages'],
-      ['ActionDisplayImage',               'Shows an image with fade or scale animation',                     'Pop-up icons and overlays'],
-      ['ActionDialogueSequence',           'Multi-line dialogue with portraits and choices',                  'NPC conversations and cutscenes'],
-      ['ActionSpawnObject',                'Instantiates a prefab at a spawn point',                         'Spawn enemies and pickups'],
-      ['ActionAutoSpawner',                'Continuously spawns prefabs on a timer',                         'Enemy waves and ambient spawning'],
-      ['ActionSpawnProjectile',            'Spawns a projectile with direction and force',                   'Shooting and throwing'],
-      ['ActionRestartScene',               'Reloads the current scene',                                      'Restart button and game over'],
-      ['ActionRespawnPlayer',              'Teleports player to last checkpoint',                            'Death and respawn'],
-      ['ActionTeleportToTransform',        'Teleports any object to a target',                              'Portals and warps'],
-      ['ActionEventSequencer',             'Fires events in sequence with delays',                           'Cutscene chains'],
-      ['ActionRandomEvent',                'Picks one event from a weighted list',                           'Random loot and varied responses'],
-      ['ActionShuffleEvent',               'Cycles events in random order, each once',                      'Shuffle playlists and non-repeating dialogue'],
-      ['ActionTriggerAnimatorParameter',   'Sets an Animator parameter',                                    'Trigger animations'],
-      ['ActionPlayCharacterEmoteAnimation','Plays a named animation trigger',                               'Character reactions and emotes'],
-      ['ActionAnimateTransform',           'Moves, rotates, or scales using animation curves',              'Custom tweened animations'],
-      ['ActionRandomMotion',               'Continuously applies randomized movement',                       'Floating objects and idle wobble'],
-      ['ActionPlatformAnimator',           'Moves a platform between waypoints',                            'Doors, elevators, and moving platforms'],
-      ['ActionDecalSequence',              'Frame-by-frame material animation on a URP decal',              'Animated decals'],
-      ['ActionDecalSequenceLibrary',       'Switches between multiple named decal sequences',               'Characters with multiple animation states'],
-      ['ActionBlinkDecal',                 'Automatically blinks a character eye decal',                    'Any character that needs blinking'],
-    ],
-  },
-  {
-    name: 'Game Managers', color: '#34D399',
-    tint: 'rgba(52,211,153,.04)',
-    rows: [
-      ['GameHealthManager',     'Tracks health with damage, healing, and death event',      'Player or enemy health'],
-      ['GameCollectionManager', 'Tracks a numeric value with threshold events',             'Score, coins, collectibles'],
-      ['GameInventoryManager',  'Tracks multiple item slots with counts',                  'Keys, ammo, resources'],
-      ['GameTimerManager',      'Counts up or down, fires events at thresholds',           'Level timer, countdown clock'],
-      ['GameCheckpointManager', 'Stores last checkpoint for respawning',                  'Respawn system'],
-      ['GameStateManager',      'Handles pause and victory screens',                       'Pause menu, win condition'],
-      ['GameAudioManager',      'Controls background music and ambient audio',             'Music system, crossfades'],
-      ['GameCameraManager',     'Switches between Cinemachine cameras by name',           'Multiple angles, cutscenes'],
-      ['GameUIManager',         'Connects managers to HUD UI elements',                   'HUD wiring'],
-      ['GameSceneManager',      'Loads scenes additively with spawn point coordination',  'Multi-level games and hub worlds'],
-      ['GameStoreManager',      'In-game shop with buy buttons, balance display, and persistent unlocks', 'Upgrade shops, vendors, item stores'],
-      ['GameFlagManager',       'Named boolean flags that persist across scene loads',    'One-time pickups, doors opened, events seen'],
-      ['GameFlagListener',      'Fires events based on a flag state on scene load',       'Restore world state when returning to a scene'],
-    ],
-  },
-  {
-    name: 'Character Controllers', color: '#EF4444',
-    tint: 'rgba(239,68,68,.04)',
-    rows: [
-      ['CharacterControllerFP',      'First-person controller with mouse look, jump, sprint', 'First-person games'],
-      ['CharacterControllerCC',      'Third-person controller with rotation and jump',        'Third-person and top-down games'],
-      ['PhysicsBallPlayerController','Physics-based ball controller',                        'Rolling ball games'],
-      ['PhysicsCharacterController', 'Rigidbody-based character controller',                 'Physics-heavy platformers'],
-      ['EnemyControllerCC',          'AI enemy that chases the player using NavMesh',        'Basic enemy AI'],
-      ['PhysicsEnemyController',     'Rigidbody-based enemy that chases',                   'Physics-based enemy AI'],
-    ],
-  },
-  {
-    name: 'Physics', color: '#FB923C',
-    tint: 'rgba(251,146,60,.04)',
-    rows: [
-      ['PhysicsBumper',           'Bounces any Rigidbody that touches it',                  'Pinball bumpers, bounce pads'],
-      ['PhysicsBumperTag',        'Same but only affects tagged objects',                   'Targeted bounce zones'],
-      ['PhysicsForceZone',        'Applies forces to Rigidbodies inside a trigger',         'Wind zones, jump pads, explosion areas'],
-      ['PhysicsPlatformAnimator', 'Moves platform between waypoints using Rigidbody',      'Moving platforms the player can stand on'],
-      ['PhysicsPlatformStick',    'Keeps player attached to a moving platform',            'Required companion to PhysicsPlatformAnimator'],
-    ],
-  },
-  {
-    name: 'Puzzles', color: '#F472B6',
-    tint: 'rgba(244,114,182,.04)',
-    rows: [
-      ['PuzzleSwitch',          'A switch that can be activated and deactivated',             'Any interactive switch or button'],
-      ['PuzzleSwitchChecker',   'Fires when all assigned switches are activated',             'Combination puzzles'],
-      ['PuzzleSequenceChecker', 'Fires when switches are activated in the correct order',    'Sequence puzzles'],
-    ],
-  },
-  {
-    name: 'UI & Utilities', color: '#94A3C8',
-    tint: 'rgba(148,163,200,.04)',
-    rows: [
-      ['FadeInFromBlackOnRestart', 'Fades the screen in from black every time the scene loads', 'Scene transitions and respawn fade-in'],
-    ],
-  },
-  {
-    name: 'Spawn Points', color: '#94A3C8',
-    tint: 'rgba(148,163,200,.04)',
-    rows: [
-      ['SpawnPoint', 'Marks a spawn location; character controllers check for one on start', 'Player start positions and multi-door entry'],
-    ],
-  },
-];
+// Catalog lives in components.js, shared with the other catalog page.
+const TABLES = EGTK_CATALOG;
 
 const container = document.getElementById('refTables');
 TABLES.forEach(cat => {

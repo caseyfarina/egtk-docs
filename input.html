@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EGTK — Input &amp; Keys</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script>if(localStorage.getItem('theme')==='light')document.documentElement.setAttribute('data-theme','light');</script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg:#0D0F14; --surface:#171B24; --surf2:#1C2130;
+    --text1:#F0F2F8; --text2:#8B8FA8; --text3:#5E6280;
+    --rule:#21283C; --blue:#4F8EF7; --purple:#9B72F7;
+    --green:#34D399; --orange:#FB923C; --teal:#2DD4BF;
+    --red:#EF4444; --slate:#94A3C8; --yellow:#F59E0B; --pink:#F472B6;
+  }
+  html { scroll-behavior: smooth; }
+  body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text1); -webkit-font-smoothing:antialiased; }
+  .dot-grid { background-image:radial-gradient(circle,rgba(148,163,200,.065) 1px,transparent 1px); background-size:28px 28px; }
+
+  .topnav { position:sticky; top:0; z-index:100; background:rgba(13,15,20,.88); backdrop-filter:blur(12px); border-bottom:1px solid var(--rule); padding:0 80px; display:flex; align-items:center; gap:32px; height:52px; }
+  .topnav-logo { font-size:13px; font-weight:700; color:var(--text1); text-decoration:none; }
+  .topnav-logo span { color:var(--blue); }
+  .topnav-sep { width:1px; height:16px; background:var(--rule); }
+  .topnav a { font-size:12px; font-weight:500; color:var(--text3); text-decoration:none; transition:color .15s; }
+  .topnav a:hover { color:var(--text1); }
+  .topnav-back { margin-left:auto; font-size:12px; font-weight:500; color:var(--text3); text-decoration:none; }
+  .topnav-back:hover { color:var(--blue); }
+
+  .hero { padding:80px 80px 48px; max-width:1200px; margin:0 auto; }
+  .breadcrumb { font-size:12px; color:var(--text3); margin-bottom:20px; }
+  .breadcrumb a { color:var(--text3); text-decoration:none; }
+  .breadcrumb a:hover { color:var(--blue); }
+  .breadcrumb span { margin:0 8px; }
+  .hero-pill { display:inline-flex; align-items:center; font-size:10px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; padding:5px 12px; border-radius:20px; background:rgba(239,68,68,.1); color:var(--red); margin-bottom:20px; }
+  .hero-title { font-size:52px; font-weight:700; letter-spacing:-.03em; line-height:1.1; color:var(--text1); margin-bottom:16px; }
+  .hero-desc { font-size:17px; color:var(--text2); line-height:1.7; max-width:640px; margin-bottom:32px; }
+  .outcome-row { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:48px; }
+  .outcome-chip { display:flex; align-items:center; gap:6px; background:var(--surface); border:1px solid var(--rule); border-radius:8px; padding:6px 12px; font-size:12px; font-weight:500; color:var(--text2); }
+  .outcome-chip .dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+
+  .section { max-width:1200px; margin:0 auto; padding:0 80px 72px; }
+  .sec-label { font-size:10px; font-weight:600; letter-spacing:.12em; text-transform:uppercase; color:var(--text3); margin-bottom:12px; display:block; }
+  .sec-title { font-size:28px; font-weight:700; letter-spacing:-.02em; color:var(--text1); margin-bottom:10px; }
+  .sec-desc { font-size:15px; color:var(--text2); line-height:1.7; max-width:680px; margin-bottom:32px; }
+  hr.rule { border:none; border-top:1px solid var(--rule); max-width:1200px; margin:0 auto; }
+
+  .steps-list { list-style:none; display:flex; flex-direction:column; gap:12px; margin-bottom:32px; }
+  .step-item { display:flex; gap:16px; align-items:flex-start; background:var(--surface); border:1px solid var(--rule); border-radius:10px; padding:16px 20px; }
+  .step-badge { width:28px; height:28px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; color:var(--red); background:rgba(239,68,68,.12); margin-top:1px; }
+  .step-title { font-size:14px; font-weight:600; color:var(--text1); margin-bottom:4px; }
+  .step-body { font-size:13px; color:var(--text2); line-height:1.6; }
+  .step-body code { font-family:'SF Mono','Fira Mono',monospace; font-size:12px; padding:1px 5px; border-radius:4px; background:rgba(255,255,255,.07); color:var(--text1); }
+  .step-body strong { color:var(--text1); font-weight:600; }
+
+  .field-table { width:100%; border-collapse:collapse; border:1px solid var(--rule); border-radius:10px; overflow:hidden; margin-bottom:24px; }
+  .field-table th { font-size:9px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--text3); padding:9px 16px; text-align:left; background:rgba(255,255,255,.03); border-bottom:1px solid var(--rule); }
+  .field-table td { padding:9px 16px; font-size:13px; border-bottom:1px solid rgba(33,40,60,.5); vertical-align:top; }
+  .field-table tr:last-child td { border-bottom:none; }
+  .field-table tr:nth-child(even) td { background:var(--surf2); }
+  .field-name { font-family:'SF Mono','Fira Mono',monospace; font-size:12px; color:var(--red); font-weight:500; }
+  .field-default { font-family:'SF Mono','Fira Mono',monospace; font-size:11px; color:var(--text3); }
+  .field-desc { color:var(--text2); }
+  .field-desc code { font-family:'SF Mono','Fira Mono',monospace; font-size:12px; padding:1px 5px; border-radius:4px; background:rgba(255,255,255,.07); color:var(--text1); }
+
+  .callout { border-radius:12px; padding:20px 24px; border:1px solid; display:flex; gap:16px; align-items:flex-start; margin-bottom:24px; }
+  .callout-icon { font-size:20px; flex-shrink:0; margin-top:1px; }
+  .callout-title { font-size:14px; font-weight:700; margin-bottom:5px; }
+  .callout-body { font-size:13px; color:var(--text2); line-height:1.7; }
+  .callout-body code { font-family:'SF Mono','Fira Mono',monospace; font-size:12px; padding:1px 5px; border-radius:4px; background:rgba(255,255,255,.07); color:var(--text1); }
+  .callout-body strong { color:var(--text1); font-weight:600; }
+
+  .two-col { display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:32px; }
+  @media(max-width:900px) { .two-col { grid-template-columns:1fr; } }
+
+  .recipe-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:32px; }
+  @media(max-width:900px) { .recipe-grid { grid-template-columns:1fr; } }
+  .recipe-card { background:var(--surface); border:1px solid var(--rule); border-radius:12px; overflow:hidden; }
+  .recipe-hdr { padding:14px 20px; border-bottom:1px solid var(--rule); }
+  .recipe-title { font-size:14px; font-weight:700; color:var(--text1); margin-bottom:2px; }
+  .recipe-sub { font-size:12px; color:var(--text3); }
+  .recipe-body { padding:14px 20px; }
+  .recipe-row { display:flex; gap:8px; align-items:baseline; padding:5px 0; border-bottom:1px solid rgba(33,40,60,.4); font-size:12px; }
+  .recipe-row:last-child { border-bottom:none; }
+  .recipe-key { color:var(--text3); min-width:140px; flex-shrink:0; }
+  .recipe-val { font-family:'SF Mono','Fira Mono',monospace; font-size:11px; color:var(--red); }
+  .recipe-note { color:var(--text2); font-size:12px; }
+
+  .event-table { width:100%; border-collapse:collapse; border:1px solid var(--rule); border-radius:10px; overflow:hidden; margin-bottom:24px; }
+  .event-table th { font-size:9px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--text3); padding:9px 16px; text-align:left; background:rgba(255,255,255,.03); border-bottom:1px solid var(--rule); }
+  .event-table td { padding:9px 16px; font-size:13px; border-bottom:1px solid rgba(33,40,60,.5); vertical-align:top; }
+  .event-table tr:last-child td { border-bottom:none; }
+  .event-table tr:nth-child(even) td { background:var(--surf2); }
+  .event-name { font-family:'SF Mono','Fira Mono',monospace; font-size:12px; color:var(--red); font-weight:500; }
+  .event-params { font-family:'SF Mono','Fira Mono',monospace; font-size:11px; color:var(--text3); }
+
+  .page-footer { border-top:1px solid var(--rule); padding:32px 80px; max-width:1200px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; font-size:13px; color:var(--text3); }
+  .page-footer a { color:var(--blue); text-decoration:none; }
+  .page-footer a:hover { text-decoration:underline; }
+
+  @media(max-width:768px) {
+    .topnav { padding:0 20px; gap:12px; }
+    .topnav-sep, .topnav a:not(.topnav-logo):not(.topnav-back) { display:none; }
+    .hero { padding:40px 20px 32px; }
+    .hero-title { font-size:36px; }
+    .section { padding:0 20px 48px; }
+    .field-table, .event-table { display:block; overflow-x:auto; }
+    .page-footer { padding:20px; flex-direction:column; gap:8px; text-align:center; }
+  }
+
+  [data-theme="light"] { --bg:#F4F6FA; --surface:#FFFFFF; --surf2:#EEF1F7; --text1:#0D0F14; --text2:#3E4461; --text3:#6B718F; --rule:#DDE1EF; }
+  [data-theme="light"] .topnav { background:rgba(244,246,250,.92); }
+
+  #theme-btn { position:fixed; bottom:20px; right:20px; z-index:300; background:var(--surface); border:1px solid var(--rule); border-radius:8px; padding:7px 11px; font-size:15px; line-height:1; cursor:pointer; color:var(--text2); box-shadow:0 2px 8px rgba(0,0,0,.15); transition:border-color .15s; }
+  #theme-btn:hover { border-color:var(--blue); }
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <a href="index.html" class="topnav-logo">EGTK<span>.</span></a>
+  <div class="topnav-sep"></div>
+  <a href="#keys">Setting a Key</a>
+  <a href="#choose">Which Component</a>
+  <a href="#other-keys">Other Keys</a>
+  <a href="#players">Player Input</a>
+  <a href="#upgrading">Upgrading</a>
+  <a href="index.html" class="topnav-back">← All Docs</a>
+</nav>
+
+<div class="hero">
+  <div class="breadcrumb"><a href="index.html">EGTK Docs</a><span>/</span>Input &amp; Keys</div>
+  <div class="hero-pill">Input</div>
+  <h1 class="hero-title">Input &amp; Keys</h1>
+  <p class="hero-desc">Keys are set with a <strong>binding</strong>, not picked from a dropdown. You press <strong>Listen</strong> and then the key you want. The same binding works for a gamepad button too, and one component can hold several bindings at once.</p>
+  <div class="outcome-row">
+    <div class="outcome-chip"><div class="dot" style="background:var(--blue);box-shadow:0 0 6px var(--blue)"></div>Set any key with Listen</div>
+    <div class="outcome-chip"><div class="dot" style="background:var(--green);box-shadow:0 0 6px var(--green)"></div>Keyboard and gamepad on one event</div>
+    <div class="outcome-chip"><div class="dot" style="background:var(--orange);box-shadow:0 0 6px var(--orange)"></div>Works in new Unity 6.3 projects</div>
+  </div>
+</div>
+
+<hr class="rule">
+
+<div class="section" id="keys" style="padding-top:60px">
+  <span class="sec-label">Getting started</span>
+  <h2 class="sec-title">Setting a key</h2>
+  <p class="sec-desc">For <code>InputKeyPress</code> and <code>InputKeyCountdown</code>. A newly added component already listens for <strong>Space</strong>, so it works before you change anything.</p>
+
+  <ul class="steps-list">
+    <li class="step-item">
+      <div class="step-badge">1</div>
+      <div>
+        <div class="step-title">Find Activation in the Inspector</div>
+        <div class="step-body">It shows a list of bindings. A new component has one: <strong>Space</strong>.</div>
+      </div>
+    </li>
+    <li class="step-item">
+      <div class="step-badge">2</div>
+      <div>
+        <div class="step-title">Pick the binding, then click Listen</div>
+        <div class="step-body">Click the existing binding to change it, or click <strong>+</strong> to add another one. In the <strong>Path</strong> field, click <strong>Listen</strong>.</div>
+      </div>
+    </li>
+    <li class="step-item">
+      <div class="step-badge">3</div>
+      <div>
+        <div class="step-title">Press the key you want</div>
+        <div class="step-body">Unity lists what it heard. Click the key in that list. A gamepad button works the same way.</div>
+      </div>
+    </li>
+    <li class="step-item">
+      <div class="step-badge">4</div>
+      <div>
+        <div class="step-title">Wire the event</div>
+        <div class="step-body"><code>InputKeyPress</code> fires <strong>On Press Event</strong>. Wire it to any function, like <code>ActionPlaySound.Play()</code>.</div>
+      </div>
+    </li>
+  </ul>
+
+  <div class="callout" style="background:rgba(79,142,247,.05);border-color:rgba(79,142,247,.2)">
+    <div class="callout-icon">💡</div>
+    <div>
+      <div class="callout-title" style="color:var(--blue)">One event, several keys</div>
+      <div class="callout-body">Add a second binding with <strong>+</strong> and both keys fire the same event. Bind <strong>E</strong> and a gamepad button and the game works with either.</div>
+    </div>
+  </div>
+</div>
+
+<hr class="rule">
+
+<div class="section" id="choose" style="padding-top:60px">
+  <span class="sec-label">Choosing</span>
+  <h2 class="sec-title">Which input component?</h2>
+  <p class="sec-desc">All of them go through Unity's Input System.</p>
+
+  <table class="event-table">
+    <thead><tr><th>Component</th><th>Events</th><th>Use when</th></tr></thead>
+    <tbody>
+      <tr><td><span class="event-name">InputKeyPress</span></td><td class="event-params">On Press Event</td><td class="field-desc">One key on one object. Nothing else to set up.</td></tr>
+      <tr><td><span class="event-name">InputKeyCountdown</span></td><td class="event-params">On Count Down Key, On Count Limit Key</td><td class="field-desc">Something should happen after a key is pressed a number of times: hit a door five times to break it. Each press counts down by one. The second event fires when the count reaches zero.</td></tr>
+      <tr><td><span class="event-name">InputActionEvent</span></td><td class="event-params">On Action Triggered (+ float and Vector2 versions)</td><td class="field-desc">You want to use an action from an Input Actions asset, such as one shared by many objects. Drag the action into <strong>Action Reference</strong>. You choose whether it fires on press, on release, or both.</td></tr>
+      <tr><td><span class="event-name">InputInteractionZone</span></td><td class="event-params">On Interact</td><td class="field-desc">"Press E near this." Uses an Interact action if you assign one, otherwise the <strong>Fallback Input Key</strong> (E).</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<hr class="rule">
+
+<div class="section" id="other-keys" style="padding-top:60px">
+  <span class="sec-label">Built-in shortcuts</span>
+  <h2 class="sec-title">Other keys in the toolkit</h2>
+  <p class="sec-desc">Some managers have one shortcut key of their own. These are simple key dropdowns, because they are settings rather than something you wire.</p>
+
+  <table class="field-table">
+    <thead><tr><th>Component</th><th>Default</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr><td><span class="field-name">GameStateManager</span></td><td class="field-default">P</td><td class="field-desc">Pause Input Key pauses and unpauses. Escape quits when Quit On Escape is ticked.</td></tr>
+      <tr><td><span class="field-name">GameStoreManager</span></td><td class="field-default">B</td><td class="field-desc">Store Input Key opens and closes the store.</td></tr>
+      <tr><td><span class="field-name">InputInteractionZone</span></td><td class="field-default">E</td><td class="field-desc">Fallback Input Key, used when no Interact action is assigned.</td></tr>
+      <tr><td><span class="field-name">CharacterControllerFP</span></td><td class="field-default">Escape</td><td class="field-desc">Cursor Toggle Input Key frees and re-locks the mouse cursor.</td></tr>
+      <tr><td><span class="field-name">InputQuitGame</span></td><td class="field-default">Escape</td><td class="field-desc">Quits. In the Editor it stops Play mode instead, so you can tell it worked.</td></tr>
+      <tr><td><span class="field-name">lockMouseCursorToDisplay</span></td><td class="field-default">Escape</td><td class="field-desc">Frees the cursor; clicking locks it again.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<hr class="rule">
+
+<div class="section" id="players" style="padding-top:60px">
+  <span class="sec-label">Character controllers</span>
+  <h2 class="sec-title">Player Input</h2>
+  <p class="sec-desc">Character controllers read movement through a <strong>Player Input</strong> component, not a binding of their own. Set its <strong>Actions</strong> to <code>EGTK_InputSystem_Actions</code>. That asset already has Move, Look, Jump, Sprint, Dodge, Interact and Attack.</p>
+
+  <div class="callout" style="background:rgba(239,68,68,.05);border-color:rgba(239,68,68,.2)">
+    <div class="callout-icon">⚠️</div>
+    <div>
+      <div class="callout-title" style="color:var(--red)">Only one Player Input per scene</div>
+      <div class="callout-body">Player Input is built for local multiplayer. With two in a scene, Unity gives the second one a different device, and it can end up waiting for a <em>touchscreen</em>. The character just ignores the keyboard, with no error. If a character will not move, check that it is the only active object with Player Input.</div>
+    </div>
+  </div>
+</div>
+
+<hr class="rule">
+
+<div class="section" id="upgrading" style="padding-top:60px">
+  <span class="sec-label">Older projects</span>
+  <h2 class="sec-title">Upgrading from the key dropdown</h2>
+  <p class="sec-desc">Earlier versions of <code>InputKeyPress</code> and <code>InputKeyCountdown</code> had a key dropdown. That field was <strong>replaced</strong>, not renamed, so any key you picked before is gone. An upgraded component's <strong>Activation</strong> list is <strong>empty</strong> and the key does nothing at all. Add a binding with <strong>+</strong> and Listen. (Only components added fresh start with Space.)</p>
+
+  <div class="callout" style="background:rgba(79,142,247,.05);border-color:rgba(79,142,247,.2)">
+    <div class="callout-icon">💡</div>
+    <div>
+      <div class="callout-title" style="color:var(--blue)">Why it changed</div>
+      <div class="callout-body">New Unity 6.3 projects use the Input System <em>only</em>. The old way of reading keys does nothing there. In a fresh project, pressing the key simply never fired the event. Every part of the toolkit now uses the Input System.</div>
+    </div>
+  </div>
+
+  <div class="callout" style="background:rgba(52,211,153,.05);border-color:rgba(52,211,153,.2)">
+    <div class="callout-icon">🧪</div>
+    <div>
+      <div class="callout-title" style="color:var(--green)">Try every input component</div>
+      <div class="callout-body">Open <code>ExampleScenes/Example2D_InputTest</code>. It has a labelled station for each input component. Each station toggles a sprite so you can see it fire.</div>
+    </div>
+  </div>
+</div>
+
+
+<footer class="page-footer">
+  <span>EGTK Documentation</span>
+  <span><a href="index.html">← Back to all docs</a></span>
+</footer>
+
+<button id="theme-btn" title="Toggle light/dark">☀️</button>
+<script>
+  const btn = document.getElementById('theme-btn');
+  const html = document.documentElement;
+  btn.addEventListener('click', () => {
+    const isLight = html.getAttribute('data-theme') === 'light';
+    if (isLight) { html.removeAttribute('data-theme'); localStorage.removeItem('theme'); btn.textContent = '☀️'; }
+    else { html.setAttribute('data-theme', 'light'); localStorage.setItem('theme', 'light'); btn.textContent = '🌙'; }
+  });
+  if (html.getAttribute('data-theme') === 'light') btn.textContent = '🌙';
+</script>
+</body>
+</html>

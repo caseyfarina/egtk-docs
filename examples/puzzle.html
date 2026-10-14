@@ -295,7 +295,7 @@
       <div class="step-badge">1</div>
       <div>
         <div class="step-title">Set up switches identically to combination lock</div>
-        <div class="step-body">PuzzleSwitch setup is the same — each switch just needs <code>Activate()</code> wired to its interaction input. The sequence checker listens to <code>onActivated</code> internally, so you don't need to wire anything on the switches themselves.</div>
+        <div class="step-body">PuzzleSwitch setup is the same — each switch just needs <code>Activate()</code> wired to its interaction input. <strong>It must be <code>Activate()</code></strong> — <code>NextState()</code> and <code>SetState()</code> change the switch but the checker never hears them, so the sequence silently never advances. The sequence checker listens to <code>onActivated</code> internally, so you don't need to wire anything on the switches themselves.</div>
       </div>
     </li>
     <li class="step-item">
@@ -309,7 +309,7 @@
       <div class="step-badge">3</div>
       <div>
         <div class="step-title">Configure Reset on Mistake and wire events</div>
-        <div class="step-body">Enable <strong>Reset on Mistake</strong> if a wrong step should restart from step 1 (recommended for most puzzles). Wire <code>onSequenceSolved</code> to the reward. Wire <code>onMistake</code> → <code>ActionPlaySound.PlaySound()</code> for an error sound. Wire <code>onProgress</code> → <code>ActionDisplayText.Show()</code> to show "Step 2 of 4".</div>
+        <div class="step-body">Enable <strong>Reset on Mistake</strong> if a wrong step should restart from step 1 (recommended for most puzzles). Wire <code>onSequenceSolved</code> to the reward. Wire <code>onMistake</code> → <code>ActionPlaySound.Play()</code> for an error sound. Wire <code>onReset</code> → <code>ActionDisplayText.DisplayText("Wrong order — start again")</code> so the player knows the sequence restarted.</div>
       </div>
     </li>
   </ol>

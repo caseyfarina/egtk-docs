@@ -165,7 +165,7 @@
       <div class="step-badge">3</div>
       <div>
         <div class="step-title">Wire the trigger to the manager</div>
-        <div class="step-body">Select the player (or the object with InputTriggerZone). In the <strong>On Enter</strong> event: drag in <code>CollectionManager</code>, choose function <code>GameCollectionManager → Increment()</code>. The default increment is 1 — pass a specific int if you need a different value. Also wire <code>On Enter</code> → the collectible's <code>SetActive(false)</code> to hide it on collect.</div>
+        <div class="step-body">Select the player (or the object with InputTriggerZone). In the <strong>On Trigger Enter Event</strong> event: drag in <code>CollectionManager</code>, choose function <code>GameCollectionManager → Increment()</code>. The default increment is 1 — pass a specific int if you need a different value. Also wire <code>On Trigger Enter Event</code> → the collectible's <code>SetActive(false)</code> to hide it on collect.</div>
       </div>
     </li>
     <li class="step-item">
@@ -198,8 +198,8 @@
      ports:{in:{side:'in',dy:28}}},
   ], edges:[
     {from:'coin',    fromPort:'out',  to:'itz',     toPort:'in',   label:'enters zone',             color:'#2DD4BF', delay:'0s',   dur:'2s'},
-    {from:'itz',     fromPort:'out1', to:'gcm',     toPort:'in',   label:'On Enter → Increment()',  color:'#4F8EF7', delay:'.4s',  dur:'2.2s'},
-    {from:'itz',     fromPort:'out2', to:'disable', toPort:'in',   label:'On Enter → SetActive(false)', color:'#4F8EF7', delay:'.8s', dur:'2s'},
+    {from:'itz',     fromPort:'out1', to:'gcm',     toPort:'in',   label:'On Trigger Enter Event → Increment()',  color:'#4F8EF7', delay:'.4s',  dur:'2.2s'},
+    {from:'itz',     fromPort:'out2', to:'disable', toPort:'in',   label:'On Trigger Enter Event → SetActive(false)', color:'#4F8EF7', delay:'.8s', dur:'2s'},
     {from:'gcm',     fromPort:'out1', to:'ui',      toPort:'in',   label:'onValueChanged',          color:'#34D399', delay:'1.1s', dur:'2s'},
     {from:'gcm',     fromPort:'out2', to:'victory', toPort:'in',   label:'threshold → onCrossedUp', color:'#34D399', delay:'1.5s', dur:'2.2s'},
   ]});
@@ -225,7 +225,7 @@
       <div class="step-badge">2</div>
       <div>
         <div class="step-title">Wire On Crossed Up</div>
-        <div class="step-body">The <code>onCrossedUp</code> event fires once when the value goes from below to at-or-above the threshold. Wire it to whatever should happen — <code>GameStateManager.Victory()</code> for a win, <code>ActionAutoSpawner.StartSpawning()</code> to trigger a wave, or <code>ActionPlaySound.PlaySound()</code> for a fanfare.</div>
+        <div class="step-body">The <code>onCrossedUp</code> event fires once when the value goes from below to at-or-above the threshold. Wire it to whatever should happen — <code>GameStateManager.Victory()</code> for a win, <code>ActionAutoSpawner.StartSpawning()</code> to trigger a wave, or <code>ActionPlaySound.Play()</code> for a fanfare.</div>
       </div>
     </li>
     <li class="step-item">

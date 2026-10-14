@@ -545,8 +545,8 @@
   ], edges:[
     {from:'enemy',  fromPort:'out',  to:'player', toPort:'in',   label:'enters zone (tag:enemy)',  color:'#EF4444', delay:'0s',  dur:'2s'},
     {from:'hpu',    fromPort:'out',  to:'player', toPort:'in',   label:'enters zone (tag:health)', color:'#34D399', delay:'.7s', dur:'2s'},
-    {from:'player', fromPort:'out1', to:'ghm',    toPort:'in',   label:'On Enter → TakeDamage(10)',color:'#EF4444', delay:'.4s', dur:'2.2s'},
-    {from:'player', fromPort:'out2', to:'gcm',    toPort:'in',   label:'On Enter → Increment()',   color:'#34D399', delay:'1s',  dur:'2s'},
+    {from:'player', fromPort:'out1', to:'ghm',    toPort:'in',   label:'On Trigger Enter Event → TakeDamage(10)',color:'#EF4444', delay:'.4s', dur:'2.2s'},
+    {from:'player', fromPort:'out2', to:'gcm',    toPort:'in',   label:'On Trigger Enter Event → Increment()',   color:'#34D399', delay:'1s',  dur:'2s'},
   ]});
   </script>
 
@@ -799,9 +799,9 @@
   ], edges:[
     {from:'input',  fromPort:'out',  to:'asp',  toPort:'in',   label:'On Action',              color:'#4F8EF7', delay:'0s',   dur:'2s'},
     {from:'asp',    fromPort:'out',  to:'gcm',  toPort:'in1',  label:'onProjectileSpawned',    color:'#9B72F7', delay:'.3s',  dur:'2.2s'},
-    {from:'itz_e',  fromPort:'out',  to:'ghm',  toPort:'in1',  label:'On Enter → TakeDamage',  color:'#EF4444', delay:'.6s',  dur:'2s'},
-    {from:'itz_h',  fromPort:'out',  to:'ghm',  toPort:'in2',  label:'On Enter → Heal(25)',    color:'#34D399', delay:'.9s',  dur:'2s'},
-    {from:'itz_p',  fromPort:'out',  to:'gcm',  toPort:'in2',  label:'On Enter → Increment()', color:'#FB923C', delay:'1.2s', dur:'2s'},
+    {from:'itz_e',  fromPort:'out',  to:'ghm',  toPort:'in1',  label:'On Trigger Enter Event → TakeDamage',  color:'#EF4444', delay:'.6s',  dur:'2s'},
+    {from:'itz_h',  fromPort:'out',  to:'ghm',  toPort:'in2',  label:'On Trigger Enter Event → Heal(25)',    color:'#34D399', delay:'.9s',  dur:'2s'},
+    {from:'itz_p',  fromPort:'out',  to:'gcm',  toPort:'in2',  label:'On Trigger Enter Event → Increment()', color:'#FB923C', delay:'1.2s', dur:'2s'},
     {from:'ghm',    fromPort:'out',  to:'gsm',  toPort:'in',   label:'onDeath → Game Over',    color:'#EF4444', delay:'.4s',  dur:'2.2s'},
     {from:'timer',  fromPort:'out1', to:'esp',  toPort:'in',   label:'onStart → StartSpawning',color:'#F59E0B', delay:'.2s',  dur:'2s'},
     {from:'timer',  fromPort:'out2', to:'gsm',  toPort:'in',   label:'onComplete → time up',   color:'#F59E0B', delay:'1.5s', dur:'2.2s'},

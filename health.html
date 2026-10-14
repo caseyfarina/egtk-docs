@@ -163,14 +163,14 @@
       <div class="step-badge">2</div>
       <div>
         <div class="step-title">Wire hazards to TakeDamage()</div>
-        <div class="step-body">On your hazard object (spike, enemy, lava zone), add <code>InputTriggerZone</code> with tag <strong>Player</strong>. Wire <strong>On Trigger Enter</strong> → <code>GameHealthManager.TakeDamage(10)</code>. The int parameter is the damage amount.</div>
+        <div class="step-body">On your hazard object (spike, enemy, lava zone), add <code>InputTriggerZone</code> with tag <strong>Player</strong>. Wire <strong>On Trigger Enter Event</strong> → <code>GameHealthManager.TakeDamage(10)</code>. The int parameter is the damage amount.</div>
       </div>
     </li>
     <li class="step-item">
       <div class="step-badge">3</div>
       <div>
         <div class="step-title">Wire onDeath to a restart or respawn</div>
-        <div class="step-body">Select <code>GameHealthManager</code> and find the <strong>onDeath</strong> event. Wire it to <code>ActionRestartScene.RestartCurrentScene()</code> or <code>ActionRespawnPlayer.RespawnToCheckpoint()</code>.</div>
+        <div class="step-body">Select <code>GameHealthManager</code> and find the <strong>onDeath</strong> event. Wire it to <code>ActionRestartScene.RestartScene()</code> or <code>ActionRespawnPlayer.RespawnToCheckpoint()</code>.</div>
       </div>
     </li>
     <li class="step-item">
@@ -269,7 +269,7 @@
         <div class="recipe-row"><span class="recipe-key">Low Threshold</span><span class="recipe-val">25</span></div>
         <div class="recipe-row"><span class="recipe-key">Show Bar</span><span class="recipe-val">true</span></div>
         <div class="recipe-row"><span class="recipe-key">Hazard → </span><span class="recipe-note">TakeDamage(10)</span></div>
-        <div class="recipe-row"><span class="recipe-key">onDeath → </span><span class="recipe-note">ActionRestartScene.RestartCurrentScene()</span></div>
+        <div class="recipe-row"><span class="recipe-key">onDeath → </span><span class="recipe-note">ActionRestartScene.RestartScene()</span></div>
       </div>
     </div>
     <div class="recipe-card">
@@ -341,7 +341,7 @@
     <tbody>
       <tr><td><span class="field-name">TakeDamage()</span></td><td class="field-default">int amount</td><td class="field-desc">Reduces health by amount. Ignored if already dead.</td></tr>
       <tr><td><span class="field-name">Heal()</span></td><td class="field-default">int amount</td><td class="field-desc">Restores health by amount, capped at Max Health. Ignored if dead.</td></tr>
-      <tr><td><span class="field-name">FullHeal()</span></td><td class="field-default">—</td><td class="field-desc">Restores health to Max Health. Does not revive from death — use SetHealth(max) for that.</td></tr>
+      <tr><td><span class="field-name">FullHeal()</span></td><td class="field-default">—</td><td class="field-desc">Restores health to Max Health. Works after death too, and fires onRevived.</td></tr>
       <tr><td><span class="field-name">SetHealth()</span></td><td class="field-default">int value</td><td class="field-desc">Sets health to an exact value. Can revive (if above 0) or kill (if 0).</td></tr>
       <tr><td><span class="field-name">SetMaxHealth()</span></td><td class="field-default">int value</td><td class="field-desc">Changes Max Health at runtime. Useful for upgrades that increase max HP.</td></tr>
     </tbody>

@@ -158,6 +158,7 @@
   <a href="#structure">Scene Structure</a>
   <a href="#loading">Scene Loading</a>
   <a href="#persistence">Persistence</a>
+  <a href="#flags">Flags</a>
   <a href="#reference">Reference</a>
   <a href="index.html" class="topnav-back">← All Docs</a>
 </nav>
@@ -334,6 +335,57 @@
 
 <hr class="rule">
 
+<!-- Flags -->
+<div class="section" id="flags" style="padding-top:60px">
+  <span class="sec-label">Remembering one-time events</span>
+  <h2 class="sec-title">Doors that stay open, pickups that stay gone</h2>
+  <p class="sec-desc">Health and score are numbers. For "this already happened", use <strong>flags</strong>: named true/false values that survive every scene load. Leave a level and come back, and the door you opened is still open.</p>
+
+  <ul class="steps-list">
+    <li class="step-item">
+      <div class="step-badge">1</div>
+      <div>
+        <div class="step-title">Add GameFlagManager to each scene that uses flags</div>
+        <div class="step-body">No setup needed. Flags carry over automatically, like the persistent managers above.</div>
+      </div>
+    </li>
+    <li class="step-item">
+      <div class="step-badge">2</div>
+      <div>
+        <div class="step-title">Set a flag when the thing happens</div>
+        <div class="step-body">Wire any event → <code>GameFlagManager.SetFlag("door_opened")</code>. The name is up to you, but it must match exactly everywhere.</div>
+      </div>
+    </li>
+    <li class="step-item">
+      <div class="step-badge">3</div>
+      <div>
+        <div class="step-title">Add GameFlagListener to the object that should remember</div>
+        <div class="step-body">Drag in the scene's <strong>Flag Manager</strong> and type the same <strong>Flag Name</strong>. Wire <strong>On Flag Already Set</strong> to the restored state, such as <code>SetActive(false)</code> on a pickup, or the door's open animation.</div>
+      </div>
+    </li>
+  </ul>
+
+  <table class="event-table" style="margin-top:28px">
+    <thead><tr><th>GameFlagListener event</th><th>Parameters</th><th>When it fires</th></tr></thead>
+    <tbody>
+      <tr><td><span class="event-name">onFlagAlreadySet</span></td><td class="event-params">—</td><td class="field-desc">When the scene starts, if the flag was set earlier. Use it to put things back the way the player left them.</td></tr>
+      <tr><td><span class="event-name">onFlagNotSet</span></td><td class="event-params">—</td><td class="field-desc">When the scene starts, if the flag is not set yet.</td></tr>
+      <tr><td><span class="event-name">onFlagBecameSet</span></td><td class="event-params">—</td><td class="field-desc">During play, the moment the flag is set.</td></tr>
+      <tr><td><span class="event-name">onFlagBecameCleared</span></td><td class="event-params">—</td><td class="field-desc">During play, the moment the flag is cleared.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout" style="background:rgba(79,142,247,.05);border-color:rgba(79,142,247,.2)">
+    <div class="callout-icon">💡</div>
+    <div>
+      <div class="callout-title" style="color:var(--blue)">Flags survive death by default</div>
+      <div class="callout-body">GameFlagManager's <strong>On Restart</strong> is <strong>Keep Value</strong>: when the player dies and the scene restarts, opened doors stay open. Set it to <strong>Reset To Default</strong> to undo them on restart. Every flag clears at the start of a new play session. <code>ClearFlag("name")</code> and <code>ClearAllFlags()</code> clear flags yourself.</div>
+    </div>
+  </div>
+</div>
+
+<hr class="rule">
+
 <!-- Reference -->
 <div class="section" id="reference" style="padding-top:60px">
   <span class="sec-label">Inspector Reference</span>
@@ -394,7 +446,7 @@
   <ul class="patterns-list">
     <li class="pattern-item">
       <div class="pattern-title">Load the next level from an exit trigger</div>
-      <div class="pattern-body">Add an <code>InputTriggerZone</code> to an exit area. In <strong>On Enter</strong>: drag the <code>SceneManager</code> object → <code>GameSceneManager → LoadScene(string)</code> → type <code>Level2</code>. The player walks through and Level2 loads seamlessly.</div>
+      <div class="pattern-body">Add an <code>InputTriggerZone</code> to an exit area. In <strong>On Trigger Enter Event</strong>: drag the <code>SceneManager</code> object → <code>GameSceneManager → LoadScene(string)</code> → type <code>Level2</code>. The player walks through and Level2 loads seamlessly.</div>
     </li>
     <li class="pattern-item">
       <div class="pattern-title">Return to the main menu</div>
@@ -552,7 +604,7 @@ drawGraph('scene-graph', {w:940, h:300, nodes:[
   {id:'player',  x:738, y:116, w:185, h:68, label:'Player',   name:'CharacterControllerCC',detail:'repositioned on load',      color:'#FB923C',
    ports:{in:{side:'in',dy:34}}},
 ], edges:[
-  {from:'trigger', fromPort:'out',  to:'gsm',    toPort:'in',   label:'On Enter → LoadScene("Level1")', color:'#4F8EF7', delay:'0s',   dur:'2.2s'},
+  {from:'trigger', fromPort:'out',  to:'gsm',    toPort:'in',   label:'On Trigger Enter Event → LoadScene("Level1")', color:'#4F8EF7', delay:'0s',   dur:'2.2s'},
   {from:'gsm',     fromPort:'out',  to:'level',  toPort:'in',   label:'loads additively',               color:'#9B72F7', delay:'.5s',  dur:'2s'},
   {from:'level',   fromPort:'out',  to:'spawn',  toPort:'in',   label:'contains SpawnPoint',            color:'#2DD4BF', delay:'1s',   dur:'2s'},
   {from:'spawn',   fromPort:'out',  to:'player', toPort:'in',   label:'positions player',               color:'#2DD4BF', delay:'1.4s', dur:'2s'},

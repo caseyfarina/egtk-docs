@@ -392,7 +392,7 @@ function drawGraph(svgId, {nodes, edges, w, h}) {
 <div class="section" id="adhoc" style="padding-top:60px">
   <span class="sec-label">Ad-hoc UI — no manager needed</span>
   <h2 class="sec-title">Show a message or image at any moment</h2>
-  <p class="sec-desc">These aren't tied to a manager. Wire any event → <code style="font-family:'SF Mono',monospace;font-size:14px;background:rgba(255,255,255,.07);padding:2px 6px;border-radius:4px">Show()</code> and they appear.</p>
+  <p class="sec-desc">These aren't tied to a manager. Wire any event → <code style="font-family:'SF Mono',monospace;font-size:14px;background:rgba(255,255,255,.07);padding:2px 6px;border-radius:4px">DisplayDefaultText()</code> or <code style="font-family:'SF Mono',monospace;font-size:14px;background:rgba(255,255,255,.07);padding:2px 6px;border-radius:4px">DisplayDefaultImage()</code> and they appear.</p>
 
   <div class="adhoc-grid">
     <div class="adhoc-card">
@@ -401,7 +401,7 @@ function drawGraph(svgId, {nodes, edges, w, h}) {
         <div class="adhoc-sub">Shows a text string with optional typewriter effect</div>
       </div>
       <div class="adhoc-body">
-        Set your message, position, and font size in the Inspector. Wire any event → <code>Show()</code>. Wire another event → <code>Hide()</code> to dismiss it. Good for hints, subtitles, and NPC messages when ActionDialogueSequence is overkill.
+        Set your message, position, and font size in the Inspector. Wire any event → <code>DisplayDefaultText()</code>, or <code>DisplayText("…")</code> to type the message into the event. Wire another event → <code>HideText()</code> to dismiss it. Good for hints, subtitles, and NPC messages when ActionDialogueSequence is overkill.
       </div>
     </div>
     <div class="adhoc-card">
@@ -410,7 +410,7 @@ function drawGraph(svgId, {nodes, edges, w, h}) {
         <div class="adhoc-sub">Shows a sprite with fade or scale animation</div>
       </div>
       <div class="adhoc-body">
-        Assign a sprite, pick an animation (Fade In, Scale In, or Both), set auto-hide duration. Wire any event → <code>Show()</code>. Good for tutorial images, objective icons, and pop-up indicators.
+        Assign a sprite, pick an animation (Fade In, Scale In, or Both), set auto-hide duration. Wire any event → <code>DisplayDefaultImage()</code>; <code>HideImage()</code> dismisses it. Good for tutorial images, objective icons, and pop-up indicators.
       </div>
     </div>
   </div>

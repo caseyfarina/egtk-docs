@@ -553,7 +553,7 @@
         <div class="pbox-title">UnityEvent</div>
         <div class="pbox-rule"></div>
         <ul class="pbox-examples">
-          <li>On Key Press</li>
+          <li>On Press Event</li>
           <li>On Enter / On Exit</li>
           <li>On Interact</li>
           <li>On Click</li>
@@ -623,6 +623,7 @@
   </p>
 </div>
 
+<script src="components.js"></script>
 <script>
 const COLORS = {
   blue:   '#4F8EF7',
@@ -645,7 +646,7 @@ const GOALS = [
     steps: [
       'Add InputKeyPress to any GameObject',
       'Add ActionPlaySound (needs an AudioSource)',
-      'Wire: On Key Press → Play()',
+      'Wire: On Press Event → Play()',
     ],
     delay: '0s',
   },
@@ -794,115 +795,8 @@ const GOALS = [
   },
 ];
 
-const TABLES = [
-  {
-    name: 'Input', color: COLORS.blue,
-    tint: 'rgba(79,142,247,.04)',
-    cols: ['Component', 'What It Does', 'Good For'],
-    rows: [
-      ['InputKeyPress',           'Fires when a key is pressed',                                    'Key pressed → call any function'],
-      ['InputOnStart',            'Fires when the scene starts',                                   'Auto-run something on scene load'],
-      ['InputTriggerZone',        'Fires when a tagged object enters or exits a collider',          'Player walks into area → call a function'],
-      ['InputCheckpointZone',     'A trigger zone that also saves a spawn point',                  'Checkpoints and respawn points'],
-      ['InputInteractionZone',    'Shows a prompt sprite; fires when the player presses Interact', 'Player presses E or Triangle → call any function'],
-      ['InputMouseInteraction',   'Fires when the mouse clicks or hovers over this object',        'Clickable objects with a free cursor'],
-      ['InputFPMouseInteraction', 'Same but raycasts from screen center',                         'Clickable objects in a first-person game'],
-      ['InputClickDrag',          'Makes this object draggable',                                  'Drag-and-drop puzzles and sliders'],
-      ['InputClickRotate',        'Makes this object rotatable by dragging',                      'Dials, wheels, rotating puzzles'],
-      ['InputActionEvent',        'Fires from any Unity Input System action',                     'Custom controller and keyboard bindings'],
-      ['InputKeyCountdown',       'Counts down while a key is held',                              'Hold-to-open doors and charge mechanics'],
-      ['InputCollisionEnter',     'Fires on physics collision with a tagged object',               'Bullet hits and physical triggers'],
-    ],
-  },
-  {
-    name: 'Actions', color: COLORS.purple,
-    tint: 'rgba(155,114,247,.04)',
-    cols: ['Component', 'What It Does', 'Good For'],
-    rows: [
-      ['ActionPlaySound',                 'Plays a sound with randomized volume and pitch',                   'Any sound effect'],
-      ['ActionDisplayText',               'Shows text on screen with optional typewriter effect',             'Subtitles, hints, UI messages'],
-      ['ActionDisplayImage',              'Shows an image with fade or scale animation',                      'Pop-up icons and overlays'],
-      ['ActionDialogueSequence',          'Multi-line dialogue with portraits and choices',                   'NPC conversations and cutscenes'],
-      ['ActionSpawnObject',               'Instantiates a prefab at a spawn point',                          'Spawn enemies and pickups'],
-      ['ActionAutoSpawner',               'Continuously spawns prefabs on a timer',                          'Enemy waves and ambient spawning'],
-      ['ActionSpawnProjectile',           'Spawns a projectile with direction and force',                    'Shooting and throwing'],
-      ['ActionRestartScene',              'Reloads the current scene',                                       'Restart button and game over'],
-      ['ActionRespawnPlayer',             'Teleports player to last checkpoint',                             'Death and respawn'],
-      ['ActionTeleportToTransform',       'Teleports any object to a target',                               'Portals and warps'],
-      ['ActionEventSequencer',            'Fires events in sequence with delays',                            'Cutscene chains'],
-      ['ActionRandomEvent',               'Picks one event from a weighted list',                            'Random loot and varied responses'],
-      ['ActionShuffleEvent',              'Cycles events in random order, each once',                        'Shuffle playlists and non-repeating dialogue'],
-      ['ActionTriggerAnimatorParameter',  'Sets an Animator parameter',                                     'Trigger animations'],
-      ['ActionPlayCharacterEmoteAnimation','Plays a named animation trigger',                               'Character reactions and emotes'],
-      ['ActionAnimateTransform',          'Moves, rotates, or scales using animation curves',               'Custom tweened animations'],
-      ['ActionRandomMotion',              'Continuously applies randomized movement',                        'Floating objects and idle wobble'],
-      ['ActionPlatformAnimator',          'Moves a platform between waypoints',                             'Doors, elevators, and moving platforms'],
-      ['ActionDecalSequence',             'Frame-by-frame material animation on a URP decal',               'Animated decals'],
-      ['ActionDecalSequenceLibrary',      'Switches between multiple named decal sequences',                'Characters with multiple animation states'],
-      ['ActionBlinkDecal',                'Automatically blinks a character eye decal',                     'Any character that needs blinking'],
-    ],
-  },
-  {
-    name: 'Game Managers', color: COLORS.green,
-    tint: 'rgba(52,211,153,.04)',
-    cols: ['Component', 'What It Does', 'Good For'],
-    rows: [
-      ['GameHealthManager',     'Tracks health with damage, healing, and death event',       'Player or enemy health'],
-      ['GameCollectionManager', 'Tracks a numeric value with threshold events',              'Score, coins, collectibles'],
-      ['GameInventoryManager',  'Tracks multiple item slots with counts',                   'Keys, ammo, resources'],
-      ['GameTimerManager',      'Counts up or down, fires events at thresholds',            'Level timer, countdown clock'],
-      ['GameCheckpointManager', 'Stores last checkpoint for respawning',                   'Respawn system'],
-      ['GameStateManager',      'Handles pause and victory screens',                        'Pause menu, win condition'],
-      ['GameAudioManager',      'Controls background music and ambient audio',              'Music system, crossfades'],
-      ['GameCameraManager',     'Switches between Cinemachine cameras by name',            'Multiple angles, cutscenes'],
-      ['GameUIManager',         'Connects managers to HUD UI elements',                    'HUD wiring'],
-      ['GameSceneManager',      'Loads scenes additively with spawn point coordination',   'Multi-level games and hub worlds'],
-    ],
-  },
-  {
-    name: 'Character Controllers', color: COLORS.red,
-    tint: 'rgba(239,68,68,.04)',
-    cols: ['Component', 'What It Does', 'Good For'],
-    rows: [
-      ['CharacterControllerFP',     'First-person controller with mouse look, jump, sprint', 'First-person games'],
-      ['CharacterControllerCC',     'Third-person controller with rotation and jump',        'Third-person and top-down games'],
-      ['PhysicsBallPlayerController','Physics-based ball controller',                       'Rolling ball games'],
-      ['PhysicsCharacterController','Rigidbody-based character controller',                 'Physics-heavy platformers'],
-      ['EnemyControllerCC',         'AI enemy that chases the player using NavMesh',        'Basic enemy AI'],
-      ['PhysicsEnemyController',    'Rigidbody-based enemy that chases',                   'Physics-based enemy AI'],
-    ],
-  },
-  {
-    name: 'Physics', color: COLORS.orange,
-    tint: 'rgba(251,146,60,.04)',
-    cols: ['Component', 'What It Does', 'Good For'],
-    rows: [
-      ['PhysicsBumper',           'Bounces any Rigidbody that touches it',                     'Pinball bumpers, bounce pads'],
-      ['PhysicsBumperTag',        'Same but only affects tagged objects',                      'Targeted bounce zones'],
-      ['PhysicsForceZone',        'Applies forces to Rigidbodies inside a trigger',            'Wind zones, jump pads, explosion areas'],
-      ['PhysicsPlatformAnimator', 'Moves platform between waypoints using Rigidbody',         'Moving platforms the player can stand on'],
-      ['PhysicsPlatformStick',    'Keeps player attached to a moving platform',               'Required companion to PhysicsPlatformAnimator'],
-    ],
-  },
-  {
-    name: 'Puzzles', color: COLORS.pink,
-    tint: 'rgba(244,114,182,.04)',
-    cols: ['Component', 'What It Does', 'Good For'],
-    rows: [
-      ['PuzzleSwitch',          'A switch that can be activated and deactivated',              'Any interactive switch or button'],
-      ['PuzzleSwitchChecker',   'Fires when all assigned switches are activated',              'Combination puzzles'],
-      ['PuzzleSequenceChecker', 'Fires when switches are activated in the correct order',     'Sequence puzzles'],
-    ],
-  },
-  {
-    name: 'UI & Utilities', color: COLORS.slate,
-    tint: 'rgba(148,163,200,.04)',
-    cols: ['Component', 'What It Does', 'Good For'],
-    rows: [
-      ['FadeInFromBlackOnRestart', 'Fades the screen in from black every time the scene loads', 'Scene transitions and respawn fade-in'],
-    ],
-  },
-];
+// Catalog lives in components.js, shared with the other catalog page.
+const TABLES = EGTK_CATALOG;
 
 // ── Build goal cards ──────────────────────────────────────────────
 const goalsGrid = document.getElementById('goalsGrid');
@@ -959,7 +853,7 @@ TABLES.forEach(t => {
   // Column headers
   const colHdr = document.createElement('div');
   colHdr.className = 'ref-cat-row header';
-  colHdr.innerHTML = t.cols.map(c => `<span class="ref-col-label">${c}</span>`).join('');
+  colHdr.innerHTML = (t.cols || ['Component', 'What It Does', 'Good For']).map(c => `<span class="ref-col-label">${c}</span>`).join('');
   wrap.appendChild(colHdr);
 
   // Rows

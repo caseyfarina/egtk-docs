@@ -117,6 +117,7 @@
   <a href="#cc-setup">CC Setup</a>
   <a href="#fp-setup">FP Setup</a>
   <a href="#platforms">Platforms</a>
+  <a href="#pushing">Pushing</a>
   <a href="#reference">Reference</a>
   <a href="index.html" class="topnav-back">← All Docs</a>
 </nav>
@@ -285,7 +286,7 @@
         <div class="step-badge">2</div>
         <div>
           <div class="step-title">Use PhysicsPlatformAnimator</div>
-          <div class="step-body">Move the platform with <code>PhysicsPlatformAnimator</code> (Rigidbody-based) rather than moving the Transform directly. The controller reads Rigidbody velocity to calculate platform movement. Wire any event → <code>PhysicsPlatformAnimator.Play()</code>.</div>
+          <div class="step-body">Move the platform with <code>PhysicsPlatformAnimator</code>. Each frame the controller checks how far the platform it stands on has moved and turned, and moves the same amount, so it carries the player along. Wire any event → <code>PhysicsPlatformAnimator.Play()</code>.</div>
         </div>
       </li>
     </ul>
@@ -303,6 +304,35 @@
         </div>
       </li>
     </ul>
+  </div>
+</div>
+
+<hr class="rule">
+
+<!-- Pushing -->
+<div class="section" id="pushing" style="padding-top:60px">
+  <span class="sec-label">Physics objects</span>
+  <h2 class="sec-title">Pushing crates and barrels</h2>
+  <p class="sec-desc">Unity's CharacterController walks straight through physics objects without moving them. Add <code>CharacterPushRigidBody</code> to the player (next to <code>CharacterControllerCC</code>) and anything with a Rigidbody gets pushed.</p>
+
+  <table class="field-table" style="margin-bottom:24px">
+    <thead><tr><th>Field</th><th>Default</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr><td><span class="field-name">Push Strength</span></td><td class="field-default">2</td><td class="field-desc">How hard objects are shoved.</td></tr>
+      <tr><td><span class="field-name">Push Layers</span></td><td class="field-default">Everything</td><td class="field-desc">Only objects on these layers get pushed. Set to Nothing and nothing is pushed.</td></tr>
+      <tr><td><span class="field-name">Horizontal Push Only</span></td><td class="field-default">true</td><td class="field-desc">Push sideways only, never up or down.</td></tr>
+      <tr><td><span class="field-name">Minimum / Maximum Mass</span></td><td class="field-default">0 / 0</td><td class="field-desc">Ignore objects lighter or heavier than this (0 = no limit). Set a maximum to make some crates too heavy to move.</td></tr>
+      <tr><td><span class="field-name">Ignore Kinematic</span></td><td class="field-default">true</td><td class="field-desc">Don't push Rigidbodies set to Kinematic.</td></tr>
+    </tbody>
+  </table>
+  <p class="sec-desc">Wire <strong>onPushObject</strong> to a scraping sound. It fires whenever something is pushed. <strong>onPushBlocked</strong> fires when the player bumps a Rigidbody it won't push: too heavy, too light, Kinematic, or on the wrong layer. Use it for a "too heavy" grunt.</p>
+
+  <div class="callout" style="background:rgba(79,142,247,.05);border-color:rgba(79,142,247,.2)">
+    <div class="callout-icon">💡</div>
+    <div>
+      <div class="callout-title" style="color:var(--blue)">Making a 2D game?</div>
+      <div class="callout-body">These controllers are 3D. For sprites, use <code>CharacterController2D</code>. See <a href="2d.html" style="color:var(--blue)">Making a 2D Game</a>.</div>
+    </div>
   </div>
 </div>
 

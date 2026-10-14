@@ -209,7 +209,7 @@
     <div class="callout-icon">🎯</div>
     <div>
       <div class="callout-title" style="color:var(--orange)">Wire On Purchased to game effects, not UI</div>
-      <div class="callout-body">The store handles its own sound effects, button states, and balance display. Wire <strong>On Purchased</strong> to things that affect gameplay: <code>PlayerController.EnableDoubleJump()</code>, <code>GameHealthManager.Heal(25)</code>, <code>Spawner.SetActive(true)</code>. This event also re-fires when a persistent item is restored on scene load — so game state is always correct.</div>
+      <div class="callout-body">The store handles its own sound effects, button states, and balance display. Wire <strong>On Purchased</strong> to things that affect gameplay: <code>CharacterControllerCC.SetJumpHeight(3)</code>, <code>GameHealthManager.Heal(25)</code>, <code>Spawner.SetActive(true)</code>. This event also re-fires when a persistent item is restored on scene load — so game state is always correct.</div>
     </div>
   </div>
 </div>
@@ -274,8 +274,8 @@
         <ul class="mode-steps">
           <li class="mode-step"><div class="mode-step-n">1</div>Set Open Mode → <strong>Event Only</strong></li>
           <li class="mode-step"><div class="mode-step-n">2</div>Add <code>InputTriggerZone</code> to a collider near the NPC</li>
-          <li class="mode-step"><div class="mode-step-n">3</div>Wire <strong>On Enter</strong> → <code>GameStoreManager.OpenStore()</code></li>
-          <li class="mode-step"><div class="mode-step-n">4</div>Wire <strong>On Exit</strong> → <code>GameStoreManager.CloseStore()</code> (optional — the ✕ button also closes)</li>
+          <li class="mode-step"><div class="mode-step-n">3</div>Wire <strong>On Trigger Enter Event</strong> → <code>GameStoreManager.OpenStore()</code></li>
+          <li class="mode-step"><div class="mode-step-n">4</div>Wire <strong>On Trigger Exit Event</strong> → <code>GameStoreManager.CloseStore()</code> (optional — the ✕ button also closes)</li>
         </ul>
       </div>
     </div>
@@ -382,7 +382,7 @@
       <div class="recipe-body">
         <div class="recipe-row"><span class="recipe-key">Max Purchases</span><span class="recipe-val">3</span></div>
         <div class="recipe-row"><span class="recipe-key">Persist Purchase</span><span class="recipe-val">true</span></div>
-        <div class="recipe-row"><span class="recipe-key">On Purchased →</span><span class="recipe-note">PlayerController.IncreaseSpeed(5) — fires once per tier on restore</span></div>
+        <div class="recipe-row"><span class="recipe-key">On Purchased →</span><span class="recipe-note">CharacterControllerCC.SetMoveSpeed(8) — fires once per tier on restore</span></div>
       </div>
     </div>
     <div class="recipe-card">
@@ -392,8 +392,8 @@
       </div>
       <div class="recipe-body">
         <div class="recipe-row"><span class="recipe-key">Open Mode</span><span class="recipe-val">Event Only</span></div>
-        <div class="recipe-row"><span class="recipe-key">InputTriggerZone</span><span class="recipe-note">On Enter → OpenStore()</span></div>
-        <div class="recipe-row"><span class="recipe-key">InputTriggerZone</span><span class="recipe-note">On Exit → CloseStore()</span></div>
+        <div class="recipe-row"><span class="recipe-key">InputTriggerZone</span><span class="recipe-note">On Trigger Enter Event → OpenStore()</span></div>
+        <div class="recipe-row"><span class="recipe-key">InputTriggerZone</span><span class="recipe-note">On Trigger Exit Event → CloseStore()</span></div>
         <div class="recipe-row"><span class="recipe-key">CC Controller</span><span class="recipe-note">Assign player to freeze movement</span></div>
       </div>
     </div>

@@ -7,40 +7,35 @@ updated: 2026-10-13
 
 ## Now
 
-**The site is significantly behind the toolkit.** It documents 58 components; the package
-now has 75. Nothing on the site mentions 2D support or the Input System migration, and
-every new component's `[HelpURL]` points at the index because no page covers it yet.
+Caught up with the toolkit as of 2026-10-13. The catalog lists all 75 student-facing
+components, and there are dedicated 2D (`2d.html`) and input (`input.html`) pages.
+
+**The catalog lives in `components.js` only.** `index.html` and `intro.html` both render from
+it, and every "N components" figure is counted from it at page load (`.egtk-count`). Edit
+components there, never in a page — two hand-kept copies is what let the count and the list
+drift before.
 
 The site is hand-authored — there is no pipeline from code to these pages, so nothing
 updates itself.
 
+## How the 2026-10-13 audit was done (repeat it after toolkit changes)
+
+1. Every `Component.Member` pair on every page checked against that class's public methods
+   and UnityEvents in `gameToolKit/Assets/eventGameToolKit/Runtime`.
+2. Every camelCase field/event name checked against serialized fields in the code.
+3. Catalog checked to equal the set of `MonoBehaviour` classes minus internal helpers
+   (`DialogueUIController`, `ProjectileVelocity`).
+4. Behavioural claims read against the code, not the old docs. That found real errors the
+   name checks could not: `InputKeyCountdown` counts presses (not a hold),
+   `PhysicsPlatformAnimator` moves by transform (not Rigidbody), `FullHeal()` does revive,
+   and `InputTriggerZone`'s events are `On Trigger Enter Event` / `On Trigger Exit Event`
+   (pages said `On Enter`, `onEnter`, `On Trigger Enter`).
+
 ## Next
 
-1. **Correct the catalog in `intro.html`.** 18 components are missing and one,
-   `PhysicsBumperTag`, no longer exists (merged into `PhysicsBumper` as a tag filter):
-
-   `ActionBlinkDecalOptimized`, `ActionDestroyObject`, `ActionEmissionAnimation`,
-   `ActionToggle`, `CharacterController2D`, `CharacterPushRigidBody`, `GameFlagListener`,
-   `GameFlagManager`, `GameStoreManager`, `InputQuitGame`, `PhysicsBumper2D`,
-   `PhysicsForceZone2D`, `PhysicsPlatformStick2D`, `SpawnPoint`, `StopMotionPostProcess`,
-   `applicationFPSLimiting`, `lockMouseCursorToDisplay`, `ObjectAttractor`
-
-2. **Fix the count in `index.html`** — it claims "all 65 components". Derive it rather than
-   guessing; the number has been wrong twice.
-
-3. **Add a 2D page.** Which components work with `Collider2D`, `CharacterController2D`
-   setup, and the Ground Layer trap that silently stops jumping.
-   Since 2026-10-13 it also needs: the Animator parameters it drives (`Speed`, `Grounded`,
-   `VerticalVelocity` — missing ones are skipped), **Visual Root** for characters made of
-   several sprites, and **Art Faces Left**.
-
-4. **Add an input page.** Keys are now bound through an Input Action in the Inspector, not
-   picked from a dropdown. Existing projects must set their keys again.
-
-5. **Point `[HelpURL]` at the new pages** once they exist, in the toolkit repo.
-
-`gameToolKit/Assets/eventGameToolKit/Documentation/ComponentQuickReference.md` is current
-and is the best source for steps 3 and 4.
+- Pages still without a deep dive, reachable only through the catalog: decals,
+  stop motion, spawning, puzzles beyond the example, physics bumpers/force zones (3D).
+- `ActionTeleportToTransform` in 2D is marked ⚠️ untested on `2d.html`; update once tried.
 
 ## Blocked
 
